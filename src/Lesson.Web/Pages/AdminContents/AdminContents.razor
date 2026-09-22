@@ -1,20 +1,21 @@
 @page "/admin/videos"
+@page "/admin/contents"
 @attribute [Authorize(Roles = nameof(UserRole.Admin))]
-@inject IVideoService Videos
+@inject IContentService Contents
 @inject IFolderService Folders
 
-<PageHeader Eyebrow="Admin" Title="مدیریت ویدیو" Subtitle="بارگذاری، انتقال و حذف" />
+<PageHeader Eyebrow="Admin" Title="مدیریت محتوا" Subtitle="بارگذاری، انتقال و حذف (حداکثر ۲۰ مگابایت)" />
 
 <section class="grid two-col">
     <section class="panel pad">
         <div class="toolbar">
-            <h3>فهرست ویدیوها</h3>
+            <h3>فهرست محتوا</h3>
             <SearchInput Label="جستجو" Placeholder="عنوان یا مسیر" Value="@_query" ValueChanged="OnSearch" />
         </div>
 
         <div class="toolbar">
             <select class="form-select" @bind="_folderFilterIdString">
-                <option value="">همه پوشه‌ها</option>
+                <option value="">همه گروه‌ها</option>
                 @foreach (var folder in _folderOptions)
                 {
                     <option value="@folder.Id">@folder.RelativePath</option>
@@ -23,24 +24,24 @@
             <button class="btn btn-outline" type="button" @onclick="ApplyFilters">اعمال فیلتر</button>
         </div>
 
-        <DataTable TItem="VideoDto" Items="_filtered" Columns="_columns">
-            <ActionsTemplate Context="video">
-                <a class="btn btn-secondary" href="/api/admin/videos/@video.Id/download"><AppIcon Name="download" /> دانلود</a>
-                <a class="btn btn-ghost" href="/admin/videos/@video.Id"><AppIcon Name="play" /> پخش</a>
-                <button class="btn btn-outline" type="button" @onclick="() => OpenMove(video)">جابجایی</button>
-                <button class="btn btn-danger" type="button" @onclick="() => ConfirmDelete(video)">حذف</button>
+        <DataTable TItem="ContentDto" Items="_filtered" Columns="_columns">
+            <ActionsTemplate Context="item">
+                <a class="btn btn-secondary" href="/api/admin/contents/@item.Id/download"><AppIcon Name="download" /> دانلود</a>
+                <a class="btn btn-ghost" href="/admin/contents/@item.Id"><AppIcon Name="play" /> مشاهده</a>
+                <button class="btn btn-outline" type="button" @onclick="() => OpenMove(item)">جابجایی</button>
+                <button class="btn btn-danger" type="button" @onclick="() => ConfirmDelete(item)">حذف</button>
             </ActionsTemplate>
         </DataTable>
     </section>
 
     <section class="panel pad">
-        <h3>بارگذاری</h3>
+        <h3>بارگذاری جدید</h3>
+        <p class="hint">حداکثر حجم: ۲۰ مگابایت — همه پسوندها مجاز هستند.</p>
 
         @if (_statusMessage is not null)
         {
             <div class="alert alert-success">@_statusMessage</div>
         }
-
         @if (_errorMessage is not null)
         {
             <div class="alert alert-error">@_errorMessage</div>
@@ -49,10 +50,10 @@
         <div class="form-grid">
             <div class="field">
                 <label>فایل</label>
-                <InputFile OnChange="OnFileSelected" accept="video/x-matroska,audio/mpeg,.mkv,.mp3" />
+                <InputFile OnChange="OnFileSelected" />
                 @if (_selectedFile is not null)
                 {
-                    <p class="hint">فایل انتخاب‌شده: @_selectedFile.Name</p>
+                    <p class="hint">@_selectedFile.Name — @FormatSize(_selectedFile.Size)</p>
                 }
             </div>
 
@@ -62,9 +63,9 @@
             </div>
 
             <div class="field">
-                <label>پوشه مقصد</label>
+                <label>گروه مقصد</label>
                 <select @bind="_uploadFolderIdString">
-                    <option value="">انتخاب پوشه</option>
+                    <option value="">انتخاب گروه</option>
                     @foreach (var folder in _folderOptions)
                     {
                         <option value="@folder.Id">@folder.RelativePath</option>
@@ -74,24 +75,26 @@
         </div>
 
         <div class="toolbar">
-            <button class="btn btn-primary" type="button" @onclick="UploadAsync" disabled="@(string.IsNullOrWhiteSpace(_displayName) || _selectedFile is null || string.IsNullOrWhiteSpace(_uploadFolderIdString) || _isBusy)">بارگذاری</button>
+            <button class="btn btn-primary" type="button" @onclick="UploadAsync"
+                    disabled="@(string.IsNullOrWhiteSpace(_displayName) || _selectedFile is null || string.IsNullOrWhiteSpace(_uploadFolderIdString) || _isBusy)">
+                بارگذاری
+            </button>
             <button class="btn btn-ghost" type="button" @onclick="ResetUpload" disabled="@_isBusy">پاک‌سازی</button>
         </div>
 
-        @if (_movingVideo is not null)
+        @if (_movingItem is not null)
         {
             <hr class="panel-divider" />
-
-            <h4>جابجایی ویدیو</h4>
+            <h4>جابجایی محتوا</h4>
             <div class="form-grid">
                 <div class="field">
-                    <label>ویدیو</label>
-                    <input value="@_movingVideo.DisplayName" disabled />
+                    <label>محتوا</label>
+                    <input value="@_movingItem.DisplayName" disabled />
                 </div>
                 <div class="field">
-                    <label>پوشه جدید</label>
+                    <label>گروه جدید</label>
                     <select @bind="_moveFolderIdString">
-                        <option value="">انتخاب پوشه</option>
+                        <option value="">انتخاب گروه</option>
                         @foreach (var folder in _folderOptions)
                         {
                             <option value="@folder.Id">@folder.RelativePath</option>
@@ -101,7 +104,7 @@
             </div>
             <div class="toolbar">
                 <button class="btn btn-primary" type="button" @onclick="MoveAsync" disabled="@(string.IsNullOrWhiteSpace(_moveFolderIdString) || _isBusy)">انتقال</button>
-                <button class="btn btn-ghost" type="button" @onclick="() => _movingVideo = null">لغو</button>
+                <button class="btn btn-ghost" type="button" @onclick="() => _movingItem = null">لغو</button>
             </div>
         }
     </section>
@@ -109,16 +112,16 @@
 
 <ConfirmDialog
     IsOpen="_showDeleteConfirm"
-    Title="حذف ویدیو"
-    Message="آیا حذف این ویدیو را تایید می‌کنید؟"
+    Title="حذف محتوا"
+    Message="آیا حذف این محتوا را تایید می‌کنید؟"
     ConfirmText="حذف"
     Busy="_isBusy"
     OnClose="CancelDelete"
     OnConfirm="DeleteConfirmed" />
 
 @code {
-    private IReadOnlyList<VideoDto> _videos = [];
-    private IReadOnlyList<VideoDto> _filtered = [];
+    private IReadOnlyList<ContentDto> _items = [];
+    private IReadOnlyList<ContentDto> _filtered = [];
     private IReadOnlyList<FolderFlat> _folderOptions = [];
     private string _query = string.Empty;
     private string _folderFilterIdString = string.Empty;
@@ -126,15 +129,15 @@
     private string _moveFolderIdString = string.Empty;
     private string _displayName = string.Empty;
     private IBrowserFile? _selectedFile;
-    private VideoDto? _movingVideo;
+    private ContentDto? _movingItem;
     private string? _statusMessage;
     private string? _errorMessage;
     private bool _isBusy;
-
-    private long? _deleteVideoId;
+    private long? _deleteId;
     private bool _showDeleteConfirm;
+    private const long MaxUploadBytes = 20L * 1024 * 1024;
 
-    private readonly IReadOnlyList<TableColumn<VideoDto>> _columns =
+    private readonly IReadOnlyList<TableColumn<ContentDto>> _columns =
     [
         new() { Header = "عنوان", Template = v => (RenderFragment)(b => b.AddContent(0, v.DisplayName)) },
         new() { Header = "مسیر", Template = v => (RenderFragment)(b => {
@@ -143,22 +146,18 @@
             b.AddContent(2, v.FolderPath);
             b.CloseElement();
         }) },
-        new() { Header = "فرمت", Template = v => (RenderFragment)(b => b.AddContent(0, v.FileExtension)) },
+        new() { Header = "نوع", Template = v => (RenderFragment)(b => b.AddContent(0, v.Type.ToString())) },
         new() { Header = "حجم", Template = v => (RenderFragment)(b => b.AddContent(0, FormatSize(v.FileSize))) }
     ];
 
-    protected override async Task OnInitializedAsync()
-    {
-        await ReloadAsync();
-    }
+    protected override async Task OnInitializedAsync() => await ReloadAsync();
 
     private async Task ReloadAsync()
     {
         var folders = await Folders.GetTreeAsync();
         _folderOptions = Flatten(folders).ToList();
-
-        _videos = await Videos.GetAllAsync();
-        _filtered = _videos;
+        _items = await Contents.GetAllAsync();
+        _filtered = _items;
         _statusMessage = null;
         _errorMessage = null;
     }
@@ -169,33 +168,20 @@
         {
             yield return new FolderFlat(n.Id, n.RelativePath);
             foreach (var c in Flatten(n.Children))
-            {
                 yield return c;
-            }
         }
     }
 
-    private void OnSearch(string q)
-    {
-        _query = q;
-        ApplyFilters();
-    }
+    private void OnSearch(string q) { _query = q; ApplyFilters(); }
 
     private void ApplyFilters()
     {
-        IEnumerable<VideoDto> result = _videos;
-
+        IEnumerable<ContentDto> result = _items;
         if (!string.IsNullOrWhiteSpace(_query))
-        {
             result = result.Where(v => v.DisplayName.Contains(_query, StringComparison.OrdinalIgnoreCase)
-                                   || v.FolderPath.Contains(_query, StringComparison.OrdinalIgnoreCase));
-        }
-
+                                    || v.FolderPath.Contains(_query, StringComparison.OrdinalIgnoreCase));
         if (long.TryParse(_folderFilterIdString, out var folderId))
-        {
             result = result.Where(v => v.FolderId == folderId);
-        }
-
         _filtered = result.ToList();
     }
 
@@ -203,58 +189,33 @@
     {
         _selectedFile = e.FileCount > 0 ? e.File : null;
         if (_selectedFile is not null)
-        {
-            _displayName = _selectedFile.Name;
-        }
+            _displayName = Path.GetFileNameWithoutExtension(_selectedFile.Name);
     }
 
     private async Task UploadAsync()
     {
-        if (_selectedFile is null)
+        if (_selectedFile is null) { _errorMessage = "فایلی انتخاب نشده است."; return; }
+        if (!long.TryParse(_uploadFolderIdString, out var folderId)) { _errorMessage = "گروه مقصد را انتخاب کنید."; return; }
+        if (string.IsNullOrWhiteSpace(_displayName)) { _errorMessage = "نام نمایش را وارد کنید."; return; }
+        if (_selectedFile.Size > MaxUploadBytes)
         {
-            _errorMessage = "فایلی انتخاب نشده است.";
-            return;
-        }
-
-        if (!long.TryParse(_uploadFolderIdString, out var folderId))
-        {
-            _errorMessage = "پوشه مقصد را انتخاب کنید.";
-            return;
-        }
-
-        if (string.IsNullOrWhiteSpace(_displayName))
-        {
-            _errorMessage = "نام نمایش را وارد کنید.";
-            return;
-        }
-
-        var extension = Path.GetExtension(_selectedFile.Name).ToLowerInvariant();
-        if (extension is not ".mkv" and not ".mp3")
-        {
-            _errorMessage = "فقط فایل‌های MKV و MP3 مجاز هستند.";
+            _errorMessage = $"حداکثر حجم مجاز ۲۰ مگابایت است. حجم فایل: {_selectedFile.Size / 1024d / 1024d:0.0} MB";
             return;
         }
 
         try
         {
             _isBusy = true;
-            await using var stream = _selectedFile.OpenReadStream(maxAllowedSize: 5L * 1024 * 1024 * 1024);
-            var request = new UploadVideoRequest(folderId, _selectedFile.Name, _displayName.Trim(), stream, stream.Length);
-            await Videos.UploadAsync(request);
-
-            _statusMessage = "ویدیو با موفقیت ارسال شد.";
+            await using var stream = _selectedFile.OpenReadStream(maxAllowedSize: MaxUploadBytes);
+            var request = new UploadContentRequest(folderId, _selectedFile.Name, _displayName.Trim(), stream, _selectedFile.Size);
+            await Contents.UploadAsync(request);
+            _statusMessage = "محتوا با موفقیت بارگذاری شد.";
             _errorMessage = null;
             ResetUpload();
             await ReloadAsync();
         }
-        catch (Exception ex)
-        {
-            _errorMessage = ex.Message;
-        }
-        finally
-        {
-            _isBusy = false;
-        }
+        catch (Exception ex) { _errorMessage = ex.Message; }
+        finally { _isBusy = false; }
     }
 
     private void ResetUpload()
@@ -264,82 +225,46 @@
         _uploadFolderIdString = string.Empty;
     }
 
-    private void OpenMove(VideoDto video)
+    private void OpenMove(ContentDto item)
     {
-        _movingVideo = video;
+        _movingItem = item;
         _moveFolderIdString = string.Empty;
         _errorMessage = null;
     }
 
     private async Task MoveAsync()
     {
-        if (_movingVideo is null)
-        {
-            return;
-        }
-
-        if (!long.TryParse(_moveFolderIdString, out var folderId))
-        {
-            _errorMessage = "پوشه مقصد را انتخاب کنید.";
-            return;
-        }
-
+        if (_movingItem is null) return;
+        if (!long.TryParse(_moveFolderIdString, out var folderId)) { _errorMessage = "گروه مقصد را انتخاب کنید."; return; }
         try
         {
             _isBusy = true;
-            await Videos.MoveAsync(_movingVideo.Id, folderId);
-            _statusMessage = "فایل با موفقیت منتقل شد.";
-            _movingVideo = null;
-            _moveFolderIdString = string.Empty;
+            await Contents.MoveAsync(_movingItem.Id, folderId);
+            _statusMessage = "محتوا با موفقیت منتقل شد.";
+            _movingItem = null;
             await ReloadAsync();
         }
-        catch (Exception ex)
-        {
-            _errorMessage = ex.Message;
-        }
-        finally
-        {
-            _isBusy = false;
-        }
+        catch (Exception ex) { _errorMessage = ex.Message; }
+        finally { _isBusy = false; }
     }
 
-    private void ConfirmDelete(VideoDto video)
-    {
-        _deleteVideoId = video.Id;
-        _showDeleteConfirm = true;
-    }
+    private void ConfirmDelete(ContentDto item) { _deleteId = item.Id; _showDeleteConfirm = true; }
 
     private async Task DeleteConfirmed()
     {
-        if (_deleteVideoId is null)
-        {
-            return;
-        }
-
+        if (_deleteId is null) return;
         try
         {
             _isBusy = true;
-            await Videos.DeleteAsync(_deleteVideoId.Value);
-            _statusMessage = "ویدیو حذف شد.";
+            await Contents.DeleteAsync(_deleteId.Value);
+            _statusMessage = "محتوا حذف شد.";
             await ReloadAsync();
         }
-        catch (Exception ex)
-        {
-            _errorMessage = ex.Message;
-        }
-        finally
-        {
-            _isBusy = false;
-            _showDeleteConfirm = false;
-            _deleteVideoId = null;
-        }
+        catch (Exception ex) { _errorMessage = ex.Message; }
+        finally { _isBusy = false; _showDeleteConfirm = false; _deleteId = null; }
     }
 
-    private void CancelDelete()
-    {
-        _showDeleteConfirm = false;
-        _deleteVideoId = null;
-    }
+    private void CancelDelete() { _showDeleteConfirm = false; _deleteId = null; }
 
     private static string FormatSize(long size)
         => size > 1024 * 1024 * 1024 ? $"{size / 1024d / 1024d / 1024d:0.0} GB" :

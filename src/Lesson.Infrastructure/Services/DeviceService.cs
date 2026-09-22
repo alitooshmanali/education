@@ -59,16 +59,16 @@ public sealed class DeviceService : IDeviceService
 
     public async Task RevokeDeviceAsync(long deviceId, CancellationToken cancellationToken = default)
     {
-        var device = await _db.UserDevices.Include(x => x.AuthenticationSessions).Include(x => x.VideoWatchSessions).FirstAsync(x => x.Id == deviceId, cancellationToken);
+        var device = await _db.UserDevices
+            .Include(x => x.AuthenticationSessions)
+            .FirstAsync(x => x.Id == deviceId, cancellationToken);
+
         device.RevokedAt = DateTimeOffset.UtcNow;
         foreach (var session in device.AuthenticationSessions)
         {
             session.RevokedAt = DateTimeOffset.UtcNow;
         }
-        foreach (var watch in device.VideoWatchSessions)
-        {
-            watch.EndedAt = DateTimeOffset.UtcNow;
-        }
+
         await _db.SaveChangesAsync(cancellationToken);
     }
 }

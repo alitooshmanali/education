@@ -11,5 +11,4 @@ public sealed class UserDevice : BaseEntity
     public DateTimeOffset LastSeenAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? RevokedAt { get; set; }
     public ICollection<AuthenticationSession> AuthenticationSessions { get; set; } = new List<AuthenticationSession>();
-    public ICollection<VideoWatchSession> VideoWatchSessions { get; set; } = new List<VideoWatchSession>();
 }

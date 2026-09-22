@@ -1,18 +1,18 @@
 @page "/student/videos"
 @attribute [Authorize(Roles = nameof(UserRole.Student))]
-@inject IVideoService Videos
+@inject IContentService Contents
 @inject ICurrentUserContext CurrentUser
 
-<PageHeader Eyebrow="Student" Title="درس‌ها" Subtitle="فقط ویدیوهای مجاز شما" />
+<PageHeader Eyebrow="Student" Title="درس‌ها" Subtitle="فقط محتوای مجاز شما" />
 
 <section class="panel pad">
     <div class="toolbar">
         <SearchInput Label="جستجو" Placeholder="عنوان یا مسیر" Value="@_query" ValueChanged="OnSearch" />
     </div>
 
-    <DataTable TItem="VideoDto" Items="_filtered" Columns="_columns">
-        <ActionsTemplate Context="video">
-            <a class="btn btn-secondary" href="@($"/student/videos/{video.Id}")"><AppIcon Name="play" /> پخش</a>
+    <DataTable TItem="ContentDto" Items="_filtered" Columns="_columns">
+        <ActionsTemplate Context="item">
+            <a class="btn btn-secondary" href="@($"/student/videos/{item.Id}")"><AppIcon Name="play" /> باز کردن</a>
         </ActionsTemplate>
     </DataTable>
 
@@ -23,11 +23,11 @@
 </section>
 
 @code {
-    private IReadOnlyList<VideoDto> _videos = [];
-    private IReadOnlyList<VideoDto> _filtered = [];
+    private IReadOnlyList<ContentDto> _items = [];
+    private IReadOnlyList<ContentDto> _filtered = [];
     private string _query = string.Empty;
 
-    private readonly IReadOnlyList<TableColumn<VideoDto>> _columns =
+    private readonly IReadOnlyList<TableColumn<ContentDto>> _columns =
     [
         new() { Header = "عنوان", Template = v => (RenderFragment)(b => b.AddContent(0, v.DisplayName)) },
         new() { Header = "مسیر", Template = v => (RenderFragment)(b =>
@@ -37,26 +37,26 @@
                 b.AddContent(2, v.FolderPath);
                 b.CloseElement();
             }) },
+        new() { Header = "نوع", Template = v => (RenderFragment)(b => b.AddContent(0, v.Type.ToString())) },
         new() { Header = "حجم", Template = v => (RenderFragment)(b => b.AddContent(0, FormatSize(v.FileSize))) }
     ];
 
     protected override async Task OnInitializedAsync()
     {
-        if (CurrentUser.UserId is null)
-        {
-            return;
-        }
+        if (CurrentUser.UserId is null) return;
 
-        _videos = await Videos.GetForUserAsync(CurrentUser.UserId.Value, false);
-        _filtered = _videos;
+        _items = await Contents.GetForUserAsync(CurrentUser.UserId.Value, false);
+        _filtered = _items;
     }
 
     private void OnSearch(string value)
     {
         _query = value;
         _filtered = string.IsNullOrWhiteSpace(value)
-            ? _videos
-            : _videos.Where(v => v.DisplayName.Contains(value, StringComparison.OrdinalIgnoreCase) || v.FolderPath.Contains(value, StringComparison.OrdinalIgnoreCase)).ToList();
+            ? _items
+            : _items.Where(v =>
+                v.DisplayName.Contains(value, StringComparison.OrdinalIgnoreCase) ||
+                v.FolderPath.Contains(value, StringComparison.OrdinalIgnoreCase)).ToList();
     }
 
     private static string FormatSize(long size)

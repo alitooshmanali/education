@@ -1,13 +1,13 @@
-@page "/student/videos/{VideoId:long}"
+@page "/student/videos/{ContentId:long}"
 @attribute [Authorize(Roles = nameof(UserRole.Student))]
-@inject IVideoService Videos
+@inject IContentService Contents
 @inject ICurrentUserContext CurrentUser
 
-<PageHeader Eyebrow="Student" Title="مشاهده ویدیو" Subtitle="پخش امن با احراز دسترسی" />
+<PageHeader Eyebrow="Student" Title="مشاهده محتوا" Subtitle="پخش امن با احراز دسترسی و ادامه از نقطه قطع‌شده" />
 
-@if (_video is null)
+@if (_content is null)
 {
-    <EmptyState Icon="video" Title="در دسترس نیست" Message="این ویدیو برای شما قابل پخش نیست یا حذف شده.">
+    <EmptyState Icon="video" Title="در دسترس نیست" Message="این محتوا برای شما قابل پخش نیست یا حذف شده.">
         <Action>
             <a class="btn btn-primary" href="/student/videos">بازگشت</a>
         </Action>
@@ -18,27 +18,59 @@ else
     <section class="media-shell">
         <section class="video-player-shell panel pad">
             <div class="video-info">
-                <h3>@_video.DisplayName</h3>
-                <div class="meta ltr">@_video.FolderPath</div>
-                <p class="meta">نوع: @(_video.FileExtension.ToUpperInvariant()) — حجم: @FormatSize(_video.FileSize)</p>
+                <h3>@_content.DisplayName</h3>
+                <div class="meta ltr">@_content.FolderPath</div>
+                <p class="meta">نوع: @_content.Type — پسوند: @_content.FileExtension.ToUpperInvariant() — حجم: @FormatSize(_content.FileSize)</p>
+                @if (_progress is not null)
+                {
+                    <p class="meta">
+                        پیشرفت شما: <strong>@_progress.ProgressPercent.ToString("0.0")%</strong>
+                        @if (_progress.IsCompleted)
+                        {
+                            <span class="status-badge tone-success">تکمیل شده</span>
+                        }
+                    </p>
+                }
             </div>
 
-            <VideoPlayer StreamUrl="@($"/api/videos/{VideoId}/stream")" PosterUrl="" />
+            @if (_content.Type is Lesson.Domain.Enums.ContentType.Video or Lesson.Domain.Enums.ContentType.Audio)
+            {
+                <VideoPlayer StreamUrl="@($"/api/contents/{ContentId}/stream")"
+                             ContentId="ContentId"
+                             ResumePosition="@GetResumeSeconds()"
+                             TrackProgress="true" />
+            }
+            else if (_content.Type is Lesson.Domain.Enums.ContentType.Image)
+            {
+                <div class="panel pad">
+                    <img src="@($"/api/contents/{ContentId}/stream")" alt="@_content.DisplayName" style="max-width:100%;border-radius:8px;" />
+                </div>
+            }
+            else
+            {
+                <div class="panel pad">
+                    <p>این فایل قابل پخش آنلاین نیست. می‌توانید آن را دانلود کنید.</p>
+                    <a class="btn btn-primary" href="@($"/api/contents/{ContentId}/stream")" target="_blank">دانلود / مشاهده</a>
+                    <button class="btn btn-secondary" type="button" @onclick="MarkAsRead">علامت‌گذاری به‌عنوان خوانده‌شده</button>
+                </div>
+            }
         </section>
 
         <section class="panel pad">
-            <h4>ویدیوهای مرتبط</h4>
+            <h4>محتوای مرتبط</h4>
             <div class="sidebar-list">
                 @if (_related.Any())
                 {
                     @foreach (var item in _related)
                     {
-                        <a class="video-link" href="/student/videos/@item.Id"><AppIcon Name="play" /><span>@item.DisplayName</span></a>
+                        <a class="video-link" href="/student/videos/@item.Id">
+                            <AppIcon Name="play" /><span>@item.DisplayName</span>
+                        </a>
                     }
                 }
                 else
                 {
-                    <EmptyState Icon="video" Title="دیگری موجود نیست" Message="برای این پوشه مورد دیگری وجود ندارد." />
+                    <EmptyState Icon="video" Title="دیگری موجود نیست" Message="برای این گروه مورد دیگری وجود ندارد." />
                 }
             </div>
         </section>
@@ -46,29 +78,40 @@ else
 }
 
 @code {
-    [Parameter] public long VideoId { get; set; }
-    private VideoDto? _video;
-    private IReadOnlyList<VideoDto> _related = [];
+    [Parameter] public long ContentId { get; set; }
+    private ContentDto? _content;
+    private ContentProgressDto? _progress;
+    private IReadOnlyList<ContentDto> _related = [];
 
     protected override async Task OnInitializedAsync()
     {
-        if (CurrentUser.UserId is null)
-        {
-            return;
-        }
+        if (CurrentUser.UserId is null) return;
 
-        var all = await Videos.GetForUserAsync(CurrentUser.UserId.Value, false);
-        _video = all.FirstOrDefault(x => x.Id == VideoId);
-        if (_video is null)
-        {
-            return;
-        }
+        var userId = CurrentUser.UserId.Value;
+        var all = await Contents.GetForUserAsync(userId, false);
+        _content = all.FirstOrDefault(x => x.Id == ContentId);
+        if (_content is null) return;
 
-        _related = all.Where(x => x.FolderPath == _video.FolderPath && x.Id != _video.Id).ToList();
+        _related = all.Where(x => x.FolderPath == _content.FolderPath && x.Id != _content.Id).ToList();
+        _progress = await Contents.GetProgressAsync(userId, ContentId);
+    }
+
+    private async Task MarkAsRead()
+    {
+        if (CurrentUser.UserId is null || _content is null) return;
+        await Contents.UpdateProgressAsync(CurrentUser.UserId.Value, ContentId, 0, null);
+        _progress = await Contents.GetProgressAsync(CurrentUser.UserId.Value, ContentId);
     }
 
     private static string FormatSize(long size)
         => size > 1024 * 1024 * 1024 ? $"{size / 1024d / 1024d / 1024d:0.0} GB" :
            size > 1024 * 1024 ? $"{size / 1024d / 1024d:0.0} MB" :
            $"{size / 1024d:0.0} KB";
+
+    private double GetResumeSeconds()
+    {
+        if (_progress is null) return 0;
+        if (_progress.IsCompleted) return 0;
+        return _progress.LastPositionSeconds > 0.5 ? _progress.LastPositionSeconds : 0;
+    }
 }

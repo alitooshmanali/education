@@ -3,7 +3,6 @@ using Lesson.Infrastructure.Abstractions;
 using Lesson.Infrastructure.Options;
 using Lesson.Infrastructure.Persistence;
 using Lesson.Infrastructure.Services;
-using Lesson.Infrastructure.Storage;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -36,17 +35,14 @@ builder.Services.AddDbContext<LessonDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<LessonDbContext>());
-builder.Services.AddScoped<IFileStorage, LocalFileStorage>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFolderService, FolderService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
 builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<Lesson.Infrastructure.Abstractions.IAuthenticationService, Lesson.Infrastructure.Services.AuthenticationService>();
-builder.Services.AddScoped<IVideoService, VideoService>();
-builder.Services.AddScoped<IVideoAccessService, VideoAccessService>();
-builder.Services.AddScoped<IVideoStreamingService, VideoStreamingService>();
-builder.Services.AddScoped<IVideoScannerService, VideoScannerService>();
+builder.Services.AddScoped<IContentService, ContentService>();
+builder.Services.AddScoped<IContentStreamingService, ContentStreamingService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
@@ -62,7 +58,8 @@ app.UseAuthorization();
 
 app.MapRazorComponents<Lesson.Web.App>().AddInteractiveServerRenderMode();
 
-app.MapPost("/api/auth/login", async (HttpContext context, Lesson.Infrastructure.Abstractions.IAuthenticationService auth, IUserService users, IConfiguration config) =>
+// ---------- Auth ----------
+app.MapPost("/api/auth/login", async (HttpContext context, Lesson.Infrastructure.Abstractions.IAuthenticationService auth) =>
 {
     var form = await context.Request.ReadFormAsync();
     var username = form["username"].ToString();
@@ -76,10 +73,14 @@ app.MapPost("/api/auth/login", async (HttpContext context, Lesson.Infrastructure
 
     if (!context.Request.Cookies.ContainsKey("lesson.device"))
     {
-        context.Response.Cookies.Append("lesson.device", device, new CookieOptions { HttpOnly = true, Secure = true, SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Strict, IsEssential = true });
+        context.Response.Cookies.Append("lesson.device", device, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Strict,
+            IsEssential = true
+        });
     }
-
-    // keep explicit user/role/session claims for authorization and streaming validation
 
     var claims = new List<Claim>
     {
@@ -104,48 +105,67 @@ app.MapMethods("/api/auth/logout", ["GET", "POST"], async (HttpContext context, 
     return Results.Redirect("/");
 });
 
-app.MapGet("/api/videos/{id:long}/stream", async (HttpContext context, long id, IVideoStreamingService streaming) =>
+// ---------- Content streaming (from DB bytes) ----------
+app.MapGet("/api/contents/{id:long}/stream", async (HttpContext context, long id, IContentStreamingService streaming) =>
 {
-    if (!context.User.Identity?.IsAuthenticated ?? true)
-    {
+    if (!(context.User.Identity?.IsAuthenticated ?? false))
         return Results.Unauthorized();
-    }
 
     var userId = long.Parse(context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
     var device = context.User.FindFirstValue("lesson.device") ?? string.Empty;
     var session = context.User.FindFirstValue("lesson.session") ?? string.Empty;
     var isAdmin = context.User.IsInRole(nameof(UserRole.Admin));
+
     var result = await streaming.OpenAsync(id, userId, device, session, isAdmin);
     if (result is null)
-    {
         return Results.Forbid();
-    }
 
     context.Response.Headers[HeaderNames.AcceptRanges] = "bytes";
+    if (result.ResumePositionSeconds.HasValue)
+        context.Response.Headers["X-Resume-Position"] = result.ResumePositionSeconds.Value.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
+
     return Results.Stream(result.Stream, result.ContentType, enableRangeProcessing: true, fileDownloadName: result.FileName);
 }).RequireAuthorization();
 
-app.MapGet("/api/admin/videos/{id:long}/download", async (HttpContext context, long id, IVideoStreamingService streaming) =>
+// ---------- Progress update ----------
+app.MapPost("/api/contents/{id:long}/progress", async (HttpContext context, long id, IContentService contents) =>
+{
+    if (!(context.User.Identity?.IsAuthenticated ?? false))
+        return Results.Unauthorized();
+
+    // Admin must not write progress
+    if (context.User.IsInRole(nameof(UserRole.Admin)))
+        return Results.NoContent();
+
+    var userId = long.Parse(context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+    var body = await context.Request.ReadFromJsonAsync<ProgressUpdateRequest>();
+    if (body is null)
+        return Results.BadRequest();
+
+    await contents.UpdateProgressAsync(userId, id, body.PositionSeconds, body.DurationSeconds);
+    return Results.Ok();
+}).RequireAuthorization();
+
+// ---------- Admin download ----------
+app.MapGet("/api/admin/contents/{id:long}/download", async (HttpContext context, long id, IContentStreamingService streaming) =>
 {
     if (!context.User.IsInRole(nameof(UserRole.Admin)))
-    {
         return Results.Forbid();
-    }
 
     var userId = long.Parse(context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
     var device = context.User.FindFirstValue("lesson.device") ?? string.Empty;
     var session = context.User.FindFirstValue("lesson.session") ?? string.Empty;
+
     var result = await streaming.OpenAsync(id, userId, device, session, true);
     if (result is null)
-    {
         return Results.NotFound();
-    }
 
     return Results.File(result.Stream, result.ContentType, result.FileName);
 }).RequireAuthorization();
 
-
 app.Run();
+
+public sealed record ProgressUpdateRequest(double PositionSeconds, double? DurationSeconds);
 
 public sealed class CurrentUserContext : ICurrentUserContext
 {

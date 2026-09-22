@@ -11,6 +11,6 @@ public sealed class User : BaseEntity
     public ICollection<Permission> Permissions { get; set; } = new List<Permission>();
     public ICollection<UserDevice> Devices { get; set; } = new List<UserDevice>();
     public ICollection<AuthenticationSession> AuthenticationSessions { get; set; } = new List<AuthenticationSession>();
-    public ICollection<VideoWatchSession> VideoWatchSessions { get; set; } = new List<VideoWatchSession>();
+    public ICollection<ContentProgress> ContentProgresses { get; set; } = new List<ContentProgress>();
     public ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
 }

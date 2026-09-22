@@ -2,7 +2,12 @@ using Lesson.Domain.Entities;
 
 namespace Lesson.Infrastructure.Abstractions;
 
-public sealed record FolderNodeDto(long Id, string Name, string RelativePath, IReadOnlyList<FolderNodeDto> Children, IReadOnlyList<VideoDto> Videos);
+public sealed record FolderNodeDto(
+    long Id,
+    string Name,
+    string RelativePath,
+    IReadOnlyList<FolderNodeDto> Children,
+    IReadOnlyList<ContentDto> Contents);
 
 public interface IFolderService
 {

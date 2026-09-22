@@ -111,6 +111,54 @@ namespace Lesson.Infrastructure.Migrations
                     b.ToTable("AuthenticationSessions", (string)null);
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.ContentProgress", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("ContentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<double>("LastPositionSeconds")
+                        .HasColumnType("float");
+
+                    b.Property<DateTimeOffset>("LastWatchedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<double>("MaxWatchedSeconds")
+                        .HasColumnType("float");
+
+                    b.Property<double>("ProgressPercent")
+                        .HasColumnType("float");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContentId");
+
+                    b.HasIndex("UserId", "ContentId")
+                        .IsUnique();
+
+                    b.ToTable("ContentProgresses", (string)null);
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.Folder", b =>
                 {
                     b.Property<long>("Id")
@@ -146,6 +194,68 @@ namespace Lesson.Infrastructure.Migrations
                     b.HasIndex("ParentFolderId");
 
                     b.ToTable("Folders", (string)null);
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.LessonContent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<double?>("DurationSeconds")
+                        .HasColumnType("float");
+
+                    b.Property<string>("FileExtension")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("FolderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FolderId");
+
+                    b.HasIndex("Type");
+
+                    b.ToTable("Contents", (string)null);
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.Permission", b =>
@@ -288,112 +398,6 @@ namespace Lesson.Infrastructure.Migrations
                     b.ToTable("UserDevices", (string)null);
                 });
 
-            modelBuilder.Entity("Lesson.Domain.Entities.Video", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("DisplayName")
-                        .IsRequired()
-                        .HasMaxLength(260)
-                        .HasColumnType("nvarchar(260)");
-
-                    b.Property<string>("FileExtension")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(260)
-                        .HasColumnType("nvarchar(260)");
-
-                    b.Property<long>("FileSize")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("FolderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("RelativePath")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("StorageKey")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FolderId");
-
-                    b.ToTable("Videos", (string)null);
-                });
-
-            modelBuilder.Entity("Lesson.Domain.Entities.VideoWatchSession", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<long?>("AuthenticationSessionId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("EndedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset>("LastActivityAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset>("StartedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<long>("UserDeviceId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("VideoId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AuthenticationSessionId");
-
-                    b.HasIndex("UserDeviceId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("VideoId");
-
-                    b.ToTable("VideoWatchSessions", (string)null);
-                });
-
             modelBuilder.Entity("Lesson.Domain.Entities.AuditLog", b =>
                 {
                     b.HasOne("Lesson.Domain.Entities.User", "User")
@@ -423,6 +427,25 @@ namespace Lesson.Infrastructure.Migrations
                     b.Navigation("UserDevice");
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.ContentProgress", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.LessonContent", "Content")
+                        .WithMany("ProgressRecords")
+                        .HasForeignKey("ContentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Lesson.Domain.Entities.User", "User")
+                        .WithMany("ContentProgresses")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Content");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.Folder", b =>
                 {
                     b.HasOne("Lesson.Domain.Entities.Folder", "ParentFolder")
@@ -431,6 +454,17 @@ namespace Lesson.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("ParentFolder");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.LessonContent", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.Folder", "Folder")
+                        .WithMany("Contents")
+                        .HasForeignKey("FolderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Folder");
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.Permission", b =>
@@ -469,58 +503,18 @@ namespace Lesson.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Lesson.Domain.Entities.Video", b =>
-                {
-                    b.HasOne("Lesson.Domain.Entities.Folder", "Folder")
-                        .WithMany("Videos")
-                        .HasForeignKey("FolderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Folder");
-                });
-
-            modelBuilder.Entity("Lesson.Domain.Entities.VideoWatchSession", b =>
-                {
-                    b.HasOne("Lesson.Domain.Entities.AuthenticationSession", "AuthenticationSession")
-                        .WithMany()
-                        .HasForeignKey("AuthenticationSessionId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Lesson.Domain.Entities.UserDevice", "UserDevice")
-                        .WithMany("VideoWatchSessions")
-                        .HasForeignKey("UserDeviceId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Lesson.Domain.Entities.User", "User")
-                        .WithMany("VideoWatchSessions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Lesson.Domain.Entities.Video", "Video")
-                        .WithMany("WatchSessions")
-                        .HasForeignKey("VideoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AuthenticationSession");
-
-                    b.Navigation("User");
-
-                    b.Navigation("UserDevice");
-
-                    b.Navigation("Video");
-                });
-
             modelBuilder.Entity("Lesson.Domain.Entities.Folder", b =>
                 {
                     b.Navigation("ChildFolders");
 
-                    b.Navigation("Permissions");
+                    b.Navigation("Contents");
 
-                    b.Navigation("Videos");
+                    b.Navigation("Permissions");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.LessonContent", b =>
+                {
+                    b.Navigation("ProgressRecords");
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.User", b =>
@@ -529,23 +523,16 @@ namespace Lesson.Infrastructure.Migrations
 
                     b.Navigation("AuthenticationSessions");
 
+                    b.Navigation("ContentProgresses");
+
                     b.Navigation("Devices");
 
                     b.Navigation("Permissions");
-
-                    b.Navigation("VideoWatchSessions");
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.UserDevice", b =>
                 {
                     b.Navigation("AuthenticationSessions");
-
-                    b.Navigation("VideoWatchSessions");
-                });
-
-            modelBuilder.Entity("Lesson.Domain.Entities.Video", b =>
-                {
-                    b.Navigation("WatchSessions");
                 });
 #pragma warning restore 612, 618
         }
