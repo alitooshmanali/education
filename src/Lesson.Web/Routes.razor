@@ -1,0 +1,31 @@
+﻿<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    <LayoutView Layout="@typeof(Layout.AuthLayout)">
+                        <div class="error-page centered-shell">
+                            <div class="error-card">
+                                <h1>دسترسی محدود</h1>
+                                <p>دسترسی شما به این صفحه محدود است.</p>
+                                <a class="btn btn-primary" href="/login">ورود</a>
+                            </div>
+                        </div>
+                    </LayoutView>
+                </NotAuthorized>
+                <Authorizing>
+                    <LayoutView Layout="@typeof(Layout.AuthLayout)">
+                        <div class="centered-shell">
+                            <p>در حال بررسی مجوز...</p>
+                        </div>
+                    </LayoutView>
+                </Authorizing>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(Layout.AuthLayout)">
+                <NotFound />
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

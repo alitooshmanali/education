@@ -1,0 +1,33 @@
+@if (IsOpen)
+{
+    <div class="dialog-overlay" @onclick="Close">
+        <div class="dialog" role="dialog" aria-modal="true" @onclick:stopPropagation>
+            <div class="dialog__title">@Title</div>
+            <p>@Message</p>
+            <div class="dialog__actions">
+                <AppButton Variant="ghost" Type="button" OnClick="Close">انصراف</AppButton>
+                <AppButton Variant="danger" Type="button" Busy="Busy" OnClick="ConfirmAsync">@ConfirmText</AppButton>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public string Title { get; set; } = "Confirm";
+    [Parameter] public string Message { get; set; } = "Are you sure?";
+    [Parameter] public string ConfirmText { get; set; } = "Confirm";
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task ConfirmAsync()
+    {
+        await OnConfirm.InvokeAsync();
+    }
+}

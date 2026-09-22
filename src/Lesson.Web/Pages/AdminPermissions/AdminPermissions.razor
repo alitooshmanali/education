@@ -1,0 +1,176 @@
+@page "/admin/permissions"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject IUserService Users
+@inject IPermissionService Permissions
+@inject IFolderService Folders
+
+<PageHeader Eyebrow="Admin" Title="مدیریت دسترسی" Subtitle="اعطاء دسترسی پوشه‌ای به کاربران" />
+
+    <section class="panel pad">
+    <div class="grid two-col">
+        <section class="panel pad panel-flex">
+            <h3>انتخاب کاربر</h3>
+            <select class="form-select" @onchange="OnUserSelected" value="@_selectedUserIdString">
+                <option value="">انتخاب کنید</option>
+                @foreach (var user in _users)
+                {
+                    <option value="@user.Id">@user.Username (@user.Role)</option>
+                }
+            </select>
+
+            <h4 class="mt">دسترسی‌های فعلی</h4>
+            <div class="panel pad panel-inline-list">
+                @if (_selectedUserId is null)
+                {
+                    <p>ابتدا کاربر را انتخاب کنید.</p>
+                }
+                else if (!_grants.Any())
+                {
+                    <p>برای این کاربر هنوز دسترسی‌ای ثبت نشده است.</p>
+                }
+                else
+                {
+                    @foreach (var grant in _grants)
+                    {
+                        <div class="toolbar toolbar--compact">
+                            <span class="ltr">@grant.Folder?.RelativePath</span>
+                            <button class="btn btn-danger" type="button" @onclick="() => ConfirmRevoke(grant)">ابطال</button>
+                        </div>
+                    }
+                }
+            </div>
+        </section>
+
+        <section class="panel pad panel-flex">
+            <h3>انتخاب پوشه</h3>
+            <p>انتخاب مسیر پوشه، دسترسی به زیرپوشه‌ها را نیز به همراه خواهد داشت.</p>
+            <FolderTree Nodes="_folders" Selected="OnFolderSelected" SelectedId="_selectedFolderId" />
+            <p class="mt">انتخاب فعلی: <span class="ltr">@_selectedFolderPath</span></p>
+            <div class="toolbar">
+                <AppButton Variant="primary" Type="button" Busy="_isBusy" OnClick="GrantForSelection" Disabled="_selectedFolderId is null || _selectedUserId is null">اعطای دسترسی</AppButton>
+            </div>
+        </section>
+    </div>
+
+    <ConfirmDialog
+        IsOpen="_showRevokeConfirm"
+        Title="ابطال دسترسی"
+        Message="آیا از لغو این دسترسی مطمئن هستید؟"
+        ConfirmText="ابطال"
+        Busy="_isBusy"
+        OnClose="CancelRevoke"
+        OnConfirm="RevokeSelectedAsync" />
+</section>
+
+@code {
+    private IReadOnlyList<User> _users = [];
+    private IReadOnlyList<FolderNodeDto> _folders = [];
+    private IReadOnlyList<Permission> _grants = [];
+    private long? _selectedUserId;
+    private string _selectedUserIdString = string.Empty;
+    private long? _selectedFolderId;
+    private string _selectedFolderPath = "--";
+    private bool _isBusy;
+
+    private long? _revokePermissionId;
+    private bool _showRevokeConfirm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _users = await Users.GetAllAsync();
+        _folders = await Folders.GetTreeAsync();
+    }
+
+    private async Task OnUserSelected(ChangeEventArgs e)
+    {
+        _selectedFolderId = null;
+        _selectedFolderPath = "--";
+        _selectedUserIdString = e.Value?.ToString() ?? string.Empty;
+        if (!long.TryParse(_selectedUserIdString, out var userId))
+        {
+            _selectedUserId = null;
+            _grants = [];
+            return;
+        }
+
+        _selectedUserId = userId;
+        _grants = await Permissions.GetForUserAsync(userId);
+    }
+
+    private void OnFolderSelected(long folderId)
+    {
+        _selectedFolderId = folderId;
+        _selectedFolderPath = _folders
+            .SelectMany(FlattenFolders)
+            .Where(x => x.Id == folderId)
+            .Select(x => x.RelativePath)
+            .FirstOrDefault() ?? "--";
+    }
+
+    private static IEnumerable<FolderNodeDto> FlattenFolders(FolderNodeDto node)
+    {
+        yield return node;
+        foreach (var c in node.Children)
+        {
+            foreach (var next in FlattenFolders(c))
+            {
+                yield return next;
+            }
+        }
+    }
+
+    private async Task GrantForSelection()
+    {
+        if (_selectedUserId is null || _selectedFolderId is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _isBusy = true;
+            await Permissions.GrantAsync(_selectedUserId.Value, _selectedFolderId.Value, null);
+            _grants = await Permissions.GetForUserAsync(_selectedUserId.Value);
+            _selectedFolderId = null;
+            _selectedFolderPath = "--";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private void ConfirmRevoke(Permission permission)
+    {
+        _revokePermissionId = permission.Id;
+        _showRevokeConfirm = true;
+    }
+
+    private async Task RevokeSelectedAsync()
+    {
+        if (_revokePermissionId is null || _selectedUserId is null)
+        {
+            _showRevokeConfirm = false;
+            return;
+        }
+
+        try
+        {
+            _isBusy = true;
+            await Permissions.RevokeAsync(_revokePermissionId.Value);
+            _grants = await Permissions.GetForUserAsync(_selectedUserId.Value);
+        }
+        finally
+        {
+            _showRevokeConfirm = false;
+            _revokePermissionId = null;
+            _isBusy = false;
+        }
+    }
+
+    private void CancelRevoke()
+    {
+        _showRevokeConfirm = false;
+        _revokePermissionId = null;
+    }
+}

@@ -1,0 +1,50 @@
+@typeparam TItem
+@using System.Globalization
+
+<div class="data-grid @GridColumnsClass" role="table">
+    <div class="data-grid__head" role="row">
+        @if (Columns is not null)
+        {
+            @foreach (var column in Columns)
+            {
+                <div class="data-grid__cell data-grid__cell--head">@column.Header</div>
+            }
+            @if (ActionsTemplate is not null)
+            {
+                <div class="data-grid__cell data-grid__cell--head">عملیات</div>
+            }
+        }
+    </div>
+    @if (Items?.Any() != true)
+    {
+        <div class="data-grid__empty" role="row">
+            <div class="data-grid__cell data-grid__cell--empty">موردی برای نمایش وجود ندارد.</div>
+        </div>
+    }
+    else
+    {
+        @foreach (var item in Items)
+        {
+            <div class="data-grid__row" role="row">
+                @foreach (var column in Columns)
+                {
+                    <div class="data-grid__cell">@column.Template(item)</div>
+                }
+                @if (ActionsTemplate is not null)
+                {
+                    <div class="data-grid__cell">@ActionsTemplate(item)</div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public IReadOnlyList<TItem>? Items { get; set; }
+    [Parameter] public IReadOnlyList<TableColumn<TItem>>? Columns { get; set; }
+    [Parameter] public RenderFragment<TItem>? ActionsTemplate { get; set; }
+
+    private int ColumnCount => Math.Clamp((Columns?.Count ?? 0) + (ActionsTemplate is not null ? 1 : 0), 1, 10);
+
+    private string GridColumnsClass => $"data-grid--cols-{Math.Min(Math.Max(ColumnCount, 1), 10)}";
+}

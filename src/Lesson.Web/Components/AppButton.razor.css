@@ -1,0 +1,16 @@
+.app-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.app-btn,
+.btn {
+    min-height: 34px;
+}
+
+.app-btn .app-icon {
+    width: 16px;
+    height: 16px;
+}

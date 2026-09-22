@@ -1,0 +1,249 @@
+.landing-landing {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+}
+
+.landing-copy {
+    text-align: center;
+    max-width: 680px;
+    margin-inline: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    padding: 24px;
+}
+
+.landing-copy h1 { margin: 0; font-size: 28px; }
+.landing-copy p { margin: 8px 0 16px; color: var(--muted); }
+
+.auth-shell {
+    min-height: 100vh;
+    display: grid;
+    background: var(--background);
+}
+
+.auth-page {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    width: min(980px, 100%);
+    margin: 0 auto;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+}
+
+.auth-hero {
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+    color: #fff;
+    padding: 26px;
+    display: grid;
+    gap: 10px;
+    min-height: 260px;
+}
+
+.auth-hero h1 { margin: 0; font-size: 24px; }
+.auth-hero p { margin: 0; color: #cbd5e1; }
+
+.auth-card-wrap {
+    display: grid;
+    place-items: center;
+}
+
+.auth-card {
+    width: min(100%, 420px);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+}
+
+.auth-card h2 { margin: 0 0 6px; font-size: 22px; }
+.auth-card .sub { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+
+.centered-shell {
+    padding: 20px;
+}
+
+.panel-stack {
+    display: grid;
+    gap: 12px;
+}
+
+.panel-spaced {
+    margin-top: 10px;
+}
+
+.panel-narrow {
+    max-width: 640px;
+}
+
+.panel-flex {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.panel-inline-list {
+    display: grid;
+    gap: 8px;
+}
+
+.toolbar--flow {
+    flex-wrap: wrap;
+}
+
+.panel-links .toolbar--flow {
+    align-items: stretch;
+    gap: 8px;
+}
+
+.toolbar--spaced {
+    margin-top: 10px;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.toolbar--compact {
+    margin-top: 8px;
+    gap: 8px;
+}
+
+.field--narrow {
+    max-width: 360px;
+}
+
+.content-grid--stacked {
+    gap: 12px;
+}
+
+.cards-spaced {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.auth-shell h1,
+.auth-card h2 { margin-top: 0; }
+
+.login-password-wrap {
+    position: relative;
+    display: block;
+}
+
+.login-password-wrap input {
+    width: 100%;
+    height: 42px;
+    padding-inline-end: 44px;
+    box-sizing: border-box;
+}
+
+.login-toggle-password {
+    position: absolute;
+    inset-inline-end: 6px;
+    top: 0;
+    bottom: 0;
+    margin-block: auto;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+    padding: 0;
+    z-index: 2;
+    line-height: 0;
+    transform: none;
+}
+
+.login-toggle-password:hover {
+    background: var(--surface-elevated);
+    color: var(--text);
+}
+
+.login-toggle-password .app-icon {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    min-height: 18px;
+}
+
+.login-toggle-password .app-icon svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+}
+
+/*.login-password-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.login-password-wrap input {
+    width: 100%;
+    padding-inline-end: 44px;
+}
+
+.login-toggle-password {
+    position: absolute;
+    inset-inline-end: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    border-radius: 6px;
+    padding: 0;
+    z-index: 2;
+}
+
+.login-toggle-password:hover {
+    background: var(--surface-elevated);
+    color: var(--text);
+}
+
+.login-toggle-password .app-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.login-toggle-password {
+    position: absolute;
+    inset-inline-end: 8px;
+    inset-block-start: 32px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+}*/
+
+.video-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admin-guide {
+    margin: 0;
+    padding-inline-start: 18px;
+    display: grid;
+    gap: 6px;
+}
+
+.admin-guide li {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.content-grid,
+.error-grid { display: block; }

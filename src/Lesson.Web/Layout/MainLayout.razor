@@ -1,0 +1,168 @@
+@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.JSInterop
+@using Lesson.Web
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IJSRuntime Js
+
+<div class="app-shell @(ThemeClass)" dir="rtl" lang="fa">
+    <input id="nav-check" type="checkbox" class="nav-toggle" @bind="_isNavOpen" />
+
+    <aside class="app-sidebar" data-open="@_isNavOpen" aria-label="Primary navigation">
+        <div class="brand">
+            <div class="brand__mark">ZA</div>
+            <div class="brand__text">
+                <strong>آموزشگاه زبان Zalia</strong>
+                <span>پلتفرم جامع آموزش زبان انگلیسی</span>
+            </div>
+        </div>
+
+        <nav aria-label="Primary">
+            @if (_isStudent)
+            {
+                <section class="nav-section">
+                    <div class="nav-label">صفحه اصلی</div>
+                    <NavLink class="nav-item" href="/student" Match="NavLinkMatch.All"><AppIcon Name="dashboard" /> داشبورد</NavLink>
+                    <NavLink class="nav-item" href="/student/videos"><AppIcon Name="video" /> ویدیوها</NavLink>
+                </section>
+            }
+            else if (_isAdmin)
+            {
+                <section class="nav-section">
+                    <div class="nav-label">صفحه اصلی</div>
+                    <NavLink class="nav-item" href="/admin" Match="NavLinkMatch.All"><AppIcon Name="dashboard" /> داشبورد</NavLink>
+                </section>
+
+                <section class="nav-section">
+                    <div class="nav-label">مدیریت</div>
+                    <NavLink class="nav-item" href="/admin/users"><AppIcon Name="users" /> کاربران</NavLink>
+                    <NavLink class="nav-item" href="/admin/folders"><AppIcon Name="folder" /> پوشه‌ها</NavLink>
+                    <NavLink class="nav-item" href="/admin/videos"><AppIcon Name="video" /> ویدیوها</NavLink>
+                    <NavLink class="nav-item" href="/admin/permissions"><AppIcon Name="permission" /> دسترسی‌ها</NavLink>
+                    <NavLink class="nav-item" href="/admin/devices"><AppIcon Name="device" /> دستگاه‌ها</NavLink>
+                    <NavLink class="nav-item" href="/admin/audit"><AppIcon Name="audit" /> لاگ‌ها</NavLink>
+                </section>
+
+                <section class="nav-section nav-section--footer">
+                    <button class="nav-item nav-item--ghost" type="button" @onclick="Logout" aria-label="خروج">
+                        <AppIcon Name="logout" /> خروج
+                    </button>
+                </section>
+            }
+            else
+            {
+                <section class="nav-section">
+                    <NavLink class="nav-item" href="/login"><AppIcon Name="logout" /> ورود</NavLink>
+                </section>
+            }
+        </nav>
+    </aside>
+
+    <section class="app-main @(_isNavOpen ? "is-open" : string.Empty)">
+        <label for="nav-check" class="nav-backdrop" @onclick="CloseNav"></label>
+
+        <header class="topbar">
+            <div class="topbar__left">
+                <button class="menu-toggle" type="button" @onclick="ToggleNav" aria-label="منو">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="topbar__crumb">@(_pageTitle)</div>
+            </div>
+
+            <div class="topbar__right">
+                <div class="theme-switch" role="group" aria-label="theme mode">
+                    <button class="theme-switch__btn @(IsThemeActive("light") ? "is-active" : "")" type="button" @onclick="SetThemeLight" aria-label="حالت روشن">روشن</button>
+                    <button class="theme-switch__btn @(IsThemeActive("dark") ? "is-active" : "")" type="button" @onclick="SetThemeDark" aria-label="حالت تیره">تیره</button>
+                    <button class="theme-switch__btn @(IsThemeActive("system") ? "is-active" : "")" type="button" @onclick="SetThemeSystem" aria-label="حالت سیستم">سیستم</button>
+                </div>
+
+                <div class="user-chip">
+                    <div class="user-meta">
+                        <strong>@_displayName</strong>
+                        <span>@(_isAdmin ? "مدیر" : _isStudent ? "دانشجو" : "کاربر")</span>
+                    </div>
+                    <div class="avatar" aria-hidden="true">@(_displayName?.FirstOrDefault())</div>
+                    <button class="btn btn-secondary btn-compact" type="button" @onclick="Logout"><AppIcon Name="logout" /> خروج</button>
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+            @Body
+        </main>
+    </section>
+</div>
+
+@code {
+    private const string DefaultTheme = "system";
+    private bool _isAdmin;
+    private bool _isStudent;
+    private string _displayName = "کاربر";
+    private bool _isNavOpen;
+    private bool _isDarkMode;
+    private string _pageTitle = "Lesson";
+    private string _themePreference = DefaultTheme;
+    private bool _initializedTheme;
+
+    private string ThemeClass => _isDarkMode ? "theme-dark" : string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = auth.User;
+        _isAdmin = user.IsInRole(nameof(UserRole.Admin));
+        _isStudent = user.IsInRole(nameof(UserRole.Student));
+        _displayName = user.Identity?.Name ?? "کاربر";
+        _pageTitle = _isAdmin ? "داشبورد مدیریت" : _isStudent ? "داشبورد دانشجو" : "Lesson";
+    }
+
+    private bool IsThemeActive(string theme) => string.Equals(_themePreference, theme, StringComparison.OrdinalIgnoreCase);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_initializedTheme)
+        {
+            _initializedTheme = true;
+            try
+            {
+                var resolved = await Js.InvokeAsync<ThemeState>("lessonTheme.getState", DefaultTheme, 6);
+                _themePreference = resolved.Preference;
+                _isDarkMode = resolved.IsDark;
+            }
+            catch
+            {
+                _themePreference = DefaultTheme;
+                _isDarkMode = false;
+            }
+            StateHasChanged();
+        }
+    }
+
+    private async Task UpdateThemeAsync(string preference)
+    {
+        _themePreference = preference;
+        try
+        {
+            _isDarkMode = await Js.InvokeAsync<bool>("lessonTheme.apply", preference);
+            await Js.InvokeVoidAsync("lessonTheme.persist", preference);
+        }
+        catch
+        {
+            _isDarkMode = string.Equals(preference, "dark", StringComparison.OrdinalIgnoreCase);
+        }
+        StateHasChanged();
+    }
+
+    private Task SetThemeLight() => UpdateThemeAsync("light");
+    private Task SetThemeDark() => UpdateThemeAsync("dark");
+    private Task SetThemeSystem() => UpdateThemeAsync("system");
+
+    private void ToggleNav() => _isNavOpen = !_isNavOpen;
+    private void CloseNav() => _isNavOpen = false;
+    private void Logout() => Nav.NavigateTo("/api/auth/logout", forceLoad: true);
+
+    private sealed record ThemeState(bool IsDark, string Preference);
+}

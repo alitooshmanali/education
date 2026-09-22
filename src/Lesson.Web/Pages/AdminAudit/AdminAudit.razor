@@ -1,0 +1,27 @@
+@page "/admin/audit"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject IAuditService Audit
+
+<PageHeader Eyebrow="Admin" Title="لاگ فعالیت" Subtitle="گزارش تغییرات مدیریتی" />
+
+<section class="panel pad">
+    <DataTable TItem="Lesson.Domain.Entities.AuditLog" Items="_items" Columns="_columns" />
+</section>
+
+@code {
+    private IReadOnlyList<Lesson.Domain.Entities.AuditLog> _items = [];
+
+    private readonly IReadOnlyList<TableColumn<Lesson.Domain.Entities.AuditLog>> _columns =
+    [
+        new() { Header = "کاربر", Template = x => (RenderFragment)(b => b.AddContent(0, x.User?.Username)) },
+        new() { Header = "عمل", Template = x => (RenderFragment)(b => b.AddContent(0, x.Action)) },
+        new() { Header = "نوع", Template = x => (RenderFragment)(b => b.AddContent(0, x.EntityType)) },
+        new() { Header = "شرح", Template = x => (RenderFragment)(b => b.AddContent(0, x.Description)) },
+        new() { Header = "تاریخ", Template = x => (RenderFragment)(b => b.AddContent(0, x.CreatedAt.ToLocalTime().ToString("g"))) }
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await Audit.GetRecentAsync(200);
+    }
+}

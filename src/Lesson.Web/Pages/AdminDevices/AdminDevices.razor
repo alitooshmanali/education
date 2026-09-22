@@ -1,0 +1,35 @@
+@page "/admin/devices"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject IDeviceService Devices
+
+<PageHeader Eyebrow="Admin" Title="مدیریت دستگاه‌ها" Subtitle="مشاهده و ابطال دستگاه‌های فعال" />
+
+<section class="panel pad">
+    <DataTable TItem="UserDevice" Items="_devices" Columns="_columns">
+        <ActionsTemplate Context="device">
+            <button class="btn btn-danger" type="button" @onclick="() => Revoke(device)">ابطال</button>
+        </ActionsTemplate>
+    </DataTable>
+</section>
+
+@code {
+    private IReadOnlyList<UserDevice> _devices = [];
+    private readonly IReadOnlyList<TableColumn<UserDevice>> _columns =
+    [
+        new() { Header = "کاربر", Template = x => (RenderFragment)(b => b.AddContent(0, x.User?.Username)) },
+        new() { Header = "دستگاه", Template = x => (RenderFragment)(b => b.AddContent(0, x.DeviceIdentifier)) },
+        new() { Header = "آخرین فعالیت", Template = x => (RenderFragment)(b => b.AddContent(0, x.LastSeenAt.ToLocalTime().ToString("g"))) },
+        new() { Header = "وضعیت", Template = x => (RenderFragment)(b => b.AddContent(0, x.RevokedAt.HasValue ? "ابطال شده" : "فعال")) }
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _devices = await Devices.GetAllAsync();
+    }
+
+    private async Task Revoke(UserDevice device)
+    {
+        await Devices.RevokeDeviceAsync(device.Id);
+        _devices = await Devices.GetAllAsync();
+    }
+}

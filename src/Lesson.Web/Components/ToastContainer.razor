@@ -1,0 +1,46 @@
+<div class="toast-wrap">
+    @if (Visible)
+    {
+        <div class="toast toast--@Tone" role="status">
+            <div class="toast__icon">@Icon</div>
+            <div>
+                <div class="toast__title">@Title</div>
+                <div class="toast__message">@Message</div>
+            </div>
+            <button type="button" class="toast__close" @onclick="Close">×</button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Tone { get; set; } = "info";
+    [Parameter] public string Title { get; set; } = string.Empty;
+    [Parameter] public string Message { get; set; } = string.Empty;
+    [Parameter] public int AutoHideMs { get; set; } = 2500;
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    private string Icon => Tone switch
+    {
+        "success" => "✓",
+        "error" => "✕",
+        "warning" => "⚠",
+        _ => "ℹ"
+    };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Visible)
+        {
+            await Task.Delay(AutoHideMs);
+            await Close();
+        }
+    }
+
+    private async Task Close()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        StateHasChanged();
+    }
+}

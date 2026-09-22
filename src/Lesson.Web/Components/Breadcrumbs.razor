@@ -1,0 +1,30 @@
+<div class="breadcrumbs">
+    @for (int i = 0; i < Segments.Count; i++)
+    {
+        var seg = Segments[i];
+        var isLast = i == Segments.Count - 1;
+        if (seg.Href is null || isLast)
+        {
+            <span class="breadcrumbs__item is-current">@seg.Title</span>
+        }
+        else
+        {
+            <a href="@seg.Href" class="breadcrumbs__item">@seg.Title</a>
+        }
+
+        @if (!isLast)
+        {
+            <span class="breadcrumbs__sep">/</span>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public IReadOnlyList<BreadcrumbSegment> Segments { get; set; } = [];
+
+    public sealed class BreadcrumbSegment
+    {
+        public string Title { get; set; } = string.Empty;
+        public string? Href { get; set; }
+    }
+}

@@ -1,0 +1,240 @@
+@page "/admin/folders"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject IFolderService Folders
+
+<PageHeader Eyebrow="Admin" Title="مدیریت پوشه" Subtitle="ساخت، ویرایش و حذف" />
+
+<section class="grid two-col">
+    <section class="panel pad">
+        <h3>درخت پوشه‌ها</h3>
+        <FolderTree Nodes="_tree" Selected="OnSelect" SelectedId="_selectedId" />
+    </section>
+
+    <section class="panel pad">
+        <h3>عملیات</h3>
+
+        @if (_selectedId is null)
+        {
+            <p>برای ویرایش یا حذف، یک پوشه را انتخاب کنید.</p>
+        }
+        else
+        {
+            <div class="form-grid">
+                <div class="field">
+                    <label>شناسه انتخابی</label>
+                    <input value="@_selectedId" disabled />
+                </div>
+                <div class="field">
+                    <label>نام فعلی</label>
+                    <input value="@_selectedName" disabled />
+                </div>
+                <div class="field">
+                    <label>نام جدید</label>
+                    <input @bind="_renameValue" placeholder="برای تغییر نام" />
+                </div>
+            </div>
+
+            <div class="toolbar toolbar--spaced">
+                <button class="btn btn-secondary" type="button" @onclick="RenameSelected">تغییر نام</button>
+                <button class="btn btn-danger" type="button" @onclick="() => ConfirmDelete(_selectedId.Value)">حذف</button>
+            </div>
+        }
+
+        <hr class="panel-divider" />
+
+        <h4>ایجاد پوشه</h4>
+        <div class="form-grid">
+            <div class="field">
+                <label>نام پوشه</label>
+                <input @bind="_createName" placeholder="نام پوشه" />
+            </div>
+            <div class="field">
+                <label>والد</label>
+                <select @bind="_createParentId">
+                    <option value="">ریشه</option>
+                    @foreach (var item in _flatFolders)
+                    {
+                        <option value="@item.Id">@item.RelativePath</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="toolbar toolbar--spaced">
+            <button class="btn btn-primary" type="button" @onclick="CreateFolder" disabled="@_isBusy">ایجاد</button>
+        </div>
+
+        <p class="mt">نکته: حذف پوشه تنها زمانی امکان‌پذیر است که شامل هیچ ویدیو یا زیرپوشه فعال نگردد.</p>
+
+        @if (!string.IsNullOrWhiteSpace(_statusMessage))
+        {
+            <div class="alert alert-success">@_statusMessage</div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <div class="alert alert-error">@_errorMessage</div>
+        }
+
+        <ConfirmDialog
+            IsOpen="_showDeleteConfirm"
+            Title="حذف پوشه"
+            Message="آیا از حذف پوشه اطمینان دارید؟"
+            ConfirmText="حذف"
+            Busy="_isBusy"
+            OnClose="CancelDelete"
+            OnConfirm="DeleteConfirmed" />
+    </section>
+</section>
+
+@code {
+    private IReadOnlyList<FolderNodeDto> _tree = [];
+    private IReadOnlyList<FolderNodeDto> _flatFolders = [];
+    private long? _selectedId;
+    private string _selectedName = string.Empty;
+    private string _renameValue = string.Empty;
+    private string _createName = string.Empty;
+    private string _createParentId = string.Empty;
+    private bool _isBusy;
+    private string _statusMessage = string.Empty;
+    private string _errorMessage = string.Empty;
+    private long? _deleteFolderId;
+    private bool _showDeleteConfirm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        _tree = await Folders.GetTreeAsync();
+        _flatFolders = Flatten(_tree).ToList();
+        _errorMessage = string.Empty;
+    }
+
+    private static IEnumerable<FolderNodeDto> Flatten(IEnumerable<FolderNodeDto> source)
+    {
+        foreach (var item in source)
+        {
+            yield return item;
+            foreach (var child in Flatten(item.Children))
+            {
+                yield return child;
+            }
+        }
+    }
+
+    private void OnSelect(long id)
+    {
+        _selectedId = id;
+        _selectedName = _flatFolders.FirstOrDefault(x => x.Id == id)?.Name ?? string.Empty;
+        _renameValue = _selectedName;
+        _errorMessage = string.Empty;
+        _statusMessage = string.Empty;
+    }
+
+    private async Task CreateFolder()
+    {
+        if (string.IsNullOrWhiteSpace(_createName))
+        {
+            _errorMessage = "نام پوشه را وارد کنید.";
+            return;
+        }
+
+        long? parent = null;
+        if (!string.IsNullOrWhiteSpace(_createParentId) && long.TryParse(_createParentId, out var p))
+        {
+            parent = p;
+        }
+
+        try
+        {
+            _isBusy = true;
+            _errorMessage = string.Empty;
+            await Folders.CreateAsync(_createName.Trim(), parent);
+            _statusMessage = "پوشه با موفقیت ایجاد شد.";
+            _createName = string.Empty;
+            _createParentId = string.Empty;
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task RenameSelected()
+    {
+        if (_selectedId is null)
+        {
+            return;
+        }
+
+        var value = _renameValue?.Trim();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            _errorMessage = "نام جدید را وارد کنید.";
+            return;
+        }
+
+        try
+        {
+            _isBusy = true;
+            await Folders.RenameAsync(_selectedId.Value, value);
+            _statusMessage = "نام پوشه به‌روزرسانی شد.";
+            await ReloadAsync();
+            OnSelect(_selectedId.Value);
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private void ConfirmDelete(long folderId)
+    {
+        _deleteFolderId = folderId;
+        _showDeleteConfirm = true;
+    }
+
+    private async Task DeleteConfirmed()
+    {
+        if (_deleteFolderId is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _isBusy = true;
+            await Folders.DeleteAsync(_deleteFolderId.Value);
+            _statusMessage = "پوشه حذف شد.";
+            _selectedId = null;
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+            _showDeleteConfirm = false;
+            _deleteFolderId = null;
+        }
+    }
+
+    private void CancelDelete()
+    {
+        _showDeleteConfirm = false;
+        _deleteFolderId = null;
+    }
+}

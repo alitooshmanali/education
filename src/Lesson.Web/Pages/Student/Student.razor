@@ -1,0 +1,48 @@
+@page "/student"
+@attribute [Authorize(Roles = nameof(UserRole.Student))]
+@inject IVideoService Videos
+@inject ICurrentUserContext CurrentUser
+@inject NavigationManager Nav
+
+<PageHeader Eyebrow="Student" Title="داشبورد" Subtitle="ویدیوهای قابل پخش شما">
+    <a class="btn btn-ghost" href="/student/videos"><AppIcon Name="video" /> نمایش همه ویدیوها</a>
+</PageHeader>
+
+<section class="panel pad">
+    <h3>آخرین درس‌ها</h3>
+
+    @if (_videos.Any())
+    {
+        <div class="cards cards-spaced">
+            @foreach (var item in _videos.Take(6))
+            {
+                <VideoCard Video="item" Href="@($"/student/videos/{item.Id}")" />
+            }
+        </div>
+    }
+    else
+    {
+        <EmptyState Icon="video" Title="ویدیویی یافت نشد" Message="در حال حاضر ویدیویی برای شما در دسترس نیست. با ادمین تماس بگیرید تا دسترسی‌ها فعال شود." />
+    }
+</section>
+
+<section class="panel pad panel-spaced">
+    <h3>سازمان‌دهی یادگیری</h3>
+    <p>این صفحه فقط ویدیوهای قابل دسترس شما را نمایش می‌دهد.</p>
+    <a class="btn btn-primary" href="/student/videos">رفتن به صفحه ویدیوها</a>
+</section>
+
+@code {
+    private IReadOnlyList<VideoDto> _videos = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (CurrentUser.UserId is null)
+        {
+            Nav.NavigateTo("/login", true);
+            return;
+        }
+
+        _videos = await Videos.GetForUserAsync(CurrentUser.UserId.Value, false);
+    }
+}

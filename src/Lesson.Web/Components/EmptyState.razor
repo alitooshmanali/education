@@ -1,0 +1,16 @@
+<section class="empty-state">
+    <AppIcon Name="@Icon" />
+    <h3>@Title</h3>
+    <p>@Message</p>
+    @if (Action is not null)
+    {
+        <div>@Action</div>
+    }
+</section>
+
+@code {
+    [Parameter] public string Icon { get; set; } = "folder";
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Message { get; set; } = "";
+    [Parameter] public RenderFragment? Action { get; set; }
+}

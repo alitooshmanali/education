@@ -1,0 +1,25 @@
+<section class="video-player-shell">
+    @if (string.IsNullOrWhiteSpace(StreamUrl))
+    {
+        <EmptyState Icon="video" Title="No video selected" Message="Choose a lesson to start watching." />
+    }
+    else
+    {
+        <video class="video-player"
+               controls
+               controlsList="nodownload noplaybackrate"
+               disablePictureInPicture
+               playsinline
+               preload="metadata"
+               src="@StreamUrl"
+               poster="@PosterUrl"
+               oncontextmenu="return false;">
+            مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.
+        </video>
+    }
+</section>
+
+@code {
+    [Parameter] public string StreamUrl { get; set; } = "";
+    [Parameter] public string? PosterUrl { get; set; }
+}

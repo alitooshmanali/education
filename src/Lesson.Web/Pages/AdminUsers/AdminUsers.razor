@@ -1,0 +1,371 @@
+@page "/admin/users"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject Lesson.Infrastructure.Abstractions.IUserService Users
+
+<PageHeader Eyebrow="Admin" Title="مدیریت کاربران" Subtitle="ایجاد، ویرایش، فعال‌سازی" />
+
+<section class="panel pad">
+    <div class="toolbar">
+        <SearchInput Label="جستجو" Placeholder="نام کاربری" Value="@_query" ValueChanged="OnSearch" />
+        <div class="toolbar__actions">
+            <AppButton Variant="primary" Type="button" OnClick="() => _showCreate = true">
+                + کاربر جدید
+            </AppButton>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_statusMessage))
+    {
+        <div class="alert alert-success">@_statusMessage</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(_errorMessage))
+    {
+        <div class="alert alert-error">@_errorMessage</div>
+    }
+
+    @if (_showCreate)
+    {
+        <section class="panel pad panel-narrow">
+            <h3>ایجاد کاربر جدید</h3>
+            <div class="form-grid">
+                <div class="field">
+                    <label>نام کاربری</label>
+                    <input type="text" @bind="_createUsername" placeholder="مثلاً student01" />
+                </div>
+                <div class="field">
+                    <label>رمز عبور</label>
+                    <input type="password" @bind="_createPassword" placeholder="حداقل ۶ کاراکتر" />
+                </div>
+                <div class="field">
+                    <label>نقش</label>
+                    <select @bind="_createRole">
+                        @foreach (var item in Enum.GetValues<UserRole>())
+                        {
+                            <option value="@item">@item</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="toolbar toolbar--spaced">
+                <AppButton Variant="primary" Type="button" Busy="_isBusy" OnClick="CreateUserAsync">افزودن</AppButton>
+                <AppButton Variant="ghost" Type="button" OnClick="CancelCreate">لغو</AppButton>
+            </div>
+        </section>
+    }
+
+    @if (_editingUser is not null)
+    {
+        <section class="panel pad panel-narrow">
+            <h3>ویرایش کاربر</h3>
+            <div class="form-grid">
+                <div class="field">
+                    <label>نام کاربری</label>
+                    <input value="@_editingUser.Username" disabled />
+                </div>
+                <div class="field">
+                    <label>نقش</label>
+                    <select @bind="_editRole">
+                        @foreach (var item in Enum.GetValues<UserRole>())
+                        {
+                            <option value="@item">@item</option>
+                        }
+                    </select>
+                </div>
+                <div class="field">
+                    <label>وضعیت</label>
+                    <select @bind="_editActiveString">
+                        <option value="true">فعال</option>
+                        <option value="false">غیرفعال</option>
+                    </select>
+                </div>
+            </div>
+            <div class="toolbar toolbar--spaced">
+                <AppButton Variant="primary" Type="button" Busy="_isBusy" OnClick="SaveEdit">ذخیره</AppButton>
+                <AppButton Variant="ghost" Type="button" OnClick="CancelEdit">لغو</AppButton>
+            </div>
+        </section>
+    }
+
+    @if (_editingPasswordUser is not null)
+    {
+        <section class="panel pad panel-narrow">
+            <h3>بازنشانی رمز</h3>
+            <div class="field field--narrow">
+                <label>رمز جدید</label>
+                <input type="password" @bind="_newPassword" placeholder="رمز جدید" />
+            </div>
+            <div class="toolbar toolbar--spaced">
+                <AppButton Variant="primary" Type="button" Busy="_isBusy" OnClick="ResetPasswordAsync">بازنشانی</AppButton>
+                <AppButton Variant="ghost" Type="button" OnClick="CancelReset">لغو</AppButton>
+            </div>
+        </section>
+    }
+
+    <DataTable TItem="User" Items="_filtered" Columns="_columns">
+        <ActionsTemplate Context="user">
+            <button class="btn btn-secondary" type="button" @onclick="() => OpenEdit(user)">ویرایش</button>
+            <button class="btn btn-ghost" type="button" @onclick="() => OpenReset(user)">بازنشانی</button>
+            <button class="btn btn-outline" type="button" @onclick="() => ToggleActive(user)">@(user.IsActive ? "غیرفعال‌سازی" : "فعال‌سازی")</button>
+            <button class="btn btn-danger" type="button" @onclick="() => ConfirmDelete(user)">حذف</button>
+        </ActionsTemplate>
+    </DataTable>
+
+    <ConfirmDialog
+        IsOpen="_showDeleteConfirm"
+        Title="حذف کاربر"
+        Message="کاربر غیرفعال می‌شود و دیگر قابل ورود نخواهد بود. ادامه می‌دهید؟"
+        ConfirmText="تایید"
+        Busy="_isBusy"
+        OnClose="CancelDelete"
+        OnConfirm="DeleteSelectedAsync" />
+</section>
+
+@code {
+    private IReadOnlyList<User> _users = [];
+    private IReadOnlyList<User> _filtered = [];
+    private string _query = string.Empty;
+    private string? _errorMessage;
+    private string? _statusMessage;
+    private bool _isBusy;
+
+    private bool _showCreate;
+    private string _createUsername = string.Empty;
+    private string _createPassword = string.Empty;
+    private UserRole _createRole = UserRole.Student;
+
+    private User? _editingUser;
+    private UserRole _editRole;
+    private string _editActiveString = "true";
+
+    private User? _editingPasswordUser;
+    private string _newPassword = string.Empty;
+
+    private User? _deleteUser;
+    private bool _showDeleteConfirm;
+
+    private readonly IReadOnlyList<TableColumn<User>> _columns =
+    [
+        new() { Header = "کاربر", Template = u => (RenderFragment)(b => b.AddContent(0, u.Username)) },
+        new() { Header = "نقش", Template = u => (RenderFragment)(b => b.AddContent(0, u.Role.ToString())) },
+        new() { Header = "وضعیت", Template = u => (RenderFragment)(b => b.AddContent(0, u.IsActive ? "فعال" : "غیرفعال")) },
+        new() { Header = "تاریخ", Template = u => (RenderFragment)(b => b.AddContent(0, u.CreatedAt.ToLocalTime().ToString("g"))) }
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        _errorMessage = null;
+        _users = await Users.GetAllAsync();
+        _filtered = ApplySearch(_users, _query);
+    }
+
+    private void OnSearch(string q)
+    {
+        _query = q;
+        _filtered = ApplySearch(_users, q);
+    }
+
+    private static IReadOnlyList<User> ApplySearch(IEnumerable<User> source, string q)
+        => string.IsNullOrWhiteSpace(q)
+            ? source.ToList()
+            : source.Where(u => u.Username.Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private async Task ToggleActive(User user)
+    {
+        try
+        {
+            _isBusy = true;
+            await Users.SetActiveAsync(user.Id, !user.IsActive);
+            _statusMessage = "تغییر وضعیت کاربر اعمال شد.";
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private void OpenEdit(User user)
+    {
+        _editingUser = user;
+        _editingPasswordUser = null;
+        _showCreate = false;
+        _editRole = user.Role;
+        _editActiveString = user.IsActive ? "true" : "false";
+    }
+
+    private async Task SaveEdit()
+    {
+        if (_editingUser is null)
+        {
+            return;
+        }
+
+        var editActive = bool.Parse(_editActiveString);
+        var changed = _editingUser.Role != _editRole || _editingUser.IsActive != editActive;
+        if (!changed)
+        {
+            _editingUser = null;
+            return;
+        }
+
+        try
+        {
+            _isBusy = true;
+            _errorMessage = null;
+            if (_editingUser.Role != _editRole)
+            {
+                await Users.SetRoleAsync(_editingUser.Id, _editRole);
+            }
+
+            if (_editingUser.IsActive != editActive)
+            {
+                await Users.SetActiveAsync(_editingUser.Id, editActive);
+            }
+
+            _statusMessage = "تغییرات کاربر با موفقیت ثبت شد.";
+            _editingUser = null;
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private void CancelEdit() => _editingUser = null;
+
+    private void OpenReset(User user)
+    {
+        _editingPasswordUser = user;
+        _editingUser = null;
+        _showCreate = false;
+        _newPassword = string.Empty;
+    }
+
+    private async Task ResetPasswordAsync()
+    {
+        if (_editingPasswordUser is null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_newPassword) || _newPassword.Length < 6)
+        {
+            _errorMessage = "رمز باید حداقل 6 کاراکتر باشد.";
+            return;
+        }
+
+        try
+        {
+            _isBusy = true;
+            await Users.ResetPasswordAsync(_editingPasswordUser.Id, PasswordHasher.Hash(_newPassword));
+            _statusMessage = "رمز کاربر با موفقیت تغییر کرد.";
+            _editingPasswordUser = null;
+            _newPassword = string.Empty;
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private void CancelReset()
+    {
+        _editingPasswordUser = null;
+        _newPassword = string.Empty;
+    }
+
+    private async Task CreateUserAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_createUsername) || string.IsNullOrWhiteSpace(_createPassword) || _createPassword.Length < 6)
+        {
+            _errorMessage = "نام کاربری و رمز معتبر وارد کنید.";
+            return;
+        }
+
+        try
+        {
+            _isBusy = true;
+            _errorMessage = null;
+            await Users.CreateAsync(_createUsername.Trim(), PasswordHasher.Hash(_createPassword), _createRole);
+            _statusMessage = "کاربر جدید ایجاد شد.";
+            _createUsername = string.Empty;
+            _createPassword = string.Empty;
+            _createRole = UserRole.Student;
+            _showCreate = false;
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private void CancelCreate()
+    {
+        _showCreate = false;
+        _createUsername = string.Empty;
+        _createPassword = string.Empty;
+    }
+
+    private void ConfirmDelete(User user)
+    {
+        _deleteUser = user;
+        _showDeleteConfirm = true;
+    }
+
+    private async Task DeleteSelectedAsync()
+    {
+        if (_deleteUser is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _isBusy = true;
+            await Users.SetActiveAsync(_deleteUser.Id, false);
+            _statusMessage = "کاربر غیرفعال شد.";
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isBusy = false;
+            _showDeleteConfirm = false;
+            _deleteUser = null;
+        }
+    }
+
+    private void CancelDelete()
+    {
+        _showDeleteConfirm = false;
+        _deleteUser = null;
+    }
+}

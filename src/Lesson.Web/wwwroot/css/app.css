@@ -1,0 +1,51 @@
+@import url("layout.css");
+@import url("components.css");
+@import url("pages.css");
+@import url("responsive.css");
+
+:root {
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --surface-elevated: #f1f5f9;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+}
+
+html.theme-dark,
+.theme-dark {
+    --background: #090f1b;
+    --surface: #111827;
+    --surface-elevated: #1d2740;
+    --text: #f8fafc;
+    --muted: #a7b1c2;
+    --border: #273244;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    min-height: 100%;
+    direction: rtl;
+    text-align: right;
+    background: var(--background);
+    color: var(--text);
+    font-family: Vazirmatn, "Segoe UI", Tahoma, sans-serif;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}

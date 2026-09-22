@@ -1,0 +1,65 @@
+@page "/login"
+@layout AuthLayout
+@inject NavigationManager Nav
+
+@code {
+    private string? _error;
+    private bool _showPassword;
+
+    protected override void OnInitialized()
+    {
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+        if (query.TryGetValue("error", out var value))
+        {
+            _error = value.ToString();
+        }
+    }
+}
+
+<div class="auth-shell">
+    <div class="auth-page">
+        <section class="auth-hero">
+            <div class="brand brand--auth">
+                <div class="brand__mark">ZA</div>
+                <div class="brand__text">
+                    <strong>آموزشگاه زبان Zalia</strong>
+                    <span>پلتفرم جامع آموزش زبان انگلیسی</span>
+                </div>
+            </div>
+            <h1>ورود</h1>
+            <p>به پنل مدیریت ویدئوهای آموزشی خود وارد شوید.</p>
+        </section>
+
+        <section class="auth-card-wrap">
+            <form class="auth-card" method="post" action="/api/auth/login">
+                <h2>ورود به حساب</h2>
+                <p class="sub">نام کاربری و رمز عبور خود را وارد کنید.</p>
+
+                @if (!string.IsNullOrWhiteSpace(_error))
+                {
+                    <div class="alert alert-error">@_error</div>
+                }
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="username">نام کاربری</label>
+                        <input id="username" name="username" autocomplete="username" placeholder="student01" />
+                    </div>
+
+                    <div class="field">
+                        <label for="password">رمز عبور</label>
+                            <div class="login-password-wrap">
+                            <input id="password" name="password" type="@(_showPassword ? "text" : "password")" autocomplete="current-password" placeholder="رمز عبور" />
+                            <button class="login-toggle-password" type="button" @onclick="() => _showPassword = !_showPassword" aria-label="نمایش/مخفی کردن رمز">
+                                <AppIcon Name="@( _showPassword ? "eye-off" : "eye" )" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary btn-compact" type="submit"><AppIcon Name="shield" /> ورود</button>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>

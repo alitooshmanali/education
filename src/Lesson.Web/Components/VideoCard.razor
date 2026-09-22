@@ -1,0 +1,27 @@
+<article class="video-card">
+    <div class="video-card__thumb">
+        <AppIcon Name="video" />
+    </div>
+    <div class="video-card__body">
+        <div class="video-card__title">@Video.DisplayName</div>
+        <div class="video-card__meta">@Video.FolderPath</div>
+        <div class="video-card__foot">
+            <span>@Video.FileExtension</span>
+            <span>@FormatSize(Video.FileSize)</span>
+        </div>
+    </div>
+    <a class="video-card__action" href="@Href">
+        <AppIcon Name="play" />
+        <span>Play</span>
+    </a>
+</article>
+
+@code {
+    [Parameter] public VideoDto Video { get; set; } = default!;
+    [Parameter] public string Href { get; set; } = "";
+
+    private static string FormatSize(long size)
+        => size > 1024 * 1024 * 1024 ? $"{size / 1024d / 1024d / 1024d:0.0} GB" :
+           size > 1024 * 1024 ? $"{size / 1024d / 1024d:0.0} MB" :
+           $"{size / 1024d:0.0} KB";
+}

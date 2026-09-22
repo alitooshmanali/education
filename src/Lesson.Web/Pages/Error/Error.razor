@@ -1,0 +1,18 @@
+@page "/error"
+@page "/error/{StatusCode:int}"
+@layout AuthLayout
+
+<div class="error-page centered-shell">
+    <section class="error-card">
+        <h1>@(StatusCode.HasValue ? $"خطای {StatusCode}" : "خطای سیستمی")</h1>
+        <p>خطای غیرمنتظره‌ای رخ داده است.</p>
+        <div class="error-card__actions">
+            <a class="btn btn-primary" href="/">بازگشت به صفحه نخست</a>
+            <a class="btn btn-secondary" href="/login">ورود مجدد</a>
+        </div>
+    </section>
+</div>
+
+@code {
+    [Parameter] public int? StatusCode { get; set; }
+}

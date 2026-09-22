@@ -1,0 +1,56 @@
+<div class="folder-tree">
+    @if (Nodes is not null)
+    {
+        @foreach (var node in Nodes)
+        {
+            <div class="folder-tree__item folder-tree__item--depth-@GetDepthClass(Level)">
+                <button class="folder-tree__toggle" @onclick="() => Toggle(node.Id)" type="button" aria-label="Toggle folder">
+                    @if (node.Children?.Any() == true)
+                    {
+                        <AppIcon Name="@(Expanded.Contains(node.Id) ? "chevron-down" : "chevron-right")" />
+                    }
+                    else
+                    {
+                        <span class="folder-tree__leaf"><AppIcon Name="circle" /></span>
+                    }
+                </button>
+                <button class="folder-tree__name @(node.Id == SelectedId ? "is-active" : "")" @onclick="() => Select(node.Id)" type="button" aria-label="Select folder">
+                    <AppIcon Name="folder" />
+                    <span>@node.Name</span>
+                </button>
+            </div>
+
+            @if (Expanded.Contains(node.Id))
+            {
+                <FolderTree
+                    Nodes="node.Children"
+                    Level="@(Level + 1)"
+                    Selected="Selected"
+                    SelectedId="SelectedId"
+                />
+            }
+        }
+    }
+</div>
+@code {
+    [Parameter] public IReadOnlyList<FolderNodeDto>? Nodes { get; set; }
+    [Parameter] public int Level { get; set; }
+    [Parameter] public EventCallback<long> Selected { get; set; }
+    [Parameter] public long? SelectedId { get; set; }
+    private HashSet<long> Expanded { get; } = new();
+
+    private void Toggle(long id)
+    {
+        if (!Expanded.Add(id))
+        {
+            Expanded.Remove(id);
+        }
+    }
+
+    private void Select(long id)
+    {
+        Selected.InvokeAsync(id);
+    }
+
+    private static int GetDepthClass(int level) => level % 7;
+}

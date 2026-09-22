@@ -1,0 +1,74 @@
+@page "/student/videos/{VideoId:long}"
+@attribute [Authorize(Roles = nameof(UserRole.Student))]
+@inject IVideoService Videos
+@inject ICurrentUserContext CurrentUser
+
+<PageHeader Eyebrow="Student" Title="مشاهده ویدیو" Subtitle="پخش امن با احراز دسترسی" />
+
+@if (_video is null)
+{
+    <EmptyState Icon="video" Title="در دسترس نیست" Message="این ویدیو برای شما قابل پخش نیست یا حذف شده.">
+        <Action>
+            <a class="btn btn-primary" href="/student/videos">بازگشت</a>
+        </Action>
+    </EmptyState>
+}
+else
+{
+    <section class="media-shell">
+        <section class="video-player-shell panel pad">
+            <div class="video-info">
+                <h3>@_video.DisplayName</h3>
+                <div class="meta ltr">@_video.FolderPath</div>
+                <p class="meta">نوع: @(_video.FileExtension.ToUpperInvariant()) — حجم: @FormatSize(_video.FileSize)</p>
+            </div>
+
+            <VideoPlayer StreamUrl="@($"/api/videos/{VideoId}/stream")" PosterUrl="" />
+        </section>
+
+        <section class="panel pad">
+            <h4>ویدیوهای مرتبط</h4>
+            <div class="sidebar-list">
+                @if (_related.Any())
+                {
+                    @foreach (var item in _related)
+                    {
+                        <a class="video-link" href="/student/videos/@item.Id"><AppIcon Name="play" /><span>@item.DisplayName</span></a>
+                    }
+                }
+                else
+                {
+                    <EmptyState Icon="video" Title="دیگری موجود نیست" Message="برای این پوشه مورد دیگری وجود ندارد." />
+                }
+            </div>
+        </section>
+    </section>
+}
+
+@code {
+    [Parameter] public long VideoId { get; set; }
+    private VideoDto? _video;
+    private IReadOnlyList<VideoDto> _related = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (CurrentUser.UserId is null)
+        {
+            return;
+        }
+
+        var all = await Videos.GetForUserAsync(CurrentUser.UserId.Value, false);
+        _video = all.FirstOrDefault(x => x.Id == VideoId);
+        if (_video is null)
+        {
+            return;
+        }
+
+        _related = all.Where(x => x.FolderPath == _video.FolderPath && x.Id != _video.Id).ToList();
+    }
+
+    private static string FormatSize(long size)
+        => size > 1024 * 1024 * 1024 ? $"{size / 1024d / 1024d / 1024d:0.0} GB" :
+           size > 1024 * 1024 ? $"{size / 1024d / 1024d:0.0} MB" :
+           $"{size / 1024d:0.0} KB";
+}
