@@ -1,4 +1,5 @@
 using Lesson.Domain.Entities;
+using Lesson.Domain.Enums;
 using Lesson.Infrastructure.Abstractions;
 using Lesson.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -10,19 +11,44 @@ public sealed class FolderService : IFolderService
     private readonly LessonDbContext _db;
     public FolderService(LessonDbContext db) => _db = db;
 
+    private sealed record ContentMeta(
+        long Id,
+        string OriginalFileName,
+        string DisplayName,
+        string FileExtension,
+        string MimeType,
+        long FileSize,
+        ContentType Type,
+        double? DurationSeconds,
+        long FolderId);
+
     public async Task<IReadOnlyList<FolderNodeDto>> GetTreeAsync(CancellationToken cancellationToken = default)
     {
-        var folders = await _db.Folders
-            .Include(x => x.Contents)
+        var folders = await _db.Folders.AsNoTracking().ToListAsync(cancellationToken);
+
+        // Metadata only — never the Content varbinary column
+        var contentMeta = await _db.Contents.AsNoTracking()
+            .Select(c => new ContentMeta(
+                c.Id,
+                c.OriginalFileName,
+                c.DisplayName,
+                c.FileExtension,
+                c.MimeType,
+                c.FileSize,
+                c.Type,
+                c.DurationSeconds,
+                c.FolderId))
             .ToListAsync(cancellationToken);
 
+        var contentsByFolder = contentMeta.ToLookup(c => c.FolderId);
+        var pathById = folders.ToDictionary(f => f.Id, f => f.RelativePath);
         var byParent = folders.ToLookup(x => x.ParentFolderId);
-        return Build(null, byParent);
+
+        return Build(null, byParent, contentsByFolder, pathById);
     }
 
     public async Task<Folder> CreateAsync(string name, long? parentFolderId, CancellationToken cancellationToken = default)
     {
-        // Pure logical group – no physical directory is created.
         var parentPath = string.Empty;
         if (parentFolderId is not null)
         {
@@ -33,14 +59,11 @@ public sealed class FolderService : IFolderService
         var trimmed = name.Trim();
         var relativePath = string.IsNullOrWhiteSpace(parentPath) ? trimmed : $"{parentPath}/{trimmed}";
 
-        // Prevent duplicate names under same parent
         var exists = await _db.Folders.AnyAsync(
             x => x.ParentFolderId == parentFolderId && x.Name == trimmed,
             cancellationToken);
         if (exists)
-        {
             throw new InvalidOperationException("گروهی با این نام در همین سطح وجود دارد.");
-        }
 
         var folder = new Folder
         {
@@ -64,9 +87,8 @@ public sealed class FolderService : IFolderService
     {
         var folder = await _db.Folders.FirstAsync(x => x.Id == folderId, cancellationToken);
         if (newParentFolderId == folderId)
-        {
             throw new InvalidOperationException("نمی‌توان گروه را به خودش منتقل کرد.");
-        }
+
         folder.ParentFolderId = newParentFolderId;
         await RebuildPathAsync(folder, cancellationToken);
     }
@@ -76,9 +98,7 @@ public sealed class FolderService : IFolderService
         var hasChildren = await _db.Folders.AnyAsync(x => x.ParentFolderId == folderId, cancellationToken);
         var hasContents = await _db.Contents.AnyAsync(x => x.FolderId == folderId, cancellationToken);
         if (hasChildren || hasContents)
-        {
             throw new InvalidOperationException("گروه خالی نیست. ابتدا زیرگروه‌ها و محتوا را حذف کنید.");
-        }
 
         var folder = await _db.Folders.FirstAsync(x => x.Id == folderId, cancellationToken);
         _db.Folders.Remove(folder);
@@ -97,9 +117,7 @@ public sealed class FolderService : IFolderService
             : $"{(await _db.Folders.AsNoTracking().FirstAsync(x => x.Id == folder.ParentFolderId, cancellationToken)).RelativePath}/{folder.Name}";
 
         foreach (var child in folder.ChildFolders)
-        {
             await RebuildDescendantPathsAsync(child, cancellationToken);
-        }
 
         await _db.SaveChangesAsync(cancellationToken);
     }
@@ -112,19 +130,23 @@ public sealed class FolderService : IFolderService
             : $"{(await _db.Folders.AsNoTracking().FirstAsync(x => x.Id == child.ParentFolderId, cancellationToken)).RelativePath}/{child.Name}";
 
         foreach (var descendant in child.ChildFolders)
-        {
             await RebuildDescendantPathsAsync(descendant, cancellationToken);
-        }
     }
 
-    private static IReadOnlyList<FolderNodeDto> Build(long? parentId, ILookup<long?, Folder> lookup)
-        => lookup[parentId].Any()
-            ? lookup[parentId].Select(f => new FolderNodeDto(
-                f.Id,
-                f.Name,
-                f.RelativePath,
-                Build(f.Id, lookup),
-                f.Contents.Select(c => new ContentDto(
+    private static IReadOnlyList<FolderNodeDto> Build(
+        long? parentId,
+        ILookup<long?, Folder> lookup,
+        ILookup<long, ContentMeta> contentsByFolder,
+        IReadOnlyDictionary<long, string> pathById)
+    {
+        if (!lookup[parentId].Any())
+            return Array.Empty<FolderNodeDto>();
+
+        return lookup[parentId].Select(f =>
+        {
+            var path = pathById.TryGetValue(f.Id, out var p) ? p : f.RelativePath;
+            var contents = contentsByFolder[f.Id]
+                .Select(c => new ContentDto(
                     c.Id,
                     c.OriginalFileName,
                     c.DisplayName,
@@ -134,6 +156,15 @@ public sealed class FolderService : IFolderService
                     c.Type,
                     c.DurationSeconds,
                     c.FolderId,
-                    f.RelativePath)).ToList())).ToList()
-            : Array.Empty<FolderNodeDto>();
+                    path))
+                .ToList();
+
+            return new FolderNodeDto(
+                f.Id,
+                f.Name,
+                f.RelativePath,
+                Build(f.Id, lookup, contentsByFolder, pathById),
+                contents);
+        }).ToList();
+    }
 }

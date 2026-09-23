@@ -21,13 +21,25 @@ public sealed class ContentService : IContentService
         _options = options.Value;
     }
 
-    public Task<IReadOnlyList<ContentDto>> GetAllAsync(CancellationToken cancellationToken = default)
-        => _db.Contents
-            .Include(x => x.Folder)
+    public async Task<IReadOnlyList<ContentDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        // IMPORTANT: never select Content (varbinary) here — only metadata
+        var list = await _db.Contents.AsNoTracking()
             .OrderBy(x => x.DisplayName)
-            .Select(x => ToDto(x))
-            .ToListAsync(cancellationToken)
-            .ContinueWith(t => (IReadOnlyList<ContentDto>)t.Result, cancellationToken);
+            .Select(x => new ContentDto(
+                x.Id,
+                x.OriginalFileName,
+                x.DisplayName,
+                x.FileExtension,
+                x.MimeType,
+                x.FileSize,
+                x.Type,
+                x.DurationSeconds,
+                x.FolderId,
+                x.Folder != null ? x.Folder.RelativePath : string.Empty))
+            .ToListAsync(cancellationToken);
+        return list;
+    }
 
     public async Task<IReadOnlyList<ContentDto>> GetForUserAsync(long userId, bool isAdmin, CancellationToken cancellationToken = default)
     {
@@ -36,20 +48,35 @@ public sealed class ContentService : IContentService
             return await GetAllAsync(cancellationToken);
         }
 
-        var query = from c in _db.Contents.Include(x => x.Folder)
-                    where _db.Permissions.Any(p =>
-                        p.UserId == userId &&
-                        p.IsActive &&
-                        p.RevokedAt == null &&
-                        (c.FolderId == p.FolderId ||
-                         _db.Folders.Any(f => f.Id == c.FolderId && f.RelativePath.StartsWith(p.Folder!.RelativePath))))
-                    select ToDto(c);
+        // Permission on folder or any ancestor (path prefix) — metadata only, no Content bytes
+        var list = await (
+            from c in _db.Contents.AsNoTracking()
+            where _db.Permissions.Any(p =>
+                p.UserId == userId &&
+                p.IsActive &&
+                p.RevokedAt == null &&
+                (c.FolderId == p.FolderId ||
+                 _db.Folders.Any(f => f.Id == c.FolderId && f.RelativePath.StartsWith(p.Folder!.RelativePath))))
+            orderby c.DisplayName
+            select new ContentDto(
+                c.Id,
+                c.OriginalFileName,
+                c.DisplayName,
+                c.FileExtension,
+                c.MimeType,
+                c.FileSize,
+                c.Type,
+                c.DurationSeconds,
+                c.FolderId,
+                c.Folder != null ? c.Folder.RelativePath : string.Empty)
+        ).ToListAsync(cancellationToken);
 
-        return await query.ToListAsync(cancellationToken);
+        return list;
     }
 
     public Task<LessonContent?> FindAsync(long contentId, CancellationToken cancellationToken = default)
-        => _db.Contents.Include(x => x.Folder).FirstOrDefaultAsync(x => x.Id == contentId, cancellationToken);
+        // WARNING: loads Content bytes — prefer GetAllAsync/ContentDto for UI
+        => _db.Contents.AsNoTracking().FirstOrDefaultAsync(x => x.Id == contentId, cancellationToken);
 
     public async Task<LessonContent> UploadAsync(UploadContentRequest request, CancellationToken cancellationToken = default)
     {

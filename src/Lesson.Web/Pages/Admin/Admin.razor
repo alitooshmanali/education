@@ -44,18 +44,19 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _users = (await Users.GetAllAsync()).Count;
-        _contents = (await Contents.GetAllAsync()).Count;
+        var allUsers = await Users.GetAllAsync();
+        _users = allUsers.Count;
+
+        var allContents = await Contents.GetAllAsync();
+        _contents = allContents.Count;
 
         var tree = await Folders.GetTreeAsync();
         _folders = CountFolders(tree);
 
-        var allUsers = await Users.GetAllAsync();
         var allPermissions = 0;
         foreach (var user in allUsers)
         {
-            var perms = await Permissions.GetForUserAsync(user.Id);
-            allPermissions += perms.Count;
+            allPermissions += (await Permissions.GetForUserAsync(user.Id)).Count;
         }
         _permissions = allPermissions;
     }
@@ -64,9 +65,7 @@
     {
         var n = 0;
         foreach (var node in nodes)
-        {
             n += 1 + CountFolders(node.Children);
-        }
         return n;
     }
 }

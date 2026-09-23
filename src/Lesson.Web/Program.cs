@@ -120,11 +120,15 @@ app.MapGet("/api/contents/{id:long}/stream", async (HttpContext context, long id
     if (result is null)
         return Results.Forbid();
 
-    context.Response.Headers[HeaderNames.AcceptRanges] = "bytes";
     if (result.ResumePositionSeconds.HasValue)
         context.Response.Headers["X-Resume-Position"] = result.ResumePositionSeconds.Value.ToString("F1", System.Globalization.CultureInfo.InvariantCulture);
 
-    return Results.Stream(result.Stream, result.ContentType, enableRangeProcessing: true, fileDownloadName: result.FileName);
+    // Stream in chunks; enable range only when stream is seekable (avoids loading entire LOB into memory)
+    var enableRange = result.Stream.CanSeek;
+    if (enableRange)
+        context.Response.Headers[HeaderNames.AcceptRanges] = "bytes";
+
+    return Results.Stream(result.Stream, result.ContentType, enableRangeProcessing: enableRange, fileDownloadName: result.FileName);
 }).RequireAuthorization();
 
 // ---------- Progress update ----------

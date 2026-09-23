@@ -50,7 +50,7 @@
         <div class="form-grid">
             <div class="field">
                 <label>فایل</label>
-                <InputFile OnChange="OnFileSelected" />
+                <InputFile OnChange="OnFileSelected" disabled="@_isBusy" />
                 @if (_selectedFile is not null)
                 {
                     <p class="hint">@_selectedFile.Name — @FormatSize(_selectedFile.Size)</p>
@@ -59,12 +59,12 @@
 
             <div class="field">
                 <label>نام نمایش</label>
-                <input @bind="_displayName" placeholder="مثلاً Family Lesson 01" />
+                <input @bind="_displayName" placeholder="مثلاً Family Lesson 01" disabled="@_isBusy" />
             </div>
 
             <div class="field">
                 <label>گروه مقصد</label>
-                <select @bind="_uploadFolderIdString">
+                <select @bind="_uploadFolderIdString" disabled="@_isBusy">
                     <option value="">انتخاب گروه</option>
                     @foreach (var folder in _folderOptions)
                     {
@@ -74,12 +74,33 @@
             </div>
         </div>
 
+        @if (_isBusy || _uploadPercent > 0)
+        {
+            <div class="upload-progress panel-spaced">
+                <div class="upload-progress__label">
+                    <span>@_uploadPhase</span>
+                    <strong>@_uploadPercent%</strong>
+                </div>
+                <div class="upload-progress__track">
+                    <div class="upload-progress__fill" style="width: @(_uploadPercent)%"></div>
+                </div>
+                <p class="hint">@FormatSize(_bytesTransferred) از @FormatSize(_bytesTotal)</p>
+            </div>
+        }
+
         <div class="toolbar">
             <button class="btn btn-primary" type="button" @onclick="UploadAsync"
                     disabled="@(string.IsNullOrWhiteSpace(_displayName) || _selectedFile is null || string.IsNullOrWhiteSpace(_uploadFolderIdString) || _isBusy)">
                 بارگذاری
             </button>
-            <button class="btn btn-ghost" type="button" @onclick="ResetUpload" disabled="@_isBusy">پاک‌سازی</button>
+            @if (_isBusy)
+            {
+                <button class="btn btn-danger" type="button" @onclick="CancelUpload">انصراف</button>
+            }
+            else
+            {
+                <button class="btn btn-ghost" type="button" @onclick="ResetUpload">پاک‌سازی</button>
+            }
         </div>
 
         @if (_movingItem is not null)
@@ -110,16 +131,17 @@
     </section>
 </section>
 
-<ConfirmDialog
-    IsOpen="_showDeleteConfirm"
-    Title="حذف محتوا"
-    Message="آیا حذف این محتوا را تایید می‌کنید؟"
-    ConfirmText="حذف"
-    Busy="_isBusy"
-    OnClose="CancelDelete"
-    OnConfirm="DeleteConfirmed" />
+<ConfirmDialog IsOpen="_showDeleteConfirm"
+               Title="حذف محتوا"
+               Message="آیا حذف این محتوا را تایید می‌کنید؟"
+               ConfirmText="حذف"
+               Busy="_isBusy"
+               OnClose="CancelDelete"
+               OnConfirm="DeleteConfirmed" />
 
 @code {
+    private const long MaxUploadBytes = 20L * 1024 * 1024;
+
     private IReadOnlyList<ContentDto> _items = [];
     private IReadOnlyList<ContentDto> _filtered = [];
     private IReadOnlyList<FolderFlat> _folderOptions = [];
@@ -135,7 +157,13 @@
     private bool _isBusy;
     private long? _deleteId;
     private bool _showDeleteConfirm;
-    private const long MaxUploadBytes = 20L * 1024 * 1024;
+
+    private int _uploadPercent;
+    private long _bytesTransferred;
+    private long _bytesTotal;
+    private string _uploadPhase = "آماده";
+    private CancellationTokenSource? _uploadCts;
+    private long? _uploadedContentId;
 
     private readonly IReadOnlyList<TableColumn<ContentDto>> _columns =
     [
@@ -203,26 +231,130 @@
             return;
         }
 
+        _uploadCts?.Cancel();
+        _uploadCts?.Dispose();
+        _uploadCts = new CancellationTokenSource();
+        var ct = _uploadCts.Token;
+        _uploadedContentId = null;
+
         try
         {
             _isBusy = true;
-            await using var stream = _selectedFile.OpenReadStream(maxAllowedSize: MaxUploadBytes);
-            var request = new UploadContentRequest(folderId, _selectedFile.Name, _displayName.Trim(), stream, _selectedFile.Size);
-            await Contents.UploadAsync(request);
+            _errorMessage = null;
+            _statusMessage = null;
+            _uploadPercent = 0;
+            _bytesTransferred = 0;
+            _bytesTotal = _selectedFile.Size;
+            _uploadPhase = "در حال خواندن فایل...";
+            await InvokeAsync(StateHasChanged);
+
+            // Read file in chunks so UI can show progress and cancel works
+            await using var input = _selectedFile.OpenReadStream(maxAllowedSize: MaxUploadBytes, cancellationToken: ct);
+            await using var bufferStream = new MemoryStream(capacity: (int)Math.Min(_selectedFile.Size, MaxUploadBytes));
+
+            var buffer = new byte[64 * 1024]; // 64 KB
+            int read;
+            while ((read = await input.ReadAsync(buffer.AsMemory(0, buffer.Length), ct)) > 0)
+            {
+                await bufferStream.WriteAsync(buffer.AsMemory(0, read), ct);
+                _bytesTransferred += read;
+                _uploadPercent = _bytesTotal > 0
+                    ? (int)Math.Min(99, (_bytesTransferred * 100) / _bytesTotal)
+                    : 0;
+                _uploadPhase = "در حال بارگذاری...";
+                await InvokeAsync(StateHasChanged);
+            }
+
+            ct.ThrowIfCancellationRequested();
+
+            _uploadPhase = "در حال ذخیره در دیتابیس...";
+            _uploadPercent = 99;
+            await InvokeAsync(StateHasChanged);
+
+            bufferStream.Position = 0;
+            var request = new UploadContentRequest(
+                folderId,
+                _selectedFile.Name,
+                _displayName.Trim(),
+                bufferStream,
+                bufferStream.Length);
+
+            var entity = await Contents.UploadAsync(request, ct);
+            _uploadedContentId = entity.Id;
+
+            ct.ThrowIfCancellationRequested();
+
+            _uploadPercent = 100;
+            _uploadPhase = "تمام شد";
             _statusMessage = "محتوا با موفقیت بارگذاری شد.";
             _errorMessage = null;
-            ResetUpload();
+            ResetUploadFields();
             await ReloadAsync();
         }
-        catch (Exception ex) { _errorMessage = ex.Message; }
-        finally { _isBusy = false; }
+        catch (OperationCanceledException)
+        {
+            await RollbackUploadedIfAny();
+            _errorMessage = "بارگذاری لغو شد.";
+            _statusMessage = null;
+            _uploadPhase = "لغو شد";
+            _uploadPercent = 0;
+        }
+        catch (Exception ex)
+        {
+            await RollbackUploadedIfAny();
+            _errorMessage = ex.Message;
+            _uploadPhase = "خطا";
+        }
+        finally
+        {
+            _isBusy = false;
+            _bytesTransferred = 0;
+            _bytesTotal = 0;
+            _uploadCts?.Dispose();
+            _uploadCts = null;
+            _uploadedContentId = null;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
-    private void ResetUpload()
+    private void CancelUpload()
+    {
+        try { _uploadCts?.Cancel(); }
+        catch { /* ignore */ }
+    }
+
+    private async Task RollbackUploadedIfAny()
+    {
+        if (_uploadedContentId is null) return;
+        try
+        {
+            await Contents.DeleteAsync(_uploadedContentId.Value);
+        }
+        catch
+        {
+            // best effort
+        }
+        finally
+        {
+            _uploadedContentId = null;
+        }
+    }
+
+    private void ResetUploadFields()
     {
         _selectedFile = null;
         _displayName = string.Empty;
         _uploadFolderIdString = string.Empty;
+        _uploadPercent = 0;
+        _uploadPhase = "آماده";
+    }
+
+    private void ResetUpload()
+    {
+        if (_isBusy) return;
+        ResetUploadFields();
+        _errorMessage = null;
+        _statusMessage = null;
     }
 
     private void OpenMove(ContentDto item)
@@ -269,7 +401,7 @@
     private static string FormatSize(long size)
         => size > 1024 * 1024 * 1024 ? $"{size / 1024d / 1024d / 1024d:0.0} GB" :
            size > 1024 * 1024 ? $"{size / 1024d / 1024d:0.0} MB" :
-           $"{size / 1024d:0.0} KB";
+           size > 0 ? $"{size / 1024d:0.0} KB" : "0 KB";
 
     private sealed record FolderFlat(long Id, string RelativePath);
 }
