@@ -1,66 +1,71 @@
 @page "/admin"
 @attribute [Authorize(Roles = nameof(UserRole.Admin))]
 @inject IUserService Users
-@inject IVideoService Videos
+@inject IContentService Contents
 @inject IFolderService Folders
 @inject IPermissionService Permissions
 
-<PageHeader Eyebrow="Admin" Title="داشبورد مدیریت" Subtitle="نمای کلی سیستم">
-    <a class="btn btn-primary" href="/admin/videos"><AppIcon Name="upload" /> ارسال ویدیو</a>
-</PageHeader>
+<PageHeader Eyebrow="Admin" Title="داشبورد مدیریت" Subtitle="خلاصه وضعیت سیستم" />
 
 <section class="grid stats">
-    <StatCard Label="کاربران" Value="@_users.ToString()" Hint="پروفایل‌های فعال" Tone="neutral" />
-    <StatCard Label="ویدیوها" Value="@_videos.ToString()" Hint="فایل‌های در دسترس" Tone="neutral" />
-    <StatCard Label="پوشه‌ها" Value="@_folders.ToString()" Hint="ساختار مسیر" Tone="neutral" />
-    <StatCard Label="دسترسی‌ها" Value="@_permissions.ToString()" Hint="اختصاص داده‌شده" Tone="neutral" />
+    <div class="stat-card">
+        <div class="stat-label">کاربران</div>
+        <div class="stat-value">@_users</div>
+        <div class="stat-hint">کل حساب‌های فعال</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">محتوا</div>
+        <div class="stat-value">@_contents</div>
+        <div class="stat-hint">فایل‌های بارگذاری‌شده</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">گروه‌ها</div>
+        <div class="stat-value">@_folders</div>
+        <div class="stat-hint">گروه‌های منطقی</div>
+    </div>
 </section>
 
-<section class="content-grid content-grid--stacked panel-stack">
-    <section class="panel pad panel-links">
-        <h3>صفحات مدیریتی</h3>
-        <div class="toolbar toolbar--flow">
-            <a class="btn btn-secondary" href="/admin/users"><AppIcon Name="users" /> مدیریت کاربران</a>
-            <a class="btn btn-secondary" href="/admin/folders"><AppIcon Name="folder" /> مدیریت پوشه‌ها</a>
-            <a class="btn btn-secondary" href="/admin/videos"><AppIcon Name="video" /> مدیریت ویدیو</a>
-            <a class="btn btn-secondary" href="/admin/permissions"><AppIcon Name="permission" /> مدیریت دسترسی</a>
-            <a class="btn btn-secondary" href="/admin/devices"><AppIcon Name="device" /> مدیریت دستگاه‌ها</a>
-            <a class="btn btn-secondary" href="/admin/audit"><AppIcon Name="audit" /> لاگ‌ها</a>
-        </div>
-    </section>
-
-    <section class="panel pad">
-        <h3>راهنمای سریع</h3>
-        <p>ویدیوها از مسیر محافظت‌شده ارائه می‌شوند و تنها دانشجویان دارای مجوز نمایش داده می‌شوند.</p>
-        <ul class="admin-guide">
-            <li>آپلود فایل در مسیر پوشه</li>
-            <li>اعطای دسترسی به پوشه برای پوشه‌های فرزند</li>
-            <li>تعویض/باطل‌سازی دستگاه</li>
-            <li>ردیابی رویدادهای ادمین از لاگ</li>
-        </ul>
-    </section>
+<section class="panel pad panel-spaced">
+    <h3>دسترسی‌ها</h3>
+    <p class="meta">تعداد کل دسترسی‌های فعال: <strong>@_permissions</strong></p>
+    <ul class="admin-guide">
+        <li>ساخت گروه و زیرگروه از بخش گروه‌ها</li>
+        <li>بارگذاری محتوا (حداکثر ۲۰ مگابایت) در هر گروه</li>
+        <li>اعطای دسترسی کاربر به گروه (ارث‌بری به زیرگروه‌ها)</li>
+        <li>ردیابی رویدادهای ادمین از لاگ</li>
+    </ul>
 </section>
 
 @code {
     private int _users;
-    private int _videos;
+    private int _contents;
     private int _folders;
     private int _permissions;
 
     protected override async Task OnInitializedAsync()
     {
-        _users = (await Users.GetAllAsync()).Count;
-        _videos = (await Videos.GetAllAsync()).Count;
-        _folders = (await Folders.GetTreeAsync()).Count;
-
         var allUsers = await Users.GetAllAsync();
+        _users = allUsers.Count;
+
+        var allContents = await Contents.GetAllAsync();
+        _contents = allContents.Count;
+
+        var tree = await Folders.GetTreeAsync();
+        _folders = CountFolders(tree);
+
         var allPermissions = 0;
         foreach (var user in allUsers)
         {
-            var perms = await Permissions.GetForUserAsync(user.Id);
-            allPermissions += perms.Count;
+            allPermissions += (await Permissions.GetForUserAsync(user.Id)).Count;
         }
-
         _permissions = allPermissions;
+    }
+
+    private static int CountFolders(IReadOnlyList<FolderNodeDto> nodes)
+    {
+        var n = 0;
+        foreach (var node in nodes)
+            n += 1 + CountFolders(node.Children);
+        return n;
     }
 }

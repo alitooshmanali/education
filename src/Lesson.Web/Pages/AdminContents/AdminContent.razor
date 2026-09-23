@@ -1,0 +1,64 @@
+@page "/admin/videos/{ContentId:long}"
+@page "/admin/contents/{ContentId:long}"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject IContentService Contents
+
+<PageHeader Eyebrow="Admin" Title="مشاهده محتوا" Subtitle="پیش‌نمایش برای مدیریت">
+    <a class="btn btn-ghost" href="/admin/contents"><AppIcon Name="video" /> بازگشت</a>
+</PageHeader>
+
+@if (_content is null)
+{
+    <EmptyState Icon="video" Title="در دسترس نیست" Message="این محتوا قابل پخش نیست یا حذف شده است.">
+        <Action>
+            <a class="btn btn-primary" href="/admin/contents">بازگشت</a>
+        </Action>
+    </EmptyState>
+}
+else
+{
+    <section class="media-shell">
+        <section class="video-player-shell panel pad">
+            <div class="video-info">
+                <h3>@_content.DisplayName</h3>
+                <div class="meta ltr">@_content.FolderPath</div>
+                <p class="meta">نوع: @_content.Type — پسوند: @_content.FileExtension.ToUpperInvariant() — حجم: @FormatSize(_content.FileSize)</p>
+            </div>
+
+            @if (_content.Type is Lesson.Domain.Enums.ContentType.Video or Lesson.Domain.Enums.ContentType.Audio)
+            {
+                <VideoPlayer StreamUrl="@($"/api/contents/{ContentId}/stream")" ContentId="ContentId" ResumePosition="0" TrackProgress="false" />
+            }
+            else if (_content.Type is Lesson.Domain.Enums.ContentType.Image)
+            {
+                <img src="@($"/api/contents/{ContentId}/stream")" alt="@_content.DisplayName" style="max-width:100%;border-radius:8px;" />
+            }
+            else
+            {
+                <a class="btn btn-primary" href="@($"/api/admin/contents/{ContentId}/download")">دانلود فایل</a>
+            }
+        </section>
+
+        <section class="panel pad">
+            <h4>جزئیات</h4>
+            <p class="meta">شناسه: @_content.Id</p>
+            <p class="meta">نام اصلی: <span class="ltr">@_content.OriginalFileName</span></p>
+        </section>
+    </section>
+}
+
+@code {
+    [Parameter] public long ContentId { get; set; }
+    private ContentDto? _content;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var all = await Contents.GetAllAsync();
+        _content = all.FirstOrDefault(x => x.Id == ContentId);
+    }
+
+    private static string FormatSize(long size)
+        => size > 1024 * 1024 * 1024 ? $"{size / 1024d / 1024d / 1024d:0.0} GB" :
+           size > 1024 * 1024 ? $"{size / 1024d / 1024d:0.0} MB" :
+           $"{size / 1024d:0.0} KB";
+}

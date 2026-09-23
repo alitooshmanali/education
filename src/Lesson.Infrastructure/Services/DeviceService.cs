@@ -28,10 +28,13 @@ public sealed class DeviceService : IDeviceService
             return new DeviceValidationResult(true, null, device);
         }
 
-        var hasActive = await _db.UserDevices.AnyAsync(x => x.UserId == userId && x.RevokedAt == null, cancellationToken);
-        if (hasActive)
+        // Revoke other active devices so login is not blocked (single active device policy)
+        var otherActives = await _db.UserDevices
+            .Where(x => x.UserId == userId && x.RevokedAt == null)
+            .ToListAsync(cancellationToken);
+        foreach (var other in otherActives)
         {
-            return new DeviceValidationResult(false, "Another device is already active.", null);
+            other.RevokedAt = DateTimeOffset.UtcNow;
         }
 
         device = new UserDevice
@@ -59,16 +62,16 @@ public sealed class DeviceService : IDeviceService
 
     public async Task RevokeDeviceAsync(long deviceId, CancellationToken cancellationToken = default)
     {
-        var device = await _db.UserDevices.Include(x => x.AuthenticationSessions).Include(x => x.VideoWatchSessions).FirstAsync(x => x.Id == deviceId, cancellationToken);
+        var device = await _db.UserDevices
+            .Include(x => x.AuthenticationSessions)
+            .FirstAsync(x => x.Id == deviceId, cancellationToken);
+
         device.RevokedAt = DateTimeOffset.UtcNow;
         foreach (var session in device.AuthenticationSessions)
         {
             session.RevokedAt = DateTimeOffset.UtcNow;
         }
-        foreach (var watch in device.VideoWatchSessions)
-        {
-            watch.EndedAt = DateTimeOffset.UtcNow;
-        }
+
         await _db.SaveChangesAsync(cancellationToken);
     }
 }

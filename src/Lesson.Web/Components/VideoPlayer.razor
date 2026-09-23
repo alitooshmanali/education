@@ -1,16 +1,20 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
 <section class="video-player-shell">
     @if (string.IsNullOrWhiteSpace(StreamUrl))
     {
-        <EmptyState Icon="video" Title="No video selected" Message="Choose a lesson to start watching." />
+        <EmptyState Icon="video" Title="ویدیویی انتخاب نشده" Message="یک درس را برای پخش انتخاب کنید." />
     }
     else
     {
-        <video class="video-player"
+        <video @ref="_videoRef"
+               class="video-player"
                controls
                controlsList="nodownload noplaybackrate"
                disablePictureInPicture
                playsinline
-               preload="metadata"
+               preload="auto"
                src="@StreamUrl"
                poster="@PosterUrl"
                oncontextmenu="return false;">
@@ -22,4 +26,32 @@
 @code {
     [Parameter] public string StreamUrl { get; set; } = "";
     [Parameter] public string? PosterUrl { get; set; }
+    [Parameter] public long ContentId { get; set; }
+    [Parameter] public double ResumePosition { get; set; }
+    /// <summary>اگر false باشد (مثلاً برای Admin) پیشرفت ذخیره نمی‌شود.</summary>
+    [Parameter] public bool TrackProgress { get; set; } = true;
+
+    private ElementReference _videoRef;
+    private bool _initialized;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _initialized || string.IsNullOrWhiteSpace(StreamUrl) || ContentId <= 0)
+            return;
+
+        _initialized = true;
+        try
+        {
+            await JS.InvokeVoidAsync(
+                "lessonVideoProgress.init",
+                _videoRef,
+                ContentId,
+                ResumePosition,
+                TrackProgress);
+        }
+        catch
+        {
+            // script not loaded
+        }
+    }
 }

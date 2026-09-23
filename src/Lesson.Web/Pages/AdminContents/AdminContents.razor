@@ -1,0 +1,407 @@
+@page "/admin/videos"
+@page "/admin/contents"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject IContentService Contents
+@inject IFolderService Folders
+
+<PageHeader Eyebrow="Admin" Title="مدیریت محتوا" Subtitle="بارگذاری، انتقال و حذف (حداکثر ۲۰ مگابایت)" />
+
+<section class="grid two-col">
+    <section class="panel pad">
+        <div class="toolbar">
+            <h3>فهرست محتوا</h3>
+            <SearchInput Label="جستجو" Placeholder="عنوان یا مسیر" Value="@_query" ValueChanged="OnSearch" />
+        </div>
+
+        <div class="toolbar">
+            <select class="form-select" @bind="_folderFilterIdString">
+                <option value="">همه گروه‌ها</option>
+                @foreach (var folder in _folderOptions)
+                {
+                    <option value="@folder.Id">@folder.RelativePath</option>
+                }
+            </select>
+            <button class="btn btn-outline" type="button" @onclick="ApplyFilters">اعمال فیلتر</button>
+        </div>
+
+        <DataTable TItem="ContentDto" Items="_filtered" Columns="_columns">
+            <ActionsTemplate Context="item">
+                <a class="btn btn-secondary" href="/api/admin/contents/@item.Id/download"><AppIcon Name="download" /> دانلود</a>
+                <a class="btn btn-ghost" href="/admin/contents/@item.Id"><AppIcon Name="play" /> مشاهده</a>
+                <button class="btn btn-outline" type="button" @onclick="() => OpenMove(item)">جابجایی</button>
+                <button class="btn btn-danger" type="button" @onclick="() => ConfirmDelete(item)">حذف</button>
+            </ActionsTemplate>
+        </DataTable>
+    </section>
+
+    <section class="panel pad">
+        <h3>بارگذاری جدید</h3>
+        <p class="hint">حداکثر حجم: ۲۰ مگابایت — همه پسوندها مجاز هستند.</p>
+
+        @if (_statusMessage is not null)
+        {
+            <div class="alert alert-success">@_statusMessage</div>
+        }
+        @if (_errorMessage is not null)
+        {
+            <div class="alert alert-error">@_errorMessage</div>
+        }
+
+        <div class="form-grid">
+            <div class="field">
+                <label>فایل</label>
+                <InputFile OnChange="OnFileSelected" disabled="@_isBusy" />
+                @if (_selectedFile is not null)
+                {
+                    <p class="hint">@_selectedFile.Name — @FormatSize(_selectedFile.Size)</p>
+                }
+            </div>
+
+            <div class="field">
+                <label>نام نمایش</label>
+                <input @bind="_displayName" placeholder="مثلاً Family Lesson 01" disabled="@_isBusy" />
+            </div>
+
+            <div class="field">
+                <label>گروه مقصد</label>
+                <select @bind="_uploadFolderIdString" disabled="@_isBusy">
+                    <option value="">انتخاب گروه</option>
+                    @foreach (var folder in _folderOptions)
+                    {
+                        <option value="@folder.Id">@folder.RelativePath</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        @if (_isBusy || _uploadPercent > 0)
+        {
+            <div class="upload-progress panel-spaced">
+                <div class="upload-progress__label">
+                    <span>@_uploadPhase</span>
+                    <strong>@_uploadPercent%</strong>
+                </div>
+                <div class="upload-progress__track">
+                    <div class="upload-progress__fill" style="width: @(_uploadPercent)%"></div>
+                </div>
+                <p class="hint">@FormatSize(_bytesTransferred) از @FormatSize(_bytesTotal)</p>
+            </div>
+        }
+
+        <div class="toolbar">
+            <button class="btn btn-primary" type="button" @onclick="UploadAsync"
+                    disabled="@(string.IsNullOrWhiteSpace(_displayName) || _selectedFile is null || string.IsNullOrWhiteSpace(_uploadFolderIdString) || _isBusy)">
+                بارگذاری
+            </button>
+            @if (_isBusy)
+            {
+                <button class="btn btn-danger" type="button" @onclick="CancelUpload">انصراف</button>
+            }
+            else
+            {
+                <button class="btn btn-ghost" type="button" @onclick="ResetUpload">پاک‌سازی</button>
+            }
+        </div>
+
+        @if (_movingItem is not null)
+        {
+            <hr class="panel-divider" />
+            <h4>جابجایی محتوا</h4>
+            <div class="form-grid">
+                <div class="field">
+                    <label>محتوا</label>
+                    <input value="@_movingItem.DisplayName" disabled />
+                </div>
+                <div class="field">
+                    <label>گروه جدید</label>
+                    <select @bind="_moveFolderIdString">
+                        <option value="">انتخاب گروه</option>
+                        @foreach (var folder in _folderOptions)
+                        {
+                            <option value="@folder.Id">@folder.RelativePath</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="toolbar">
+                <button class="btn btn-primary" type="button" @onclick="MoveAsync" disabled="@(string.IsNullOrWhiteSpace(_moveFolderIdString) || _isBusy)">انتقال</button>
+                <button class="btn btn-ghost" type="button" @onclick="() => _movingItem = null">لغو</button>
+            </div>
+        }
+    </section>
+</section>
+
+<ConfirmDialog IsOpen="_showDeleteConfirm"
+               Title="حذف محتوا"
+               Message="آیا حذف این محتوا را تایید می‌کنید؟"
+               ConfirmText="حذف"
+               Busy="_isBusy"
+               OnClose="CancelDelete"
+               OnConfirm="DeleteConfirmed" />
+
+@code {
+    private const long MaxUploadBytes = 20L * 1024 * 1024;
+
+    private IReadOnlyList<ContentDto> _items = [];
+    private IReadOnlyList<ContentDto> _filtered = [];
+    private IReadOnlyList<FolderFlat> _folderOptions = [];
+    private string _query = string.Empty;
+    private string _folderFilterIdString = string.Empty;
+    private string _uploadFolderIdString = string.Empty;
+    private string _moveFolderIdString = string.Empty;
+    private string _displayName = string.Empty;
+    private IBrowserFile? _selectedFile;
+    private ContentDto? _movingItem;
+    private string? _statusMessage;
+    private string? _errorMessage;
+    private bool _isBusy;
+    private long? _deleteId;
+    private bool _showDeleteConfirm;
+
+    private int _uploadPercent;
+    private long _bytesTransferred;
+    private long _bytesTotal;
+    private string _uploadPhase = "آماده";
+    private CancellationTokenSource? _uploadCts;
+    private long? _uploadedContentId;
+
+    private readonly IReadOnlyList<TableColumn<ContentDto>> _columns =
+    [
+        new() { Header = "عنوان", Template = v => (RenderFragment)(b => b.AddContent(0, v.DisplayName)) },
+        new() { Header = "مسیر", Template = v => (RenderFragment)(b => {
+            b.OpenElement(0, "span");
+            b.AddAttribute(1, "class", "ltr");
+            b.AddContent(2, v.FolderPath);
+            b.CloseElement();
+        }) },
+        new() { Header = "نوع", Template = v => (RenderFragment)(b => b.AddContent(0, v.Type.ToString())) },
+        new() { Header = "حجم", Template = v => (RenderFragment)(b => b.AddContent(0, FormatSize(v.FileSize))) }
+    ];
+
+    protected override async Task OnInitializedAsync() => await ReloadAsync();
+
+    private async Task ReloadAsync()
+    {
+        var folders = await Folders.GetTreeAsync();
+        _folderOptions = Flatten(folders).ToList();
+        _items = await Contents.GetAllAsync();
+        _filtered = _items;
+        _statusMessage = null;
+        _errorMessage = null;
+    }
+
+    private static IEnumerable<FolderFlat> Flatten(IEnumerable<FolderNodeDto> nodes)
+    {
+        foreach (var n in nodes)
+        {
+            yield return new FolderFlat(n.Id, n.RelativePath);
+            foreach (var c in Flatten(n.Children))
+                yield return c;
+        }
+    }
+
+    private void OnSearch(string q) { _query = q; ApplyFilters(); }
+
+    private void ApplyFilters()
+    {
+        IEnumerable<ContentDto> result = _items;
+        if (!string.IsNullOrWhiteSpace(_query))
+            result = result.Where(v => v.DisplayName.Contains(_query, StringComparison.OrdinalIgnoreCase)
+                                    || v.FolderPath.Contains(_query, StringComparison.OrdinalIgnoreCase));
+        if (long.TryParse(_folderFilterIdString, out var folderId))
+            result = result.Where(v => v.FolderId == folderId);
+        _filtered = result.ToList();
+    }
+
+    private void OnFileSelected(InputFileChangeEventArgs e)
+    {
+        _selectedFile = e.FileCount > 0 ? e.File : null;
+        if (_selectedFile is not null)
+            _displayName = Path.GetFileNameWithoutExtension(_selectedFile.Name);
+    }
+
+    private async Task UploadAsync()
+    {
+        if (_selectedFile is null) { _errorMessage = "فایلی انتخاب نشده است."; return; }
+        if (!long.TryParse(_uploadFolderIdString, out var folderId)) { _errorMessage = "گروه مقصد را انتخاب کنید."; return; }
+        if (string.IsNullOrWhiteSpace(_displayName)) { _errorMessage = "نام نمایش را وارد کنید."; return; }
+        if (_selectedFile.Size > MaxUploadBytes)
+        {
+            _errorMessage = $"حداکثر حجم مجاز ۲۰ مگابایت است. حجم فایل: {_selectedFile.Size / 1024d / 1024d:0.0} MB";
+            return;
+        }
+
+        _uploadCts?.Cancel();
+        _uploadCts?.Dispose();
+        _uploadCts = new CancellationTokenSource();
+        var ct = _uploadCts.Token;
+        _uploadedContentId = null;
+
+        try
+        {
+            _isBusy = true;
+            _errorMessage = null;
+            _statusMessage = null;
+            _uploadPercent = 0;
+            _bytesTransferred = 0;
+            _bytesTotal = _selectedFile.Size;
+            _uploadPhase = "در حال خواندن فایل...";
+            await InvokeAsync(StateHasChanged);
+
+            // Read file in chunks so UI can show progress and cancel works
+            await using var input = _selectedFile.OpenReadStream(maxAllowedSize: MaxUploadBytes, cancellationToken: ct);
+            await using var bufferStream = new MemoryStream(capacity: (int)Math.Min(_selectedFile.Size, MaxUploadBytes));
+
+            var buffer = new byte[64 * 1024]; // 64 KB
+            int read;
+            while ((read = await input.ReadAsync(buffer.AsMemory(0, buffer.Length), ct)) > 0)
+            {
+                await bufferStream.WriteAsync(buffer.AsMemory(0, read), ct);
+                _bytesTransferred += read;
+                _uploadPercent = _bytesTotal > 0
+                    ? (int)Math.Min(99, (_bytesTransferred * 100) / _bytesTotal)
+                    : 0;
+                _uploadPhase = "در حال بارگذاری...";
+                await InvokeAsync(StateHasChanged);
+            }
+
+            ct.ThrowIfCancellationRequested();
+
+            _uploadPhase = "در حال ذخیره در دیتابیس...";
+            _uploadPercent = 99;
+            await InvokeAsync(StateHasChanged);
+
+            bufferStream.Position = 0;
+            var request = new UploadContentRequest(
+                folderId,
+                _selectedFile.Name,
+                _displayName.Trim(),
+                bufferStream,
+                bufferStream.Length);
+
+            var entity = await Contents.UploadAsync(request, ct);
+            _uploadedContentId = entity.Id;
+
+            ct.ThrowIfCancellationRequested();
+
+            _uploadPercent = 100;
+            _uploadPhase = "تمام شد";
+            _statusMessage = "محتوا با موفقیت بارگذاری شد.";
+            _errorMessage = null;
+            ResetUploadFields();
+            await ReloadAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            await RollbackUploadedIfAny();
+            _errorMessage = "بارگذاری لغو شد.";
+            _statusMessage = null;
+            _uploadPhase = "لغو شد";
+            _uploadPercent = 0;
+        }
+        catch (Exception ex)
+        {
+            await RollbackUploadedIfAny();
+            _errorMessage = ex.Message;
+            _uploadPhase = "خطا";
+        }
+        finally
+        {
+            _isBusy = false;
+            _bytesTransferred = 0;
+            _bytesTotal = 0;
+            _uploadCts?.Dispose();
+            _uploadCts = null;
+            _uploadedContentId = null;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void CancelUpload()
+    {
+        try { _uploadCts?.Cancel(); }
+        catch { /* ignore */ }
+    }
+
+    private async Task RollbackUploadedIfAny()
+    {
+        if (_uploadedContentId is null) return;
+        try
+        {
+            await Contents.DeleteAsync(_uploadedContentId.Value);
+        }
+        catch
+        {
+            // best effort
+        }
+        finally
+        {
+            _uploadedContentId = null;
+        }
+    }
+
+    private void ResetUploadFields()
+    {
+        _selectedFile = null;
+        _displayName = string.Empty;
+        _uploadFolderIdString = string.Empty;
+        _uploadPercent = 0;
+        _uploadPhase = "آماده";
+    }
+
+    private void ResetUpload()
+    {
+        if (_isBusy) return;
+        ResetUploadFields();
+        _errorMessage = null;
+        _statusMessage = null;
+    }
+
+    private void OpenMove(ContentDto item)
+    {
+        _movingItem = item;
+        _moveFolderIdString = string.Empty;
+        _errorMessage = null;
+    }
+
+    private async Task MoveAsync()
+    {
+        if (_movingItem is null) return;
+        if (!long.TryParse(_moveFolderIdString, out var folderId)) { _errorMessage = "گروه مقصد را انتخاب کنید."; return; }
+        try
+        {
+            _isBusy = true;
+            await Contents.MoveAsync(_movingItem.Id, folderId);
+            _statusMessage = "محتوا با موفقیت منتقل شد.";
+            _movingItem = null;
+            await ReloadAsync();
+        }
+        catch (Exception ex) { _errorMessage = ex.Message; }
+        finally { _isBusy = false; }
+    }
+
+    private void ConfirmDelete(ContentDto item) { _deleteId = item.Id; _showDeleteConfirm = true; }
+
+    private async Task DeleteConfirmed()
+    {
+        if (_deleteId is null) return;
+        try
+        {
+            _isBusy = true;
+            await Contents.DeleteAsync(_deleteId.Value);
+            _statusMessage = "محتوا حذف شد.";
+            await ReloadAsync();
+        }
+        catch (Exception ex) { _errorMessage = ex.Message; }
+        finally { _isBusy = false; _showDeleteConfirm = false; _deleteId = null; }
+    }
+
+    private void CancelDelete() { _showDeleteConfirm = false; _deleteId = null; }
+
+    private static string FormatSize(long size)
+        => size > 1024 * 1024 * 1024 ? $"{size / 1024d / 1024d / 1024d:0.0} GB" :
+           size > 1024 * 1024 ? $"{size / 1024d / 1024d:0.0} MB" :
+           size > 0 ? $"{size / 1024d:0.0} KB" : "0 KB";
+
+    private sealed record FolderFlat(long Id, string RelativePath);
+}

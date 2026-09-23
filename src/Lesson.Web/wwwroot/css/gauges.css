@@ -1,0 +1,75 @@
+/* Gauge charts for student dashboard */
+.gauge-card {
+    text-align: center;
+}
+
+    .gauge-card h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+    }
+
+.gauge {
+    --pct: 0;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: conic-gradient(var(--primary) calc(var(--pct) * 1%), var(--border) 0);
+    display: grid;
+    place-items: center;
+    margin: 16px auto;
+    position: relative;
+}
+
+    .gauge::before {
+        content: "";
+        position: absolute;
+        inset: 14px;
+        background: var(--surface);
+        border-radius: 50%;
+    }
+
+    .gauge span {
+        position: relative;
+        z-index: 1;
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: var(--text);
+    }
+
+.gauge-meta {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0;
+}
+
+/* Upload progress */
+.upload-progress {
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md, 8px);
+    background: var(--surface-elevated, var(--surface));
+}
+
+.upload-progress__label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--text);
+}
+
+.upload-progress__track {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--border);
+    overflow: hidden;
+}
+
+.upload-progress__fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--primary);
+    transition: width 0.15s ease;
+}

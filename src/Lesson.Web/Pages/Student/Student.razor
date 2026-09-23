@@ -1,39 +1,60 @@
 @page "/student"
 @attribute [Authorize(Roles = nameof(UserRole.Student))]
-@inject IVideoService Videos
+@inject IContentService Contents
 @inject ICurrentUserContext CurrentUser
 @inject NavigationManager Nav
 
-<PageHeader Eyebrow="Student" Title="داشبورد" Subtitle="ویدیوهای قابل پخش شما">
-    <a class="btn btn-ghost" href="/student/videos"><AppIcon Name="video" /> نمایش همه ویدیوها</a>
+<PageHeader Eyebrow="Student" Title="داشبورد" Subtitle="پیشرفت یادگیری شما">
+    <a class="btn btn-ghost" href="/student/videos"><AppIcon Name="video" /> نمایش همه محتوا</a>
 </PageHeader>
 
-<section class="panel pad">
+@if (_summary is not null)
+{
+    <section class="grid two-col panel-spaced">
+        <div class="panel pad gauge-card">
+            <h3>پیشرفت ویدیوها</h3>
+            <div class="gauge" style="--pct: @(_summary.VideoProgressPercent)">
+                <span>@_summary.VideoProgressPercent%</span>
+            </div>
+            <p class="gauge-meta">@_summary.CompletedVideos از @_summary.TotalVideos تکمیل شده</p>
+        </div>
+        <div class="panel pad gauge-card">
+            <h3>پیشرفت Story / اسناد</h3>
+            <div class="gauge" style="--pct: @(_summary.StoryProgressPercent)">
+                <span>@_summary.StoryProgressPercent%</span>
+            </div>
+            <p class="gauge-meta">@_summary.CompletedStories از @_summary.TotalStories تکمیل شده</p>
+        </div>
+    </section>
+}
+
+<section class="panel pad panel-spaced">
     <h3>آخرین درس‌ها</h3>
 
-    @if (_videos.Any())
+    @if (_items.Any())
     {
         <div class="cards cards-spaced">
-            @foreach (var item in _videos.Take(6))
+            @foreach (var item in _items.Take(6))
             {
-                <VideoCard Video="item" Href="@($"/student/videos/{item.Id}")" />
+                <VideoCard Content="item" Href="@($"/student/videos/{item.Id}")" />
             }
         </div>
     }
     else
     {
-        <EmptyState Icon="video" Title="ویدیویی یافت نشد" Message="در حال حاضر ویدیویی برای شما در دسترس نیست. با ادمین تماس بگیرید تا دسترسی‌ها فعال شود." />
+        <EmptyState Icon="video" Title="محتوایی یافت نشد" Message="در حال حاضر محتوایی برای شما در دسترس نیست. با ادمین تماس بگیرید تا دسترسی‌ها فعال شود." />
     }
 </section>
 
 <section class="panel pad panel-spaced">
     <h3>سازمان‌دهی یادگیری</h3>
-    <p>این صفحه فقط ویدیوهای قابل دسترس شما را نمایش می‌دهد.</p>
-    <a class="btn btn-primary" href="/student/videos">رفتن به صفحه ویدیوها</a>
+    <p>این صفحه فقط محتوای قابل دسترس شما را نمایش می‌دهد.</p>
+    <a class="btn btn-primary" href="/student/videos">رفتن به صفحه محتوا</a>
 </section>
 
 @code {
-    private IReadOnlyList<VideoDto> _videos = [];
+    private IReadOnlyList<ContentDto> _items = [];
+    private UserProgressSummaryDto? _summary;
 
     protected override async Task OnInitializedAsync()
     {
@@ -43,6 +64,8 @@
             return;
         }
 
-        _videos = await Videos.GetForUserAsync(CurrentUser.UserId.Value, false);
+        var userId = CurrentUser.UserId.Value;
+        _items = await Contents.GetForUserAsync(userId, false);
+        _summary = await Contents.GetUserProgressSummaryAsync(userId);
     }
 }

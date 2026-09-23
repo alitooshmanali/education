@@ -7,11 +7,12 @@ public interface IApplicationDbContext
 {
     DbSet<User> Users { get; }
     DbSet<Folder> Folders { get; }
-    DbSet<Video> Videos { get; }
+    DbSet<LessonContent> Contents { get; }
+    DbSet<ContentProgress> ContentProgresses { get; }
     DbSet<Permission> Permissions { get; }
     DbSet<UserDevice> UserDevices { get; }
     DbSet<AuthenticationSession> AuthenticationSessions { get; }
-    DbSet<VideoWatchSession> VideoWatchSessions { get; }
     DbSet<AuditLog> AuditLogs { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
