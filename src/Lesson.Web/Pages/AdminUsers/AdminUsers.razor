@@ -46,6 +46,18 @@
                         }
                     </select>
                 </div>
+                @if (_createRole == UserRole.Student)
+                {
+                    <div class="field">
+                        <label>سطح زبانی</label>
+                        <select @bind="_createLevel">
+                            @foreach (var item in Enum.GetValues<LanguageLevel>())
+                            {
+                                <option value="@item">@item</option>
+                            }
+                        </select>
+                    </div>
+                }
             </div>
             <div class="toolbar toolbar--spaced">
                 <AppButton Variant="primary" Type="button" Busy="_isBusy" OnClick="CreateUserAsync">افزودن</AppButton>
@@ -79,6 +91,18 @@
                         <option value="false">غیرفعال</option>
                     </select>
                 </div>
+                @if (_editRole == UserRole.Student)
+                {
+                    <div class="field">
+                        <label>سطح زبانی</label>
+                        <select @bind="_editLevel">
+                            @foreach (var item in Enum.GetValues<LanguageLevel>())
+                            {
+                                <option value="@item">@item</option>
+                            }
+                        </select>
+                    </div>
+                }
             </div>
             <div class="toolbar toolbar--spaced">
                 <AppButton Variant="primary" Type="button" Busy="_isBusy" OnClick="SaveEdit">ذخیره</AppButton>
@@ -133,9 +157,11 @@
     private string _createUsername = string.Empty;
     private string _createPassword = string.Empty;
     private UserRole _createRole = UserRole.Student;
+    private LanguageLevel _createLevel = LanguageLevel.A1;
 
     private User? _editingUser;
     private UserRole _editRole;
+    private LanguageLevel _editLevel = LanguageLevel.A1;
     private string _editActiveString = "true";
 
     private User? _editingPasswordUser;
@@ -148,6 +174,7 @@
     [
         new() { Header = "کاربر", Template = u => (RenderFragment)(b => b.AddContent(0, u.Username)) },
         new() { Header = "نقش", Template = u => (RenderFragment)(b => b.AddContent(0, u.Role.ToString())) },
+        new() { Header = "سطح", Template = u => (RenderFragment)(b => b.AddContent(0, u.Level?.ToString() ?? "—")) },
         new() { Header = "وضعیت", Template = u => (RenderFragment)(b => b.AddContent(0, u.IsActive ? "فعال" : "غیرفعال")) },
         new() { Header = "تاریخ", Template = u => (RenderFragment)(b => b.AddContent(0, u.CreatedAt.ToLocalTime().ToString("g"))) }
     ];
@@ -200,6 +227,7 @@
         _editingPasswordUser = null;
         _showCreate = false;
         _editRole = user.Role;
+        _editLevel = user.Level ?? LanguageLevel.A1;
         _editActiveString = user.IsActive ? "true" : "false";
     }
 
@@ -211,7 +239,10 @@
         }
 
         var editActive = bool.Parse(_editActiveString);
-        var changed = _editingUser.Role != _editRole || _editingUser.IsActive != editActive;
+        var newLevel = _editRole == UserRole.Student ? _editLevel : (LanguageLevel?)null;
+        var changed = _editingUser.Role != _editRole
+            || _editingUser.IsActive != editActive
+            || _editingUser.Level != newLevel;
         if (!changed)
         {
             _editingUser = null;
@@ -230,6 +261,11 @@
             if (_editingUser.IsActive != editActive)
             {
                 await Users.SetActiveAsync(_editingUser.Id, editActive);
+            }
+
+            if (_editRole == UserRole.Student && _editingUser.Level != _editLevel)
+            {
+                await Users.SetLevelAsync(_editingUser.Id, _editLevel);
             }
 
             _statusMessage = "تغییرات کاربر با موفقیت ثبت شد.";
@@ -306,11 +342,13 @@
         {
             _isBusy = true;
             _errorMessage = null;
-            await Users.CreateAsync(_createUsername.Trim(), PasswordHasher.Hash(_createPassword), _createRole);
+            var level = _createRole == UserRole.Student ? _createLevel : (LanguageLevel?)null;
+            await Users.CreateAsync(_createUsername.Trim(), PasswordHasher.Hash(_createPassword), _createRole, level);
             _statusMessage = "کاربر جدید ایجاد شد.";
             _createUsername = string.Empty;
             _createPassword = string.Empty;
             _createRole = UserRole.Student;
+            _createLevel = LanguageLevel.A1;
             _showCreate = false;
             await ReloadAsync();
         }

@@ -68,9 +68,23 @@
                     <option value="">انتخاب گروه</option>
                     @foreach (var folder in _folderOptions)
                     {
-                        <option value="@folder.Id">@folder.RelativePath</option>
+                        <option value="@folder.Id">[@folder.Level] @folder.RelativePath</option>
                     }
                 </select>
+            </div>
+
+            <div class="field">
+                <label>سطح‌های نمایش (حداقل یکی)</label>
+                <div class="level-checks">
+                    @foreach (var lv in Enum.GetValues<LanguageLevel>())
+                    {
+                        <label class="check-inline">
+                            <input type="checkbox" checked="@_uploadLevels.Contains(lv)"
+                                   @onchange="e => ToggleUploadLevel(lv, (bool)(e.Value ?? false))" disabled="@_isBusy" />
+                            @lv
+                        </label>
+                    }
+                </div>
             </div>
         </div>
 
@@ -90,7 +104,7 @@
 
         <div class="toolbar">
             <button class="btn btn-primary" type="button" @onclick="UploadAsync"
-                    disabled="@(string.IsNullOrWhiteSpace(_displayName) || _selectedFile is null || string.IsNullOrWhiteSpace(_uploadFolderIdString) || _isBusy)">
+                    disabled="@(string.IsNullOrWhiteSpace(_displayName) || _selectedFile is null || string.IsNullOrWhiteSpace(_uploadFolderIdString) || _uploadLevels.Count == 0 || _isBusy)">
                 بارگذاری
             </button>
             @if (_isBusy)
@@ -150,6 +164,7 @@
     private string _uploadFolderIdString = string.Empty;
     private string _moveFolderIdString = string.Empty;
     private string _displayName = string.Empty;
+    private HashSet<LanguageLevel> _uploadLevels = new();
     private IBrowserFile? _selectedFile;
     private ContentDto? _movingItem;
     private string? _statusMessage;
@@ -175,6 +190,7 @@
             b.CloseElement();
         }) },
         new() { Header = "نوع", Template = v => (RenderFragment)(b => b.AddContent(0, v.Type.ToString())) },
+        new() { Header = "سطح‌ها", Template = v => (RenderFragment)(b => b.AddContent(0, string.Join(", ", v.Levels))) },
         new() { Header = "حجم", Template = v => (RenderFragment)(b => b.AddContent(0, FormatSize(v.FileSize))) }
     ];
 
@@ -194,7 +210,7 @@
     {
         foreach (var n in nodes)
         {
-            yield return new FolderFlat(n.Id, n.RelativePath);
+            yield return new FolderFlat(n.Id, n.RelativePath, n.Level);
             foreach (var c in Flatten(n.Children))
                 yield return c;
         }
@@ -220,9 +236,16 @@
             _displayName = Path.GetFileNameWithoutExtension(_selectedFile.Name);
     }
 
+    private void ToggleUploadLevel(LanguageLevel level, bool selected)
+    {
+        if (selected) _uploadLevels.Add(level);
+        else _uploadLevels.Remove(level);
+    }
+
     private async Task UploadAsync()
     {
         if (_selectedFile is null) { _errorMessage = "فایلی انتخاب نشده است."; return; }
+        if (_uploadLevels.Count == 0) { _errorMessage = "حداقل یک سطح زبانی انتخاب کنید."; return; }
         if (!long.TryParse(_uploadFolderIdString, out var folderId)) { _errorMessage = "گروه مقصد را انتخاب کنید."; return; }
         if (string.IsNullOrWhiteSpace(_displayName)) { _errorMessage = "نام نمایش را وارد کنید."; return; }
         if (_selectedFile.Size > MaxUploadBytes)
@@ -277,7 +300,8 @@
                 _selectedFile.Name,
                 _displayName.Trim(),
                 bufferStream,
-                bufferStream.Length);
+                bufferStream.Length,
+                _uploadLevels.ToList());
 
             var entity = await Contents.UploadAsync(request, ct);
             _uploadedContentId = entity.Id;
@@ -403,5 +427,5 @@
            size > 1024 * 1024 ? $"{size / 1024d / 1024d:0.0} MB" :
            size > 0 ? $"{size / 1024d:0.0} KB" : "0 KB";
 
-    private sealed record FolderFlat(long Id, string RelativePath);
+    private sealed record FolderFlat(long Id, string RelativePath, LanguageLevel Level);
 }

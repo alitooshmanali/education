@@ -1,0 +1,221 @@
+@page "/student/quizzes/{QuizId:long}"
+@attribute [Authorize(Roles = nameof(UserRole.Student))]
+@inject IQuizService Quizzes
+@inject ICurrentUserContext CurrentUser
+@inject NavigationManager Nav
+@implements IDisposable
+
+<PageHeader Eyebrow="آزمون" Title="@(_detail?.Title ?? "...")" />
+
+@if (_error is not null)
+{
+    <div class="alert alert-error">@_error</div>
+}
+
+@if (_detail is not null && _phase == Phase.Intro)
+{
+    <section class="panel pad">
+        <div class="quiz-intro">
+            @if (!string.IsNullOrWhiteSpace(_detail.IntroText))
+            {
+                <p style="white-space: pre-wrap">@_detail.IntroText</p>
+            }
+            <p class="hint">مدت: @_detail.TimeLimitMinutes دقیقه · نمره کل: @_detail.TotalScore · تعداد سؤالات: @_detail.Questions.Count</p>
+            <button class="btn btn-primary" type="button" @onclick="StartQuiz" disabled="@_busy">
+                من آماده آزمون هستم
+            </button>
+        </div>
+    </section>
+}
+
+@if (_phase == Phase.Taking && _detail is not null && _attempt is not null)
+{
+    <section class="panel pad">
+        <div class="toolbar">
+            <strong class="quiz-timer @(_remainingSeconds <= 60 ? "is-urgent" : "")">
+                ⏱ @_remainingDisplay
+            </strong>
+            <span>نمره تا اینجا: @_attempt.ScoreEarned</span>
+        </div>
+
+        @{
+            var q = _detail.Questions[_currentIndex];
+            var answered = _attempt.AnsweredQuestionIds.Contains(q.Id);
+            var answerResult = _attempt.Answers.FirstOrDefault(a => a.QuestionId == q.Id);
+        }
+
+        <div class="quiz-question">
+            <h3>سؤال @(_currentIndex + 1) از @_detail.Questions.Count</h3>
+            <p style="white-space: pre-wrap">@q.Text</p>
+            <p class="hint">نمره این سؤال: @q.Score</p>
+
+            <div class="quiz-options">
+                @foreach (var opt in q.Options)
+                {
+                    var cls = "quiz-option";
+                    if (answered && answerResult is not null)
+                    {
+                        if (opt.Id == answerResult.SelectedOptionId)
+                            cls += answerResult.IsCorrect ? " is-correct" : " is-wrong";
+                    }
+                    <button class="@cls" type="button"
+                            disabled="@(answered || _busy)"
+                            @onclick="() => Answer(q.Id, opt.Id)">
+                        @opt.Text
+                    </button>
+                }
+            </div>
+
+            @if (answered && answerResult is not null)
+            {
+                <div class="alert @(answerResult.IsCorrect ? "alert-success" : "alert-error")">
+                    @(answerResult.IsCorrect ? $"درست! +{answerResult.ScoreEarned}" : "نادرست")
+                </div>
+            }
+        </div>
+
+        <div class="toolbar toolbar--spaced">
+            <button class="btn btn-outline" type="button" disabled="@(_currentIndex == 0)" @onclick="Prev">قبلی</button>
+            @if (_currentIndex < _detail.Questions.Count - 1)
+            {
+                <button class="btn btn-secondary" type="button" @onclick="Next">بعدی</button>
+            }
+            else
+            {
+                <button class="btn btn-primary" type="button" @onclick="Finish" disabled="@_busy">پایان آزمون</button>
+            }
+        </div>
+    </section>
+}
+
+@if (_phase == Phase.Done && _attempt is not null && _detail is not null)
+{
+    <section class="panel pad" style="text-align:center">
+        <h2>نتیجه آزمون</h2>
+        <div class="stat-card__value" style="font-size:48px;margin:16px 0">@_attempt.ScoreEarned / @_detail.TotalScore</div>
+        <p>زمان صرف‌شده: @_attempt.Answers.Count سؤال پاسخ‌داده‌شده</p>
+        <a class="btn btn-primary" href="/student/quizzes">بازگشت به لیست آزمون‌ها</a>
+        <a class="btn btn-ghost" href="/student">داشبورد</a>
+    </section>
+}
+
+@code {
+    [Parameter] public long QuizId { get; set; }
+
+    private enum Phase { Intro, Taking, Done }
+    private Phase _phase = Phase.Intro;
+    private QuizDetailDto? _detail;
+    private QuizAttemptStateDto? _attempt;
+    private int _currentIndex;
+    private int _remainingSeconds;
+    private string _remainingDisplay = "";
+    private bool _busy;
+    private string? _error;
+    private System.Threading.Timer? _timer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (CurrentUser.UserId is null) { Nav.NavigateTo("/login", true); return; }
+        _detail = await Quizzes.GetDetailAsync(QuizId, includeCorrectAnswers: false);
+        if (_detail is null) { _error = "آزمون یافت نشد."; return; }
+
+        var active = await Quizzes.GetActiveAttemptAsync(CurrentUser.UserId.Value, QuizId);
+        if (active is not null && !active.IsCompleted)
+        {
+            _attempt = active;
+            _phase = Phase.Taking;
+            _remainingSeconds = active.RemainingSeconds;
+            StartTimer();
+        }
+    }
+
+    private async Task StartQuiz()
+    {
+        try
+        {
+            _busy = true;
+            _error = null;
+            _attempt = await Quizzes.StartAttemptAsync(CurrentUser.UserId!.Value, QuizId);
+            _phase = Phase.Taking;
+            _remainingSeconds = _attempt.RemainingSeconds;
+            StartTimer();
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private void StartTimer()
+    {
+        _timer?.Dispose();
+        UpdateDisplay();
+        _timer = new System.Threading.Timer(async _ =>
+        {
+            _remainingSeconds = Math.Max(0, _remainingSeconds - 1);
+            UpdateDisplay();
+            if (_remainingSeconds <= 0)
+            {
+                await InvokeAsync(async () =>
+                {
+                    await Finish();
+                    StateHasChanged();
+                });
+                return;
+            }
+            await InvokeAsync(StateHasChanged);
+        }, null, 1000, 1000);
+    }
+
+    private void UpdateDisplay()
+    {
+        var m = _remainingSeconds / 60;
+        var s = _remainingSeconds % 60;
+        _remainingDisplay = $"{m:00}:{s:00}";
+    }
+
+    private async Task Answer(long questionId, long optionId)
+    {
+        if (_attempt is null || _busy) return;
+        try
+        {
+            _busy = true;
+            var result = await Quizzes.SubmitAnswerAsync(CurrentUser.UserId!.Value, _attempt.AttemptId, questionId, optionId);
+            _attempt = await Quizzes.GetActiveAttemptAsync(CurrentUser.UserId.Value, QuizId)
+                       ?? await Quizzes.CompleteAttemptAsync(CurrentUser.UserId.Value, _attempt.AttemptId);
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private void Next()
+    {
+        if (_detail is null) return;
+        if (_currentIndex < _detail.Questions.Count - 1)
+            _currentIndex++;
+    }
+
+    private void Prev()
+    {
+        if (_currentIndex <= 0 || _detail is null) return;
+        var prevQ = _detail.Questions[_currentIndex - 1];
+        // Can only go back if previous is unanswered
+        if (_attempt is not null && _attempt.AnsweredQuestionIds.Contains(prevQ.Id))
+            return;
+        _currentIndex--;
+    }
+
+    private async Task Finish()
+    {
+        if (_attempt is null) return;
+        try
+        {
+            _busy = true;
+            _timer?.Dispose();
+            _attempt = await Quizzes.CompleteAttemptAsync(CurrentUser.UserId!.Value, _attempt.AttemptId);
+            _phase = Phase.Done;
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
+
+    public void Dispose() => _timer?.Dispose();
+}

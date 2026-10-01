@@ -43,6 +43,9 @@ builder.Services.AddScoped<IDeviceService, DeviceService>();
 builder.Services.AddScoped<Lesson.Infrastructure.Abstractions.IAuthenticationService, Lesson.Infrastructure.Services.AuthenticationService>();
 builder.Services.AddScoped<IContentService, ContentService>();
 builder.Services.AddScoped<IContentStreamingService, ContentStreamingService>();
+builder.Services.AddScoped<IStoryService, StoryService>();
+builder.Services.AddScoped<IQuizService, QuizService>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();

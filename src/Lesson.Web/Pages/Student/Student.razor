@@ -1,39 +1,53 @@
 @page "/student"
 @attribute [Authorize(Roles = nameof(UserRole.Student))]
 @inject IContentService Contents
+@inject IQuizService Quizzes
 @inject ICurrentUserContext CurrentUser
 @inject NavigationManager Nav
 
-<PageHeader Eyebrow="Student" Title="داشبورد" Subtitle="پیشرفت یادگیری شما">
-    <a class="btn btn-ghost" href="/student/videos"><AppIcon Name="video" /> نمایش همه محتوا</a>
+<PageHeader Eyebrow="Student" Title="داشبورد" Subtitle="پیشرفت شما در سطح زبانی">
+    <a class="btn btn-ghost" href="/student/videos"><AppIcon Name="video" /> محتوا</a>
+    <a class="btn btn-secondary" href="/student/quizzes"><AppIcon Name="audit" /> آزمون‌ها</a>
 </PageHeader>
 
 @if (_summary is not null)
 {
-    <section class="grid two-col panel-spaced">
-        <div class="panel pad gauge-card">
-            <h3>پیشرفت ویدیوها</h3>
-            <div class="gauge" style="--pct: @(_summary.VideoProgressPercent)">
-                <span>@_summary.VideoProgressPercent%</span>
-            </div>
-            <p class="gauge-meta">@_summary.CompletedVideos از @_summary.TotalVideos تکمیل شده</p>
+    <section class="panel pad panel-spaced">
+        <h3>پیشرفت کلی سطح</h3>
+        <div class="gauge" style="--pct: @(_summary.OverallProgressPercent)">
+            <span>@_summary.OverallProgressPercent%</span>
         </div>
-        <div class="panel pad gauge-card">
-            <h3>پیشرفت Story / اسناد</h3>
-            <div class="gauge" style="--pct: @(_summary.StoryProgressPercent)">
-                <span>@_summary.StoryProgressPercent%</span>
-            </div>
-            <p class="gauge-meta">@_summary.CompletedStories از @_summary.TotalStories تکمیل شده</p>
-        </div>
+        <p class="gauge-meta">@_summary.OverallProgressPercent٪ از مسیر سطح شما طی شده — @(Math.Round(100 - _summary.OverallProgressPercent, 1))٪ باقی‌مانده</p>
+    </section>
+
+    <section class="grid stats panel-spaced">
+        <article class="stat-card">
+            <div class="stat-card__label">ویدیو</div>
+            <div class="stat-card__value">@_summary.CompletedVideos / @_summary.TotalVideos</div>
+            <div class="stat-card__trend">@_summary.VideoProgressPercent%</div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-card__label">داستان</div>
+            <div class="stat-card__value">@_summary.CompletedStories / @_summary.TotalStories</div>
+            <div class="stat-card__trend">@_summary.StoryProgressPercent%</div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-card__label">آزمون</div>
+            <div class="stat-card__value">@_summary.CompletedQuizzes / @_summary.TotalQuizzes</div>
+            <div class="stat-card__trend">@_summary.QuizProgressPercent%</div>
+        </article>
     </section>
 }
 
 <section class="panel pad panel-spaced">
-    <h3>آخرین درس‌ها</h3>
+    <div class="toolbar">
+        <h3>آخرین محتواها</h3>
+        <a class="btn btn-ghost" href="/student/videos">همه</a>
+    </div>
 
     @if (_items.Any())
     {
-        <div class="cards cards-spaced">
+        <div class="video-grid">
             @foreach (var item in _items.Take(6))
             {
                 <VideoCard Content="item" Href="@($"/student/videos/{item.Id}")" />
@@ -42,18 +56,40 @@
     }
     else
     {
-        <EmptyState Icon="video" Title="محتوایی یافت نشد" Message="در حال حاضر محتوایی برای شما در دسترس نیست. با ادمین تماس بگیرید تا دسترسی‌ها فعال شود." />
+        <EmptyState Icon="video" Title="محتوایی یافت نشد" Message="هنوز محتوایی برای سطح شما تعریف نشده است." />
     }
 </section>
 
-<section class="panel pad panel-spaced">
-    <h3>سازمان‌دهی یادگیری</h3>
-    <p>این صفحه فقط محتوای قابل دسترس شما را نمایش می‌دهد.</p>
-    <a class="btn btn-primary" href="/student/videos">رفتن به صفحه محتوا</a>
-</section>
+@if (_quizzes.Any())
+{
+    <section class="panel pad panel-spaced">
+        <div class="toolbar">
+            <h3>آزمون‌های شما</h3>
+            <a class="btn btn-ghost" href="/student/quizzes">همه</a>
+        </div>
+        <div class="grid two-col">
+            @foreach (var q in _quizzes.Take(4))
+            {
+                <div class="panel pad">
+                    <strong>@q.Title</strong>
+                    <p class="hint">@q.Type · @q.TimeLimitMinutes دقیقه · نمره کل @q.TotalScore</p>
+                    @if (q.HasAttempted && !q.CanRetake)
+                    {
+                        <StatusBadge Text="@($"نمره: {q.LastScore}")" Tone="success" />
+                    }
+                    else
+                    {
+                        <a class="btn btn-primary btn-compact" href="/student/quizzes/@q.Id">شروع آزمون</a>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+}
 
 @code {
     private IReadOnlyList<ContentDto> _items = [];
+    private IReadOnlyList<QuizListItemDto> _quizzes = [];
     private UserProgressSummaryDto? _summary;
 
     protected override async Task OnInitializedAsync()
@@ -67,5 +103,6 @@
         var userId = CurrentUser.UserId.Value;
         _items = await Contents.GetForUserAsync(userId, false);
         _summary = await Contents.GetUserProgressSummaryAsync(userId);
+        _quizzes = await Quizzes.GetForStudentAsync(userId);
     }
 }

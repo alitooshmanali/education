@@ -49,10 +49,19 @@
                 <input @bind="_createName" placeholder="نام پوشه" />
             </div>
             <div class="field">
+                <label>سطح زبانی</label>
+                <select @bind="_createLevel">
+                    @foreach (var lv in Enum.GetValues<LanguageLevel>())
+                    {
+                        <option value="@lv">@lv</option>
+                    }
+                </select>
+            </div>
+            <div class="field">
                 <label>والد</label>
                 <select @bind="_createParentId">
                     <option value="">ریشه</option>
-                    @foreach (var item in _flatFolders)
+                    @foreach (var item in _flatFolders.Where(f => f.Level == _createLevel))
                     {
                         <option value="@item.Id">@item.RelativePath</option>
                     }
@@ -93,6 +102,7 @@
     private string _selectedName = string.Empty;
     private string _renameValue = string.Empty;
     private string _createName = string.Empty;
+    private LanguageLevel _createLevel = LanguageLevel.A1;
     private string _createParentId = string.Empty;
     private bool _isBusy;
     private string _statusMessage = string.Empty;
@@ -151,7 +161,7 @@
         {
             _isBusy = true;
             _errorMessage = string.Empty;
-            await Folders.CreateAsync(_createName.Trim(), parent);
+            await Folders.CreateAsync(_createName.Trim(), parent, _createLevel);
             _statusMessage = "پوشه با موفقیت ایجاد شد.";
             _createName = string.Empty;
             _createParentId = string.Empty;

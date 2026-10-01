@@ -1,7 +1,19 @@
-<article class="stat-card tone-@Tone">
-    <div class="stat-label">@Label</div>
-    <div class="stat-value">@Value</div>
-    <div class="stat-hint">@Hint</div>
+<article class="stat-card">
+    @if (!string.IsNullOrWhiteSpace(IconTone))
+    {
+        <div class="stat-card__icon is-@IconTone">
+            @if (!string.IsNullOrWhiteSpace(Icon))
+            {
+                <AppIcon Name="@Icon" />
+            }
+        </div>
+    }
+    <div class="stat-card__label">@Label</div>
+    <div class="stat-card__value">@Value</div>
+    @if (!string.IsNullOrWhiteSpace(Hint))
+    {
+        <div class="stat-card__trend @(TrendDown ? "is-down" : "")">@Hint</div>
+    }
 </article>
 
 @code {
@@ -9,4 +21,16 @@
     [Parameter] public string Value { get; set; } = "";
     [Parameter] public string Hint { get; set; } = "";
     [Parameter] public string Tone { get; set; } = "neutral";
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? IconTone { get; set; }
+    [Parameter] public bool TrendDown { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        // Backward compat: map old Tone to icon tone if IconTone not set
+        if (string.IsNullOrWhiteSpace(IconTone) && !string.IsNullOrWhiteSpace(Tone) && Tone != "neutral")
+        {
+            IconTone = Tone;
+        }
+    }
 }

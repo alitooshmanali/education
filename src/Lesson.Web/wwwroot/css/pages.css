@@ -1,27 +1,42 @@
+/* =========================================================
+   Page-specific styles — Auth · Landing · Dashboard pages
+   ========================================================= */
+
+/* ---- Landing ---- */
 .landing-landing {
     min-height: 100vh;
     display: grid;
     place-items: center;
     padding: 24px;
+    background: var(--color-background);
 }
 
 .landing-copy {
     text-align: center;
     max-width: 680px;
     margin-inline: auto;
-    border: 1px solid var(--border);
+    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    background: var(--surface);
-    padding: 24px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-card);
+    padding: 40px 32px;
 }
 
-.landing-copy h1 { margin: 0; font-size: 28px; }
-.landing-copy p { margin: 8px 0 16px; color: var(--muted); }
+.landing-copy h1 {
+    margin: 0;
+    font-size: 28px;
+}
 
+.landing-copy p {
+    margin: 12px 0 24px;
+    color: var(--color-text-secondary);
+}
+
+/* ---- Auth ---- */
 .auth-shell {
     min-height: 100vh;
     display: grid;
-    background: var(--background);
+    background: var(--color-background);
 }
 
 .auth-page {
@@ -31,22 +46,33 @@
     width: min(980px, 100%);
     margin: 0 auto;
     align-items: center;
-    gap: 24px;
-    padding: 24px;
+    gap: 32px;
+    padding: 32px 24px;
 }
 
 .auth-hero {
-    border-radius: var(--radius-lg);
-    background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+    border-radius: var(--radius-xl);
+    background: linear-gradient(135deg, #151B3D 0%, #1E1B4B 50%, #312E81 100%);
     color: #fff;
-    padding: 26px;
+    padding: 36px 32px;
     display: grid;
-    gap: 10px;
-    min-height: 260px;
+    gap: 14px;
+    min-height: 320px;
+    align-content: center;
 }
 
-.auth-hero h1 { margin: 0; font-size: 24px; }
-.auth-hero p { margin: 0; color: #cbd5e1; }
+.auth-hero h1 {
+    margin: 0;
+    font-size: 26px;
+    color: #fff;
+}
+
+.auth-hero p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 15px;
+    line-height: 1.7;
+}
 
 .auth-card-wrap {
     display: grid;
@@ -55,78 +81,30 @@
 
 .auth-card {
     width: min(100%, 420px);
-    border: 1px solid var(--border);
-    background: var(--surface);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
     border-radius: var(--radius-lg);
-    padding: 20px;
+    box-shadow: var(--shadow-card);
+    padding: 28px 24px;
 }
 
-.auth-card h2 { margin: 0 0 6px; font-size: 22px; }
-.auth-card .sub { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
-
-.centered-shell {
-    padding: 20px;
+.auth-card h2 {
+    margin: 0 0 6px;
+    font-size: 22px;
 }
 
-.panel-stack {
-    display: grid;
-    gap: 12px;
-}
-
-.panel-spaced {
-    margin-top: 10px;
-}
-
-.panel-narrow {
-    max-width: 640px;
-}
-
-.panel-flex {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.panel-inline-list {
-    display: grid;
-    gap: 8px;
-}
-
-.toolbar--flow {
-    flex-wrap: wrap;
-}
-
-.panel-links .toolbar--flow {
-    align-items: stretch;
-    gap: 8px;
-}
-
-.toolbar--spaced {
-    margin-top: 10px;
-    justify-content: flex-start;
-    gap: 10px;
-}
-
-.toolbar--compact {
-    margin-top: 8px;
-    gap: 8px;
-}
-
-.field--narrow {
-    max-width: 360px;
-}
-
-.content-grid--stacked {
-    gap: 12px;
-}
-
-.cards-spaced {
-    grid-template-columns: repeat(1, minmax(0, 1fr));
+.auth-card .sub {
+    margin: 0 0 20px;
+    color: var(--color-text-secondary);
+    font-size: 14px;
 }
 
 .auth-shell h1,
-.auth-card h2 { margin-top: 0; }
+.auth-card h2 {
+    margin-top: 0;
+}
 
+/* Login password */
 .login-password-wrap {
     position: relative;
     display: block;
@@ -134,116 +112,82 @@
 
 .login-password-wrap input {
     width: 100%;
-    height: 42px;
-    padding-inline-end: 44px;
+    height: 44px;
+    padding-inline-end: 48px;
     box-sizing: border-box;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-input);
+    background: var(--color-surface);
+    padding-inline-start: 14px;
 }
 
-.login-toggle-password {
+.login-password-wrap input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-focus);
+}
+
+.login-password-toggle {
     position: absolute;
-    inset-inline-end: 6px;
-    top: 0;
-    bottom: 0;
-    margin-block: auto;
-    width: 34px;
-    height: 34px;
+    inset-inline-end: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
     border: 0;
     background: transparent;
-    color: var(--muted);
     cursor: pointer;
+    color: var(--color-text-muted);
     display: grid;
     place-items: center;
-    border-radius: 6px;
-    padding: 0;
-    z-index: 2;
-    line-height: 0;
-    transform: none;
+    border-radius: var(--radius-sm);
 }
 
-.login-toggle-password:hover {
-    background: var(--surface-elevated);
-    color: var(--text);
+.login-password-toggle:hover {
+    color: var(--color-text);
+    background: var(--color-surface-elevated);
 }
 
-.login-toggle-password .app-icon {
-    width: 18px;
-    height: 18px;
-    min-width: 18px;
-    min-height: 18px;
+/* ---- Centered shell ---- */
+.centered-shell {
+    padding: 24px;
 }
 
-.login-toggle-password .app-icon svg {
-    width: 18px;
-    height: 18px;
+/* ---- Panel helpers used by pages ---- */
+.panel-inline-list {
+    display: grid;
+    gap: 8px;
+}
+
+.panel-links .toolbar--flow {
+    align-items: stretch;
+    gap: 8px;
+}
+
+/* ---- Video player page ---- */
+.video-player-wrap {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: #0F172A;
+    aspect-ratio: 16 / 9;
+}
+
+.video-player-wrap video {
+    width: 100%;
+    height: 100%;
     display: block;
 }
 
-/*.login-password-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
+.video-meta {
+    margin-top: 16px;
 }
 
-.login-password-wrap input {
-    width: 100%;
-    padding-inline-end: 44px;
+.video-meta h2 {
+    font-size: 20px;
+    margin-bottom: 6px;
 }
 
-.login-toggle-password {
-    position: absolute;
-    inset-inline-end: 6px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 34px;
-    height: 34px;
-    border: 0;
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    border-radius: 6px;
-    padding: 0;
-    z-index: 2;
-}
-
-.login-toggle-password:hover {
-    background: var(--surface-elevated);
-    color: var(--text);
-}
-
-.login-toggle-password .app-icon {
-    width: 18px;
-    height: 18px;
-}
-
-.login-toggle-password {
-    position: absolute;
-    inset-inline-end: 8px;
-    inset-block-start: 32px;
-    border: 0;
-    background: transparent;
-    color: var(--muted);
-}*/
-
-.video-grid {
-    display: grid;
-    gap: 12px;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.admin-guide {
-    margin: 0;
-    padding-inline-start: 18px;
-    display: grid;
-    gap: 6px;
-}
-
-.admin-guide li {
-    color: var(--muted);
+.video-meta p {
+    color: var(--color-text-secondary);
     font-size: 14px;
-    line-height: 1.6;
 }
-
-.content-grid,
-.error-grid { display: block; }

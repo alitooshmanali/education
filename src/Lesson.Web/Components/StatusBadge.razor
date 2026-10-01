@@ -1,6 +1,15 @@
-<span class="status-badge tone-@Tone">@Text</span>
+<span class="status-badge @ToneClass">@Text</span>
 
 @code {
     [Parameter] public string Text { get; set; } = "";
     [Parameter] public string Tone { get; set; } = "neutral";
+
+    private string ToneClass => Tone?.ToLowerInvariant() switch
+    {
+        "success" or "ok" or "active" => "success",
+        "warning" or "pending" => "warning",
+        "error" or "danger" or "failed" => "error",
+        "info" => "info",
+        _ => "neutral"
+    };
 }

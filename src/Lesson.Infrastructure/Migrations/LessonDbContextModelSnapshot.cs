@@ -111,6 +111,79 @@ namespace Lesson.Infrastructure.Migrations
                     b.ToTable("AuthenticationSessions", (string)null);
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.ContentFeedback", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<long?>("LessonContentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("QuizId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("StoryId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TargetId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("TargetType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonContentId");
+
+                    b.HasIndex("QuizId");
+
+                    b.HasIndex("StoryId");
+
+                    b.HasIndex("TargetType", "TargetId");
+
+                    b.HasIndex("UserId", "TargetType", "TargetId")
+                        .IsUnique();
+
+                    b.ToTable("ContentFeedbacks", (string)null);
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.ContentLevel", b =>
+                {
+                    b.Property<long>("ContentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.HasKey("ContentId", "Level");
+
+                    b.HasIndex("Level");
+
+                    b.ToTable("ContentLevels", (string)null);
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.ContentProgress", b =>
                 {
                     b.Property<long>("Id")
@@ -119,7 +192,7 @@ namespace Lesson.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("ContentId")
+                    b.Property<long?>("ContentId")
                         .HasColumnType("bigint");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -143,6 +216,9 @@ namespace Lesson.Infrastructure.Migrations
                     b.Property<double>("ProgressPercent")
                         .HasColumnType("float");
 
+                    b.Property<long?>("StoryId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -153,8 +229,11 @@ namespace Lesson.Infrastructure.Migrations
 
                     b.HasIndex("ContentId");
 
-                    b.HasIndex("UserId", "ContentId")
-                        .IsUnique();
+                    b.HasIndex("StoryId");
+
+                    b.HasIndex("UserId", "ContentId");
+
+                    b.HasIndex("UserId", "StoryId");
 
                     b.ToTable("ContentProgresses", (string)null);
                 });
@@ -173,6 +252,9 @@ namespace Lesson.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -190,6 +272,8 @@ namespace Lesson.Infrastructure.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Level");
 
                     b.HasIndex("ParentFolderId");
 
@@ -304,6 +388,350 @@ namespace Lesson.Infrastructure.Migrations
                     b.ToTable("Permissions", (string)null);
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.Quiz", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("FolderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("IntroImageContentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("IntroText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsLevelWide")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TimeLimitMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<decimal>("TotalScore")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FolderId");
+
+                    b.HasIndex("IntroImageContentId");
+
+                    b.HasIndex("Level");
+
+                    b.HasIndex("Type");
+
+                    b.ToTable("Quizzes", (string)null);
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.QuizAnswer", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("AnsweredAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("AttemptId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("QuestionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("ScoreEarned")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<long?>("SelectedOptionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionId");
+
+                    b.HasIndex("SelectedOptionId");
+
+                    b.HasIndex("AttemptId", "QuestionId")
+                        .IsUnique();
+
+                    b.ToTable("QuizAnswers", (string)null);
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.QuizAssignment", b =>
+                {
+                    b.Property<long>("QuizId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("QuizId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("QuizAssignments", (string)null);
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.QuizAttempt", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("QuizId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("ScoreEarned")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("TimeSpentSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("QuizId", "UserId");
+
+                    b.ToTable("QuizAttempts", (string)null);
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.QuizOption", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsCorrect")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("QuestionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionId", "SortOrder");
+
+                    b.ToTable("QuizOptions", (string)null);
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.QuizQuestion", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("ImageContentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("QuizId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("Score")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImageContentId");
+
+                    b.HasIndex("QuizId", "SortOrder");
+
+                    b.ToTable("QuizQuestions", (string)null);
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.QuizRetakeGrant", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("GrantedByUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("QuizId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GrantedByUserId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("QuizId", "UserId", "IsUsed");
+
+                    b.ToTable("QuizRetakeGrants", (string)null);
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.Story", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long>("FolderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("ImageContentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("VoiceContentId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FolderId");
+
+                    b.HasIndex("ImageContentId");
+
+                    b.HasIndex("Level");
+
+                    b.HasIndex("VoiceContentId");
+
+                    b.ToTable("Stories", (string)null);
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.User", b =>
                 {
                     b.Property<long>("Id")
@@ -317,6 +745,9 @@ namespace Lesson.Infrastructure.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
+
+                    b.Property<int?>("Level")
+                        .HasColumnType("int");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -427,13 +858,51 @@ namespace Lesson.Infrastructure.Migrations
                     b.Navigation("UserDevice");
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.ContentFeedback", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.LessonContent", null)
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("LessonContentId");
+
+                    b.HasOne("Lesson.Domain.Entities.Quiz", null)
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("QuizId");
+
+                    b.HasOne("Lesson.Domain.Entities.Story", null)
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("StoryId");
+
+                    b.HasOne("Lesson.Domain.Entities.User", "User")
+                        .WithMany("Feedbacks")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.ContentLevel", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.LessonContent", "Content")
+                        .WithMany("Levels")
+                        .HasForeignKey("ContentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Content");
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.ContentProgress", b =>
                 {
                     b.HasOne("Lesson.Domain.Entities.LessonContent", "Content")
                         .WithMany("ProgressRecords")
                         .HasForeignKey("ContentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Lesson.Domain.Entities.Story", "Story")
+                        .WithMany("ProgressRecords")
+                        .HasForeignKey("StoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Lesson.Domain.Entities.User", "User")
                         .WithMany("ContentProgresses")
@@ -442,6 +911,8 @@ namespace Lesson.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Content");
+
+                    b.Navigation("Story");
 
                     b.Navigation("User");
                 });
@@ -492,6 +963,168 @@ namespace Lesson.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.Quiz", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.Folder", "Folder")
+                        .WithMany("Quizzes")
+                        .HasForeignKey("FolderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Lesson.Domain.Entities.LessonContent", "IntroImageContent")
+                        .WithMany()
+                        .HasForeignKey("IntroImageContentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Folder");
+
+                    b.Navigation("IntroImageContent");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.QuizAnswer", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.QuizAttempt", "Attempt")
+                        .WithMany("Answers")
+                        .HasForeignKey("AttemptId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Lesson.Domain.Entities.QuizQuestion", "Question")
+                        .WithMany("Answers")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lesson.Domain.Entities.QuizOption", "SelectedOption")
+                        .WithMany()
+                        .HasForeignKey("SelectedOptionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Attempt");
+
+                    b.Navigation("Question");
+
+                    b.Navigation("SelectedOption");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.QuizAssignment", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.Quiz", "Quiz")
+                        .WithMany("Assignments")
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Lesson.Domain.Entities.User", "User")
+                        .WithMany("QuizAssignments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quiz");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.QuizAttempt", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.Quiz", "Quiz")
+                        .WithMany("Attempts")
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lesson.Domain.Entities.User", "User")
+                        .WithMany("QuizAttempts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Quiz");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.QuizOption", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.QuizQuestion", "Question")
+                        .WithMany("Options")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.QuizQuestion", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.LessonContent", "ImageContent")
+                        .WithMany()
+                        .HasForeignKey("ImageContentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Lesson.Domain.Entities.Quiz", "Quiz")
+                        .WithMany("Questions")
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ImageContent");
+
+                    b.Navigation("Quiz");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.QuizRetakeGrant", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.User", "GrantedByUser")
+                        .WithMany()
+                        .HasForeignKey("GrantedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lesson.Domain.Entities.Quiz", "Quiz")
+                        .WithMany("RetakeGrants")
+                        .HasForeignKey("QuizId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Lesson.Domain.Entities.User", "User")
+                        .WithMany("QuizRetakeGrants")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GrantedByUser");
+
+                    b.Navigation("Quiz");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.Story", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.Folder", "Folder")
+                        .WithMany("Stories")
+                        .HasForeignKey("FolderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Lesson.Domain.Entities.LessonContent", "ImageContent")
+                        .WithMany()
+                        .HasForeignKey("ImageContentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Lesson.Domain.Entities.LessonContent", "VoiceContent")
+                        .WithMany()
+                        .HasForeignKey("VoiceContentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Folder");
+
+                    b.Navigation("ImageContent");
+
+                    b.Navigation("VoiceContent");
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.UserDevice", b =>
                 {
                     b.HasOne("Lesson.Domain.Entities.User", "User")
@@ -510,10 +1143,50 @@ namespace Lesson.Infrastructure.Migrations
                     b.Navigation("Contents");
 
                     b.Navigation("Permissions");
+
+                    b.Navigation("Quizzes");
+
+                    b.Navigation("Stories");
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.LessonContent", b =>
                 {
+                    b.Navigation("Feedbacks");
+
+                    b.Navigation("Levels");
+
+                    b.Navigation("ProgressRecords");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.Quiz", b =>
+                {
+                    b.Navigation("Assignments");
+
+                    b.Navigation("Attempts");
+
+                    b.Navigation("Feedbacks");
+
+                    b.Navigation("Questions");
+
+                    b.Navigation("RetakeGrants");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.QuizAttempt", b =>
+                {
+                    b.Navigation("Answers");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.QuizQuestion", b =>
+                {
+                    b.Navigation("Answers");
+
+                    b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.Story", b =>
+                {
+                    b.Navigation("Feedbacks");
+
                     b.Navigation("ProgressRecords");
                 });
 
@@ -527,7 +1200,15 @@ namespace Lesson.Infrastructure.Migrations
 
                     b.Navigation("Devices");
 
+                    b.Navigation("Feedbacks");
+
                     b.Navigation("Permissions");
+
+                    b.Navigation("QuizAssignments");
+
+                    b.Navigation("QuizAttempts");
+
+                    b.Navigation("QuizRetakeGrants");
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.UserDevice", b =>

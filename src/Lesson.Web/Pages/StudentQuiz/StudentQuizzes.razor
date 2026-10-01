@@ -1,0 +1,42 @@
+@page "/student/quizzes"
+@attribute [Authorize(Roles = nameof(UserRole.Student))]
+@inject IQuizService Quizzes
+@inject ICurrentUserContext CurrentUser
+@inject NavigationManager Nav
+
+<PageHeader Eyebrow="Student" Title="آزمون‌ها" Subtitle="آزمون‌های سطح شما" />
+
+@if (_items.Any())
+{
+    <div class="grid two-col">
+        @foreach (var q in _items)
+        {
+            <div class="panel pad">
+                <h3>@q.Title</h3>
+                <p class="hint">@q.Type · @q.Level · @q.TimeLimitMinutes دقیقه · @q.QuestionCount سؤال · نمره @q.TotalScore</p>
+                @if (q.HasAttempted && !q.CanRetake)
+                {
+                    <StatusBadge Text="@($"انجام شده — نمره {q.LastScore}")" Tone="success" />
+                }
+                else if (q.CanRetake)
+                {
+                    <a class="btn btn-primary" href="/student/quizzes/@q.Id">@(q.HasAttempted ? "شرکت مجدد" : "شروع آزمون")</a>
+                }
+            </div>
+        }
+    </div>
+}
+else
+{
+    <EmptyState Icon="audit" Title="آزمونی نیست" Message="برای سطح شما آزمونی تعریف نشده است." />
+}
+
+@code {
+    private IReadOnlyList<QuizListItemDto> _items = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (CurrentUser.UserId is null) { Nav.NavigateTo("/login", true); return; }
+        _items = await Quizzes.GetForStudentAsync(CurrentUser.UserId.Value);
+    }
+}

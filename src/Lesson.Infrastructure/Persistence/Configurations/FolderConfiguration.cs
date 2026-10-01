@@ -12,7 +12,12 @@ public sealed class FolderConfiguration : IEntityTypeConfiguration<Folder>
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Name).HasMaxLength(200).IsRequired();
         builder.Property(x => x.RelativePath).HasMaxLength(1000).IsRequired();
+        builder.Property(x => x.Level).HasConversion<int>().IsRequired();
         builder.HasIndex(x => x.ParentFolderId);
-        builder.HasOne(x => x.ParentFolder).WithMany(x => x.ChildFolders).HasForeignKey(x => x.ParentFolderId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasIndex(x => x.Level);
+        builder.HasOne(x => x.ParentFolder)
+            .WithMany(x => x.ChildFolders)
+            .HasForeignKey(x => x.ParentFolderId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

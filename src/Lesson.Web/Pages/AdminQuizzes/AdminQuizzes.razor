@@ -1,0 +1,239 @@
+@page "/admin/quizzes"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject IQuizService Quizzes
+@inject IUserService Users
+@inject ICurrentUserContext CurrentUser
+
+<PageHeader Eyebrow="Admin" Title="مدیریت آزمون‌ها" Subtitle="طراحی، گزارش و مجوز شرکت مجدد" />
+
+<section class="grid two-col">
+    <section class="panel pad">
+        <div class="toolbar">
+            <h3>فهرست آزمون‌ها</h3>
+            <button class="btn btn-primary" type="button" @onclick="() => _showCreate = true">+ آزمون جدید</button>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_status))
+        {
+            <div class="alert alert-success">@_status</div>
+        }
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <div class="alert alert-error">@_error</div>
+        }
+
+        <DataTable TItem="QuizListItemDto" Items="_items" Columns="_columns">
+            <ActionsTemplate Context="item">
+                <button class="btn btn-ghost" type="button" @onclick="() => LoadReports(item.Id)">گزارش</button>
+                <button class="btn btn-danger" type="button" @onclick="() => DeleteQuiz(item.Id)">حذف</button>
+            </ActionsTemplate>
+        </DataTable>
+    </section>
+
+    <section class="panel pad">
+        @if (_showCreate)
+        {
+            <h3>آزمون جدید</h3>
+            <div class="form-grid">
+                <div class="field">
+                    <label>عنوان</label>
+                    <input @bind="_title" />
+                </div>
+                <div class="field">
+                    <label>متن مقدمه (همراه تصویر اختیاری)</label>
+                    <textarea @bind="_intro" rows="3"></textarea>
+                </div>
+                <div class="field">
+                    <label>نوع</label>
+                    <select @bind="_type">
+                        <option value="@QuizType.General">General</option>
+                        <option value="@QuizType.Grammar">Grammar</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>سطح</label>
+                    <select @bind="_level">
+                        @foreach (var lv in Enum.GetValues<LanguageLevel>())
+                        {
+                            <option value="@lv">@lv</option>
+                        }
+                    </select>
+                </div>
+                <div class="field">
+                    <label>مدت (دقیقه)</label>
+                    <input type="number" @bind="_minutes" min="1" />
+                </div>
+                <div class="field">
+                    <label>نمره کل</label>
+                    <input type="number" @bind="_totalScore" step="0.5" min="1" />
+                </div>
+            </div>
+
+            <h4>سؤالات</h4>
+            @for (var i = 0; i < _questions.Count; i++)
+            {
+                var qi = i;
+                var q = _questions[qi];
+                <div class="panel pad panel-spaced">
+                    <div class="field">
+                        <label>متن سؤال @(qi + 1)</label>
+                        <input @bind="q.Text" />
+                    </div>
+                    <div class="field">
+                        <label>نمره</label>
+                        <input type="number" @bind="q.Score" step="0.5" />
+                    </div>
+                    @for (var oi = 0; oi < q.Options.Count; oi++)
+                    {
+                        var oidx = oi;
+                        var opt = q.Options[oidx];
+                        <div class="toolbar">
+                            <input @bind="opt.Text" placeholder="گزینه @(oidx + 1)" style="flex:1" />
+                            <label class="check-inline">
+                                <input type="radio" name="correct-@qi" checked="@opt.IsCorrect"
+                                       @onchange="() => SetCorrect(qi, oidx)" /> صحیح
+                            </label>
+                        </div>
+                    }
+                    <button class="btn btn-ghost btn-compact" type="button" @onclick="() => AddOption(qi)">+ گزینه</button>
+                </div>
+            }
+            <div class="toolbar toolbar--spaced">
+                <button class="btn btn-secondary" type="button" @onclick="AddQuestion">+ سؤال</button>
+                <button class="btn btn-primary" type="button" @onclick="SaveQuiz" disabled="@_busy">ذخیره آزمون</button>
+                <button class="btn btn-ghost" type="button" @onclick="() => _showCreate = false">لغو</button>
+            </div>
+        }
+        else if (_reports.Any())
+        {
+            <h3>گزارش آزمون</h3>
+            <DataTable TItem="QuizReportRowDto" Items="_reports" Columns="_reportColumns" />
+        }
+        else
+        {
+            <EmptyState Icon="audit" Title="آزمون" Message="یک آزمون بسازید یا گزارش بگیرید." />
+        }
+    </section>
+</section>
+
+@code {
+    private IReadOnlyList<QuizListItemDto> _items = [];
+    private IReadOnlyList<QuizReportRowDto> _reports = [];
+    private bool _showCreate;
+    private bool _busy;
+    private string? _status;
+    private string? _error;
+
+    private string _title = "";
+    private string _intro = "";
+    private QuizType _type = QuizType.General;
+    private LanguageLevel _level = LanguageLevel.A1;
+    private int _minutes = 10;
+    private decimal _totalScore = 20;
+    private List<QDraft> _questions = new();
+
+    private readonly IReadOnlyList<TableColumn<QuizListItemDto>> _columns =
+    [
+        new() { Header = "عنوان", Template = q => (RenderFragment)(b => b.AddContent(0, q.Title)) },
+        new() { Header = "نوع", Template = q => (RenderFragment)(b => b.AddContent(0, q.Type.ToString())) },
+        new() { Header = "سطح", Template = q => (RenderFragment)(b => b.AddContent(0, q.Level.ToString())) },
+        new() { Header = "زمان", Template = q => (RenderFragment)(b => b.AddContent(0, $"{q.TimeLimitMinutes} د")) },
+        new() { Header = "سؤالات", Template = q => (RenderFragment)(b => b.AddContent(0, q.QuestionCount)) },
+    ];
+
+    private readonly IReadOnlyList<TableColumn<QuizReportRowDto>> _reportColumns =
+    [
+        new() { Header = "کاربر", Template = r => (RenderFragment)(b => b.AddContent(0, r.Username)) },
+        new() { Header = "نمره", Template = r => (RenderFragment)(b => b.AddContent(0, $"{r.ScoreEarned}/{r.TotalScore}")) },
+        new() { Header = "زمان", Template = r => (RenderFragment)(b => b.AddContent(0, $"{r.TimeSpentSeconds}s")) },
+        new() { Header = "تاریخ", Template = r => (RenderFragment)(b => b.AddContent(0, r.CompletedAt?.ToLocalTime().ToString("g") ?? "—")) },
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await Quizzes.GetAllAsync();
+        if (_questions.Count == 0) AddQuestion();
+    }
+
+    private void AddQuestion()
+    {
+        _questions.Add(new QDraft
+        {
+            Text = "",
+            Score = 5,
+            Options =
+            [
+                new ODraft { Text = "", IsCorrect = true },
+                new ODraft { Text = "", IsCorrect = false }
+            ]
+        });
+    }
+
+    private void AddOption(int qi)
+    {
+        _questions[qi].Options.Add(new ODraft { Text = "", IsCorrect = false });
+    }
+
+    private void SetCorrect(int qi, int oi)
+    {
+        for (var i = 0; i < _questions[qi].Options.Count; i++)
+            _questions[qi].Options[i].IsCorrect = i == oi;
+    }
+
+    private async Task SaveQuiz()
+    {
+        try
+        {
+            _busy = true;
+            _error = null;
+            var req = new CreateQuizRequest(
+                _title, _intro, null, _type, _level, true, _minutes, _totalScore, null,
+                _questions.Select((q, i) => new CreateQuestionRequest(
+                    q.Text, null, q.Score, i,
+                    q.Options.Select((o, j) => new CreateOptionRequest(o.Text, o.IsCorrect, j)).ToList()
+                )).ToList(),
+                null);
+            await Quizzes.CreateAsync(req);
+            _status = "آزمون ذخیره شد.";
+            _showCreate = false;
+            _title = ""; _intro = "";
+            _questions.Clear();
+            AddQuestion();
+            _items = await Quizzes.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally { _busy = false; }
+    }
+
+    private async Task DeleteQuiz(long id)
+    {
+        try
+        {
+            await Quizzes.DeleteAsync(id);
+            _items = await Quizzes.GetAllAsync();
+            _status = "حذف شد.";
+        }
+        catch (Exception ex) { _error = ex.Message; }
+    }
+
+    private async Task LoadReports(long quizId)
+    {
+        _showCreate = false;
+        _reports = await Quizzes.GetReportsAsync(null, quizId);
+    }
+
+    private sealed class QDraft
+    {
+        public string Text { get; set; } = "";
+        public decimal Score { get; set; }
+        public List<ODraft> Options { get; set; } = new();
+    }
+    private sealed class ODraft
+    {
+        public string Text { get; set; } = "";
+        public bool IsCorrect { get; set; }
+    }
+}

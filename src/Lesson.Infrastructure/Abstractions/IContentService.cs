@@ -13,7 +13,8 @@ public sealed record ContentDto(
     ContentType Type,
     double? DurationSeconds,
     long FolderId,
-    string FolderPath);
+    string FolderPath,
+    IReadOnlyList<LanguageLevel> Levels);
 
 public sealed record UploadContentRequest(
     long FolderId,
@@ -21,29 +22,16 @@ public sealed record UploadContentRequest(
     string DisplayName,
     Stream Content,
     long FileSize,
+    IReadOnlyList<LanguageLevel> Levels,
     ContentType? PreferredType = null);
 
 public sealed record ContentProgressDto(
-    long ContentId,
+    long? ContentId,
+    long? StoryId,
     double LastPositionSeconds,
     double MaxWatchedSeconds,
     double ProgressPercent,
     bool IsCompleted);
-
-public interface IContentService
-{
-    Task<IReadOnlyList<ContentDto>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<ContentDto>> GetForUserAsync(long userId, bool isAdmin, CancellationToken cancellationToken = default);
-    Task<LessonContent?> FindAsync(long contentId, CancellationToken cancellationToken = default);
-    Task<LessonContent> UploadAsync(UploadContentRequest request, CancellationToken cancellationToken = default);
-    Task MoveAsync(long contentId, long folderId, CancellationToken cancellationToken = default);
-    Task DeleteAsync(long contentId, CancellationToken cancellationToken = default);
-
-    // Progress
-    Task<ContentProgressDto?> GetProgressAsync(long userId, long contentId, CancellationToken cancellationToken = default);
-    Task UpdateProgressAsync(long userId, long contentId, double positionSeconds, double? durationSeconds, CancellationToken cancellationToken = default);
-    Task<UserProgressSummaryDto> GetUserProgressSummaryAsync(long userId, CancellationToken cancellationToken = default);
-}
 
 public sealed record UserProgressSummaryDto(
     int TotalVideos,
@@ -51,4 +39,24 @@ public sealed record UserProgressSummaryDto(
     double VideoProgressPercent,
     int TotalStories,
     int CompletedStories,
-    double StoryProgressPercent);
+    double StoryProgressPercent,
+    int TotalQuizzes,
+    int CompletedQuizzes,
+    double QuizProgressPercent,
+    double OverallProgressPercent);
+
+public interface IContentService
+{
+    Task<IReadOnlyList<ContentDto>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ContentDto>> GetForUserAsync(long userId, bool isAdmin, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ContentDto>> GetByLevelAsync(LanguageLevel level, CancellationToken cancellationToken = default);
+    Task<LessonContent?> FindAsync(long contentId, CancellationToken cancellationToken = default);
+    Task<LessonContent> UploadAsync(UploadContentRequest request, CancellationToken cancellationToken = default);
+    Task MoveAsync(long contentId, long folderId, CancellationToken cancellationToken = default);
+    Task SetLevelsAsync(long contentId, IReadOnlyList<LanguageLevel> levels, CancellationToken cancellationToken = default);
+    Task DeleteAsync(long contentId, CancellationToken cancellationToken = default);
+
+    Task<ContentProgressDto?> GetProgressAsync(long userId, long contentId, CancellationToken cancellationToken = default);
+    Task UpdateProgressAsync(long userId, long contentId, double positionSeconds, double? durationSeconds, CancellationToken cancellationToken = default);
+    Task<UserProgressSummaryDto> GetUserProgressSummaryAsync(long userId, CancellationToken cancellationToken = default);
+}

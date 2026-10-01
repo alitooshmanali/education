@@ -3,22 +3,24 @@ using Lesson.Domain.Common;
 namespace Lesson.Domain.Entities;
 
 /// <summary>
-/// Tracks how far a student has watched/read a piece of content.
-/// For videos: LastPositionSeconds is the resume point.
-/// If IsCompleted, next play starts from the beginning.
+/// Tracks student progress on a video (LessonContent) or a story.
+/// Exactly one of ContentId or StoryId is set.
 /// </summary>
 public sealed class ContentProgress : BaseEntity
 {
     public long UserId { get; set; }
     public User? User { get; set; }
 
-    public long ContentId { get; set; }
+    public long? ContentId { get; set; }
     public LessonContent? Content { get; set; }
+
+    public long? StoryId { get; set; }
+    public Story? Story { get; set; }
 
     /// <summary>Last known playback position in seconds (for video/audio).</summary>
     public double LastPositionSeconds { get; set; }
 
-    /// <summary>Maximum continuous or cumulative watched seconds (used for progress %).</summary>
+    /// <summary>Maximum continuous or cumulative watched seconds.</summary>
     public double MaxWatchedSeconds { get; set; }
 
     /// <summary>0..100 progress percentage.</summary>

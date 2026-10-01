@@ -13,86 +13,73 @@ public sealed class ContentService : IContentService
     public const long MaxUploadBytes = 20L * 1024 * 1024; // 20 MB
 
     private readonly LessonDbContext _db;
-    private readonly LessonStorageOptions _options;
 
     public ContentService(LessonDbContext db, IOptions<LessonStorageOptions> options)
     {
         _db = db;
-        _options = options.Value;
     }
 
     public async Task<IReadOnlyList<ContentDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        // IMPORTANT: never select Content (varbinary) here — only metadata
         var list = await _db.Contents.AsNoTracking()
+            .Include(x => x.Folder)
+            .Include(x => x.Levels)
             .OrderBy(x => x.DisplayName)
-            .Select(x => new ContentDto(
-                x.Id,
-                x.OriginalFileName,
-                x.DisplayName,
-                x.FileExtension,
-                x.MimeType,
-                x.FileSize,
-                x.Type,
-                x.DurationSeconds,
-                x.FolderId,
-                x.Folder != null ? x.Folder.RelativePath : string.Empty))
             .ToListAsync(cancellationToken);
-        return list;
+
+        return list.Select(ToDto).ToList();
+    }
+
+    public async Task<IReadOnlyList<ContentDto>> GetByLevelAsync(LanguageLevel level, CancellationToken cancellationToken = default)
+    {
+        var list = await _db.Contents.AsNoTracking()
+            .Include(x => x.Folder)
+            .Include(x => x.Levels)
+            .Where(x => x.Levels.Any(l => l.Level == level) || x.Folder!.Level == level)
+            .OrderBy(x => x.DisplayName)
+            .ToListAsync(cancellationToken);
+
+        return list.Select(ToDto).ToList();
     }
 
     public async Task<IReadOnlyList<ContentDto>> GetForUserAsync(long userId, bool isAdmin, CancellationToken cancellationToken = default)
     {
         if (isAdmin)
-        {
             return await GetAllAsync(cancellationToken);
-        }
 
-        // Permission on folder or any ancestor (path prefix) — metadata only, no Content bytes
-        var list = await (
-            from c in _db.Contents.AsNoTracking()
-            where _db.Permissions.Any(p =>
-                p.UserId == userId &&
-                p.IsActive &&
-                p.RevokedAt == null &&
-                (c.FolderId == p.FolderId ||
-                 _db.Folders.Any(f => f.Id == c.FolderId && f.RelativePath.StartsWith(p.Folder!.RelativePath))))
-            orderby c.DisplayName
-            select new ContentDto(
-                c.Id,
-                c.OriginalFileName,
-                c.DisplayName,
-                c.FileExtension,
-                c.MimeType,
-                c.FileSize,
-                c.Type,
-                c.DurationSeconds,
-                c.FolderId,
-                c.Folder != null ? c.Folder.RelativePath : string.Empty)
-        ).ToListAsync(cancellationToken);
+        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        if (user?.Level is null)
+            return Array.Empty<ContentDto>();
 
-        return list;
+        var level = user.Level.Value;
+
+        // Content visible if assigned to student's level (via ContentLevels or folder level)
+        var list = await _db.Contents.AsNoTracking()
+            .Include(x => x.Folder)
+            .Include(x => x.Levels)
+            .Where(c => c.IsActive && (
+                c.Levels.Any(l => l.Level == level) ||
+                (c.Folder != null && c.Folder.Level == level)))
+            .OrderBy(x => x.DisplayName)
+            .ToListAsync(cancellationToken);
+
+        return list.Select(ToDto).ToList();
     }
 
     public Task<LessonContent?> FindAsync(long contentId, CancellationToken cancellationToken = default)
-        // WARNING: loads Content bytes — prefer GetAllAsync/ContentDto for UI
-        => _db.Contents.AsNoTracking().FirstOrDefaultAsync(x => x.Id == contentId, cancellationToken);
+        => _db.Contents.Include(x => x.Levels).Include(x => x.Folder)
+            .FirstOrDefaultAsync(x => x.Id == contentId, cancellationToken);
 
     public async Task<LessonContent> UploadAsync(UploadContentRequest request, CancellationToken cancellationToken = default)
     {
-        if (request.FileSize > MaxUploadBytes)
-        {
-            throw new InvalidOperationException($"حداکثر حجم مجاز ۲۰ مگابایت است. حجم فایل: {request.FileSize / 1024.0 / 1024.0:0.0} MB");
-        }
+        if (request.Levels is null || request.Levels.Count == 0)
+            throw new InvalidOperationException("حداقل یک سطح زبانی باید انتخاب شود.");
 
         var folder = await _db.Folders.FirstAsync(x => x.Id == request.FolderId, cancellationToken);
         var ext = Path.GetExtension(request.OriginalFileName).ToLowerInvariant();
         if (string.IsNullOrEmpty(ext))
-        {
             ext = ".bin";
-        }
 
-        // Read full content into memory (max 20 MB)
         byte[] bytes;
         await using (request.Content)
         {
@@ -102,9 +89,7 @@ public sealed class ContentService : IContentService
         }
 
         if (bytes.Length > MaxUploadBytes)
-        {
             throw new InvalidOperationException("حداکثر حجم مجاز ۲۰ مگابایت است.");
-        }
 
         var mime = GuessMime(ext);
         var type = request.PreferredType ?? GuessType(ext, mime);
@@ -123,6 +108,11 @@ public sealed class ContentService : IContentService
             FolderId = folder.Id
         };
 
+        foreach (var level in request.Levels.Distinct())
+        {
+            entity.Levels.Add(new ContentLevel { Level = level });
+        }
+
         _db.Contents.Add(entity);
         await _db.SaveChangesAsync(cancellationToken);
         return entity;
@@ -136,6 +126,19 @@ public sealed class ContentService : IContentService
         await _db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task SetLevelsAsync(long contentId, IReadOnlyList<LanguageLevel> levels, CancellationToken cancellationToken = default)
+    {
+        if (levels is null || levels.Count == 0)
+            throw new InvalidOperationException("حداقل یک سطح زبانی باید انتخاب شود.");
+
+        var content = await _db.Contents.Include(x => x.Levels).FirstAsync(x => x.Id == contentId, cancellationToken);
+        content.Levels.Clear();
+        foreach (var level in levels.Distinct())
+            content.Levels.Add(new ContentLevel { ContentId = contentId, Level = level });
+
+        await _db.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task DeleteAsync(long contentId, CancellationToken cancellationToken = default)
     {
         var content = await _db.Contents.FirstAsync(x => x.Id == contentId, cancellationToken);
@@ -145,57 +148,32 @@ public sealed class ContentService : IContentService
 
     public async Task<ContentProgressDto?> GetProgressAsync(long userId, long contentId, CancellationToken cancellationToken = default)
     {
-        var p = await _db.ContentProgresses
-            .AsNoTracking()
+        var p = await _db.ContentProgresses.AsNoTracking()
             .FirstOrDefaultAsync(x => x.UserId == userId && x.ContentId == contentId, cancellationToken);
-
         if (p is null) return null;
-
-        return new ContentProgressDto(p.ContentId, p.LastPositionSeconds, p.MaxWatchedSeconds, p.ProgressPercent, p.IsCompleted);
+        return new ContentProgressDto(p.ContentId, p.StoryId, p.LastPositionSeconds, p.MaxWatchedSeconds, p.ProgressPercent, p.IsCompleted);
     }
 
     public async Task UpdateProgressAsync(long userId, long contentId, double positionSeconds, double? durationSeconds, CancellationToken cancellationToken = default)
     {
-        // Never record progress for Admin users
-        var isAdmin = await _db.Users.AsNoTracking()
-            .AnyAsync(u => u.Id == userId && u.Role == UserRole.Admin, cancellationToken);
-        if (isAdmin)
-            return;
-
-        var content = await _db.Contents.AsNoTracking().FirstOrDefaultAsync(x => x.Id == contentId, cancellationToken);
-        if (content is null) return;
-
-        var progress = await _db.ContentProgresses
+        var p = await _db.ContentProgresses
             .FirstOrDefaultAsync(x => x.UserId == userId && x.ContentId == contentId, cancellationToken);
 
-        if (progress is null)
+        if (p is null)
         {
-            progress = new ContentProgress
-            {
-                UserId = userId,
-                ContentId = contentId
-            };
-            _db.ContentProgresses.Add(progress);
+            p = new ContentProgress { UserId = userId, ContentId = contentId };
+            _db.ContentProgresses.Add(p);
         }
 
-        progress.LastPositionSeconds = Math.Max(0, positionSeconds);
-        progress.MaxWatchedSeconds = Math.Max(progress.MaxWatchedSeconds, positionSeconds);
-        progress.LastWatchedAt = DateTimeOffset.UtcNow;
+        p.LastPositionSeconds = Math.Max(0, positionSeconds);
+        p.MaxWatchedSeconds = Math.Max(p.MaxWatchedSeconds, positionSeconds);
+        p.LastWatchedAt = DateTimeOffset.UtcNow;
 
-        var duration = durationSeconds ?? content.DurationSeconds ?? 0;
-        if (duration > 0)
+        if (durationSeconds is > 0)
         {
-            progress.ProgressPercent = Math.Min(100, (progress.MaxWatchedSeconds / duration) * 100);
-            if (progress.ProgressPercent >= 90)
-            {
-                progress.IsCompleted = true;
-                progress.ProgressPercent = 100;
-            }
-        }
-        else if (content.Type is ContentType.Document or ContentType.Story or ContentType.Image)
-        {
-            progress.ProgressPercent = 100;
-            progress.IsCompleted = true;
+            p.ProgressPercent = Math.Min(100, Math.Round(p.MaxWatchedSeconds / durationSeconds.Value * 100, 1));
+            if (p.ProgressPercent >= 90)
+                p.IsCompleted = true;
         }
 
         await _db.SaveChangesAsync(cancellationToken);
@@ -203,47 +181,63 @@ public sealed class ContentService : IContentService
 
     public async Task<UserProgressSummaryDto> GetUserProgressSummaryAsync(long userId, CancellationToken cancellationToken = default)
     {
-        var accessible = await GetForUserAsync(userId, false, cancellationToken);
-        var videoIds = accessible.Where(c => c.Type == ContentType.Video || c.Type == ContentType.Audio).Select(c => c.Id).ToHashSet();
-        var storyIds = accessible.Where(c => c.Type == ContentType.Story || c.Type == ContentType.Document).Select(c => c.Id).ToHashSet();
+        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+        if (user?.Level is null)
+            return new UserProgressSummaryDto(0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-        var progresses = await _db.ContentProgresses
-            .AsNoTracking()
-            .Where(p => p.UserId == userId && (videoIds.Contains(p.ContentId) || storyIds.Contains(p.ContentId)))
+        var level = user.Level.Value;
+
+        var videos = await _db.Contents.AsNoTracking()
+            .Where(c => c.Type == ContentType.Video && c.IsActive &&
+                (c.Levels.Any(l => l.Level == level) || c.Folder!.Level == level))
+            .Select(c => c.Id)
             .ToListAsync(cancellationToken);
 
-        var completedVideos = progresses.Count(p => videoIds.Contains(p.ContentId) && p.IsCompleted);
-        var completedStories = progresses.Count(p => storyIds.Contains(p.ContentId) && p.IsCompleted);
+        var stories = await _db.Stories.AsNoTracking()
+            .Where(s => s.IsActive && s.Level == level)
+            .Select(s => s.Id)
+            .ToListAsync(cancellationToken);
 
-        double videoPct = videoIds.Count == 0 ? 0 : (completedVideos * 100.0 / videoIds.Count);
-        double storyPct = storyIds.Count == 0 ? 0 : (completedStories * 100.0 / storyIds.Count);
+        var quizzes = await _db.Quizzes.AsNoTracking()
+            .Where(q => q.IsActive && q.Level == level &&
+                (q.IsLevelWide || q.Type == QuizType.General ||
+                 q.Assignments.Any(a => a.UserId == userId)))
+            .Select(q => q.Id)
+            .ToListAsync(cancellationToken);
 
-        // Also average partial progress for videos
-        if (videoIds.Count > 0)
+        var progresses = await _db.ContentProgresses.AsNoTracking()
+            .Where(p => p.UserId == userId)
+            .ToListAsync(cancellationToken);
+
+        var completedVideos = progresses.Count(p => p.ContentId.HasValue && videos.Contains(p.ContentId.Value) && p.IsCompleted);
+        var completedStories = progresses.Count(p => p.StoryId.HasValue && stories.Contains(p.StoryId.Value) && p.IsCompleted);
+
+        var completedQuizzes = await _db.QuizAttempts.AsNoTracking()
+            .CountAsync(a => a.UserId == userId && a.IsCompleted && quizzes.Contains(a.QuizId), cancellationToken);
+
+        double videoPct = videos.Count == 0 ? 100 : (completedVideos * 100.0 / videos.Count);
+        double storyPct = stories.Count == 0 ? 100 : (completedStories * 100.0 / stories.Count);
+        double quizPct = quizzes.Count == 0 ? 100 : (completedQuizzes * 100.0 / quizzes.Count);
+
+        // Average partial video progress if available
+        if (videos.Count > 0)
         {
-            var videoProgs = progresses.Where(p => videoIds.Contains(p.ContentId)).ToList();
-            if (videoProgs.Count > 0)
-            {
-                videoPct = videoProgs.Average(p => p.ProgressPercent);
-            }
+            var vp = progresses.Where(p => p.ContentId.HasValue && videos.Contains(p.ContentId.Value)).ToList();
+            if (vp.Count > 0)
+                videoPct = vp.Average(p => p.ProgressPercent);
         }
 
-        if (storyIds.Count > 0)
-        {
-            var storyProgs = progresses.Where(p => storyIds.Contains(p.ContentId)).ToList();
-            if (storyProgs.Count > 0)
-            {
-                storyPct = storyProgs.Average(p => p.ProgressPercent);
-            }
-        }
+        var parts = new List<double>();
+        if (videos.Count > 0) parts.Add(videoPct);
+        if (stories.Count > 0) parts.Add(storyPct);
+        if (quizzes.Count > 0) parts.Add(quizPct);
+        double overall = parts.Count == 0 ? 0 : Math.Round(parts.Average(), 1);
 
         return new UserProgressSummaryDto(
-            videoIds.Count,
-            completedVideos,
-            Math.Round(videoPct, 1),
-            storyIds.Count,
-            completedStories,
-            Math.Round(storyPct, 1));
+            videos.Count, completedVideos, Math.Round(videoPct, 1),
+            stories.Count, completedStories, Math.Round(storyPct, 1),
+            quizzes.Count, completedQuizzes, Math.Round(quizPct, 1),
+            overall);
     }
 
     private static ContentDto ToDto(LessonContent x) => new(
@@ -256,7 +250,8 @@ public sealed class ContentService : IContentService
         x.Type,
         x.DurationSeconds,
         x.FolderId,
-        x.Folder?.RelativePath ?? string.Empty);
+        x.Folder?.RelativePath ?? string.Empty,
+        x.Levels?.Select(l => l.Level).ToList() ?? new List<LanguageLevel>());
 
     private static string GuessMime(string ext) => ext.ToLowerInvariant() switch
     {
@@ -284,8 +279,6 @@ public sealed class ContentService : IContentService
         if (mime.StartsWith("audio/")) return ContentType.Audio;
         if (mime.StartsWith("image/")) return ContentType.Image;
         if (ext is ".pdf" or ".doc" or ".docx" or ".txt") return ContentType.Document;
-        // Treat readable educational docs as Story if desired
-        if (ext is ".pdf" or ".docx") return ContentType.Story;
         return ContentType.Other;
     }
 }

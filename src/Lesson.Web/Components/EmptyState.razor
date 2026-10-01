@@ -1,10 +1,15 @@
 <section class="empty-state">
-    <AppIcon Name="@Icon" />
-    <h3>@Title</h3>
-    <p>@Message</p>
+    <div class="empty-state__icon">
+        <AppIcon Name="@Icon" />
+    </div>
+    <h3 class="empty-state__title">@Title</h3>
+    @if (!string.IsNullOrWhiteSpace(Message))
+    {
+        <p class="empty-state__desc">@Message</p>
+    }
     @if (Action is not null)
     {
-        <div>@Action</div>
+        <div style="margin-top: 8px;">@Action</div>
     }
 </section>
 

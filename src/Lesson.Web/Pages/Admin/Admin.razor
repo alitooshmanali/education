@@ -4,8 +4,10 @@
 @inject IContentService Contents
 @inject IFolderService Folders
 @inject IPermissionService Permissions
+@inject IFeedbackService Feedbacks
+@inject IQuizService Quizzes
 
-<PageHeader Eyebrow="Admin" Title="داشبورد مدیریت" Subtitle="خلاصه وضعیت سیستم" />
+<PageHeader Eyebrow="Admin" Title="داشبورد مدیریت" Subtitle="خلاصه وضعیت سیستم و رضایت دانشجویان" />
 
 <section class="grid stats">
     <div class="stat-card">
@@ -23,16 +25,68 @@
         <div class="stat-value">@_folders</div>
         <div class="stat-hint">گروه‌های منطقی</div>
     </div>
+    <div class="stat-card">
+        <div class="stat-label">آزمون‌ها</div>
+        <div class="stat-value">@_quizzes</div>
+        <div class="stat-hint">آزمون‌های تعریف‌شده</div>
+    </div>
 </section>
 
+@if (_satisfaction is not null)
+{
+    <section class="grid two-col panel-spaced">
+        <div class="panel pad gauge-card">
+            <h3>رضایت دانشجویان</h3>
+            <div class="gauge" style="--pct: @(_satisfaction.SatisfactionPercent)">
+                <span>@_satisfaction.SatisfactionPercent%</span>
+            </div>
+            <p class="gauge-meta">
+                میانگین امتیاز: @_satisfaction.AverageRating از ۵
+                · @_satisfaction.TotalCount نظر
+            </p>
+            <p class="hint">
+                راضی: @_satisfaction.SatisfiedCount ·
+                خنثی: @_satisfaction.NeutralCount ·
+                ناراضی: @_satisfaction.DissatisfiedCount
+            </p>
+        </div>
+        <div class="panel pad">
+            <h3>آخرین نظرات</h3>
+            @if (_recentFeedback.Any())
+            {
+                <div class="panel-stack">
+                    @foreach (var f in _recentFeedback.Take(8))
+                    {
+                        <div class="toolbar" style="justify-content:space-between;border-bottom:1px solid var(--color-border);padding-bottom:8px">
+                            <div>
+                                <strong>@f.Username</strong>
+                                <span class="hint"> · @f.TargetType #@f.TargetId</span>
+                                @if (!string.IsNullOrWhiteSpace(f.Comment))
+                                {
+                                    <p style="margin:4px 0 0;font-size:13px">@f.Comment</p>
+                                }
+                            </div>
+                            <StatusBadge Text="@($"{f.Rating}/5")" Tone="@(f.Rating >= 4 ? "success" : f.Rating <= 2 ? "error" : "warning")" />
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="hint">هنوز نظری ثبت نشده است.</p>
+            }
+        </div>
+    </section>
+}
+
 <section class="panel pad panel-spaced">
-    <h3>دسترسی‌ها</h3>
-    <p class="meta">تعداد کل دسترسی‌های فعال: <strong>@_permissions</strong></p>
+    <h3>راهنمای سریع</h3>
     <ul class="admin-guide">
-        <li>ساخت گروه و زیرگروه از بخش گروه‌ها</li>
-        <li>بارگذاری محتوا (حداکثر ۲۰ مگابایت) در هر گروه</li>
-        <li>اعطای دسترسی کاربر به گروه (ارث‌بری به زیرگروه‌ها)</li>
-        <li>ردیابی رویدادهای ادمین از لاگ</li>
+        <li>هر دانشجو دقیقاً یک سطح (A1–C2) دارد</li>
+        <li>هر پوشه متعلق به یک سطح است</li>
+        <li>هنگام آپلود ویدیو، Folder و Level(ها) را مشخص کنید</li>
+        <li>آزمون‌ها: مقدمه + آماده هستم + شمارنده + بازخورد فوری</li>
+        <li>هر دانشجو یک‌بار در آزمون شرکت می‌کند مگر مجوز مجدد ادمین</li>
     </ul>
 </section>
 
@@ -40,12 +94,14 @@
     private int _users;
     private int _contents;
     private int _folders;
-    private int _permissions;
+    private int _quizzes;
+    private SatisfactionSummaryDto? _satisfaction;
+    private IReadOnlyList<FeedbackDto> _recentFeedback = [];
 
     protected override async Task OnInitializedAsync()
     {
         var allUsers = await Users.GetAllAsync();
-        _users = allUsers.Count;
+        _users = allUsers.Count(u => u.IsActive);
 
         var allContents = await Contents.GetAllAsync();
         _contents = allContents.Count;
@@ -53,12 +109,9 @@
         var tree = await Folders.GetTreeAsync();
         _folders = CountFolders(tree);
 
-        var allPermissions = 0;
-        foreach (var user in allUsers)
-        {
-            allPermissions += (await Permissions.GetForUserAsync(user.Id)).Count;
-        }
-        _permissions = allPermissions;
+        _quizzes = (await Quizzes.GetAllAsync()).Count;
+        _satisfaction = await Feedbacks.GetSatisfactionSummaryAsync();
+        _recentFeedback = await Feedbacks.GetAllAsync();
     }
 
     private static int CountFolders(IReadOnlyList<FolderNodeDto> nodes)

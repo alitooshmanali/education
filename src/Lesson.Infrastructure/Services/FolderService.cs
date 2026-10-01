@@ -11,48 +11,44 @@ public sealed class FolderService : IFolderService
     private readonly LessonDbContext _db;
     public FolderService(LessonDbContext db) => _db = db;
 
-    private sealed record ContentMeta(
-        long Id,
-        string OriginalFileName,
-        string DisplayName,
-        string FileExtension,
-        string MimeType,
-        long FileSize,
-        ContentType Type,
-        double? DurationSeconds,
-        long FolderId);
-
-    public async Task<IReadOnlyList<FolderNodeDto>> GetTreeAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FolderNodeDto>> GetTreeAsync(LanguageLevel? levelFilter = null, CancellationToken cancellationToken = default)
     {
-        var folders = await _db.Folders.AsNoTracking().ToListAsync(cancellationToken);
+        var query = _db.Folders.AsNoTracking().AsQueryable();
+        if (levelFilter.HasValue)
+            query = query.Where(f => f.Level == levelFilter.Value);
 
-        // Metadata only — never the Content varbinary column
-        var contentMeta = await _db.Contents.AsNoTracking()
-            .Select(c => new ContentMeta(
-                c.Id,
-                c.OriginalFileName,
-                c.DisplayName,
-                c.FileExtension,
-                c.MimeType,
-                c.FileSize,
-                c.Type,
-                c.DurationSeconds,
-                c.FolderId))
+        var folders = await query.ToListAsync(cancellationToken);
+
+        var folderIds = folders.Select(f => f.Id).ToList();
+
+        var contents = await _db.Contents.AsNoTracking()
+            .Include(c => c.Levels)
+            .Where(c => folderIds.Contains(c.FolderId))
             .ToListAsync(cancellationToken);
 
-        var contentsByFolder = contentMeta.ToLookup(c => c.FolderId);
+        var contentsByFolder = contents.ToLookup(c => c.FolderId);
         var pathById = folders.ToDictionary(f => f.Id, f => f.RelativePath);
         var byParent = folders.ToLookup(x => x.ParentFolderId);
 
         return Build(null, byParent, contentsByFolder, pathById);
     }
 
-    public async Task<Folder> CreateAsync(string name, long? parentFolderId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Folder>> GetFlatAsync(LanguageLevel? levelFilter = null, CancellationToken cancellationToken = default)
+    {
+        var query = _db.Folders.AsNoTracking().AsQueryable();
+        if (levelFilter.HasValue)
+            query = query.Where(f => f.Level == levelFilter.Value);
+        return await query.OrderBy(f => f.RelativePath).ToListAsync(cancellationToken);
+    }
+
+    public async Task<Folder> CreateAsync(string name, long? parentFolderId, LanguageLevel level, CancellationToken cancellationToken = default)
     {
         var parentPath = string.Empty;
         if (parentFolderId is not null)
         {
             var parent = await _db.Folders.FirstAsync(x => x.Id == parentFolderId, cancellationToken);
+            if (parent.Level != level)
+                throw new InvalidOperationException("پوشه والد باید در همان سطح زبانی باشد.");
             parentPath = parent.RelativePath;
         }
 
@@ -60,7 +56,7 @@ public sealed class FolderService : IFolderService
         var relativePath = string.IsNullOrWhiteSpace(parentPath) ? trimmed : $"{parentPath}/{trimmed}";
 
         var exists = await _db.Folders.AnyAsync(
-            x => x.ParentFolderId == parentFolderId && x.Name == trimmed,
+            x => x.ParentFolderId == parentFolderId && x.Name == trimmed && x.Level == level,
             cancellationToken);
         if (exists)
             throw new InvalidOperationException("گروهی با این نام در همین سطح وجود دارد.");
@@ -69,7 +65,8 @@ public sealed class FolderService : IFolderService
         {
             Name = trimmed,
             ParentFolderId = parentFolderId,
-            RelativePath = relativePath
+            RelativePath = relativePath,
+            Level = level
         };
         _db.Folders.Add(folder);
         await _db.SaveChangesAsync(cancellationToken);
@@ -83,30 +80,27 @@ public sealed class FolderService : IFolderService
         await RebuildPathAsync(folder, cancellationToken);
     }
 
-    public async Task MoveAsync(long folderId, long? newParentFolderId, CancellationToken cancellationToken = default)
-    {
-        var folder = await _db.Folders.FirstAsync(x => x.Id == folderId, cancellationToken);
-        if (newParentFolderId == folderId)
-            throw new InvalidOperationException("نمی‌توان گروه را به خودش منتقل کرد.");
-
-        folder.ParentFolderId = newParentFolderId;
-        await RebuildPathAsync(folder, cancellationToken);
-    }
-
     public async Task DeleteAsync(long folderId, CancellationToken cancellationToken = default)
     {
         var hasChildren = await _db.Folders.AnyAsync(x => x.ParentFolderId == folderId, cancellationToken);
-        var hasContents = await _db.Contents.AnyAsync(x => x.FolderId == folderId, cancellationToken);
-        if (hasChildren || hasContents)
-            throw new InvalidOperationException("گروه خالی نیست. ابتدا زیرگروه‌ها و محتوا را حذف کنید.");
+        if (hasChildren)
+            throw new InvalidOperationException("ابتدا زیرپوشه‌ها را حذف کنید.");
+
+        var hasContent = await _db.Contents.AnyAsync(x => x.FolderId == folderId, cancellationToken);
+        if (hasContent)
+            throw new InvalidOperationException("ابتدا محتواهای این پوشه را حذف یا منتقل کنید.");
+
+        var hasStories = await _db.Stories.AnyAsync(x => x.FolderId == folderId, cancellationToken);
+        if (hasStories)
+            throw new InvalidOperationException("ابتدا داستان‌های این پوشه را حذف کنید.");
 
         var folder = await _db.Folders.FirstAsync(x => x.Id == folderId, cancellationToken);
         _db.Folders.Remove(folder);
         await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public Task<Folder?> FindByPathAsync(string relativePath, CancellationToken cancellationToken = default)
-        => _db.Folders.FirstOrDefaultAsync(x => x.RelativePath == relativePath, cancellationToken);
+    public Task<Folder?> FindAsync(long folderId, CancellationToken cancellationToken = default)
+        => _db.Folders.FirstOrDefaultAsync(x => x.Id == folderId, cancellationToken);
 
     private async Task RebuildPathAsync(Folder folder, CancellationToken cancellationToken)
     {
@@ -136,7 +130,7 @@ public sealed class FolderService : IFolderService
     private static IReadOnlyList<FolderNodeDto> Build(
         long? parentId,
         ILookup<long?, Folder> lookup,
-        ILookup<long, ContentMeta> contentsByFolder,
+        ILookup<long, LessonContent> contentsByFolder,
         IReadOnlyDictionary<long, string> pathById)
     {
         if (!lookup[parentId].Any())
@@ -156,13 +150,15 @@ public sealed class FolderService : IFolderService
                     c.Type,
                     c.DurationSeconds,
                     c.FolderId,
-                    path))
+                    path,
+                    c.Levels?.Select(l => l.Level).ToList() ?? new List<LanguageLevel>()))
                 .ToList();
 
             return new FolderNodeDto(
                 f.Id,
                 f.Name,
                 f.RelativePath,
+                f.Level,
                 Build(f.Id, lookup, contentsByFolder, pathById),
                 contents);
         }).ToList();

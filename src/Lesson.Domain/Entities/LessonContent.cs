@@ -4,8 +4,8 @@ using Lesson.Domain.Enums;
 namespace Lesson.Domain.Entities;
 
 /// <summary>
-/// Unified content storage for video, audio, image, PDF, Word, etc.
-/// Binary content is stored in the database as bytes (no physical filesystem folders).
+/// Binary content storage (video, audio, image, document).
+/// Organized under one Folder; can be visible in multiple Levels via ContentLevels.
 /// </summary>
 public sealed class LessonContent : BaseEntity
 {
@@ -21,5 +21,9 @@ public sealed class LessonContent : BaseEntity
     public long FolderId { get; set; }
     public Folder? Folder { get; set; }
 
+    /// <summary>Levels where this content is visible. At least one required.</summary>
+    public ICollection<ContentLevel> Levels { get; set; } = new List<ContentLevel>();
+
     public ICollection<ContentProgress> ProgressRecords { get; set; } = new List<ContentProgress>();
+    public ICollection<ContentFeedback> Feedbacks { get; set; } = new List<ContentFeedback>();
 }
