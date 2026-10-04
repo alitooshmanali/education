@@ -51,10 +51,14 @@ public interface IContentService
     Task<IReadOnlyList<ContentDto>> GetForUserAsync(long userId, bool isAdmin, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ContentDto>> GetByLevelAsync(LanguageLevel level, CancellationToken cancellationToken = default);
     Task<LessonContent?> FindAsync(long contentId, CancellationToken cancellationToken = default);
-    Task<LessonContent> UploadAsync(UploadContentRequest request, CancellationToken cancellationToken = default);
+    /// <param name="actorUserId">اگر null نباشد و isAdmin=false، سطوح فقط از سطوح مجاز مدرس پذیرفته می‌شود.</param>
+    Task<LessonContent> UploadAsync(UploadContentRequest request, long? actorUserId = null, bool isAdmin = true, CancellationToken cancellationToken = default);
     Task MoveAsync(long contentId, long folderId, CancellationToken cancellationToken = default);
-    Task SetLevelsAsync(long contentId, IReadOnlyList<LanguageLevel> levels, CancellationToken cancellationToken = default);
+    Task SetLevelsAsync(long contentId, IReadOnlyList<LanguageLevel> levels, long? actorUserId = null, bool isAdmin = true, CancellationToken cancellationToken = default);
     Task DeleteAsync(long contentId, CancellationToken cancellationToken = default);
+
+    /// <summary>سطوح مجاز بارگذاری برای کاربر فعلی (ادمین = همه؛ مدرس = TeacherLevels).</summary>
+    Task<IReadOnlyList<LanguageLevel>> GetAllowedUploadLevelsAsync(long userId, bool isAdmin, CancellationToken cancellationToken = default);
 
     Task<ContentProgressDto?> GetProgressAsync(long userId, long contentId, CancellationToken cancellationToken = default);
     Task UpdateProgressAsync(long userId, long contentId, double positionSeconds, double? durationSeconds, CancellationToken cancellationToken = default);

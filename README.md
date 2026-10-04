@@ -1,16 +1,35 @@
-# Lesson System
+# Lesson System — اساطیر آینده
 
 Clean Architecture .NET 9 lesson management system with:
 
-- Blazor Server host (Interactive Server)
+- **Website** (marketing SPA): `/site/index.html` — تمام صفحات عمومی (خانه، آکادمی، درباره ما، تماس، پلتفرم، نظام طراحی)
+- **Platform** (Blazor Server): `/login`, `/admin`, `/student` — منطق دامنه و زیرساخت بدون تغییر
+- تم برند (سرمه‌ای / شنی / کرمی) روی Website و Platform
 - SQL Server + EF Core
 - Cookie authentication
 - Role-based authorization
 - Folder-scoped permissions
 - Authenticated video streaming with range support
-- Local file storage abstraction
-- MediatR for Application layer messaging
 - Responsive UI (RTL / Persian)
+
+## Website routes (`/site/index.html#/...`)
+
+| Path | Page |
+|------|------|
+| `#/` | خانه |
+| `#/academy` | معرفی آکادمی |
+| `#/academy/english` | زبان انگلیسی |
+| `#/academy/computer` | کامپیوتر |
+| `#/academy/music` | موسیقی |
+| `#/academy/painting` | نقاشی |
+| `#/about` | درباره ما |
+| `#/about/teachers` | اساتید |
+| `#/about/gallery` | گالری |
+| `#/contact` | تماس با ما |
+| `#/platform` | معرفی پلتفرم |
+| `#/design` | نظام طراحی |
+
+ورود به پلتفرم از لینک‌های «ورود به پلتفرم» به `/login` هدایت می‌شود.
 
 ## Architecture Rules
 

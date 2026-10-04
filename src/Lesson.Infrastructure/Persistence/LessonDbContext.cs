@@ -28,6 +28,7 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
     public DbSet<QuizAnswer> QuizAnswers => Set<QuizAnswer>();
     public DbSet<QuizRetakeGrant> QuizRetakeGrants => Set<QuizRetakeGrant>();
     public DbSet<ContentFeedback> ContentFeedbacks => Set<ContentFeedback>();
+    public DbSet<TeacherLevel> TeacherLevels => Set<TeacherLevel>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -38,6 +39,19 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
         modelBuilder.Entity<User>(b =>
         {
             b.Property(x => x.Level).HasConversion<int?>();
+        });
+
+        // ---- TeacherLevel (مدرس ↔ سطوح مجاز) ----
+        modelBuilder.Entity<TeacherLevel>(b =>
+        {
+            b.ToTable("TeacherLevels");
+            b.HasKey(x => new { x.UserId, x.Level });
+            b.Property(x => x.Level).HasConversion<int>();
+            b.HasOne(x => x.User)
+                .WithMany(u => u.TeacherLevels)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            b.HasIndex(x => x.Level);
         });
 
         // ---- LessonContent ----

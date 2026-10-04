@@ -58,6 +58,22 @@
                         </select>
                     </div>
                 }
+                @if (_createRole == UserRole.Teacher)
+                {
+                    <div class="field">
+                        <label>سطوح مجاز مدرس</label>
+                        <div style="display:flex;flex-wrap:wrap;gap:10px">
+                            @foreach (var item in Enum.GetValues<LanguageLevel>())
+                            {
+                                <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px">
+                                    <input type="checkbox" checked="@_createTeacherLevels.Contains(item)"
+                                           @onchange="e => ToggleCreateTeacherLevel(item, (bool)(e.Value ?? false))" />
+                                    @item
+                                </label>
+                            }
+                        </div>
+                    </div>
+                }
             </div>
             <div class="toolbar toolbar--spaced">
                 <AppButton Variant="primary" Type="button" Busy="_isBusy" OnClick="CreateUserAsync">افزودن</AppButton>
@@ -103,6 +119,22 @@
                         </select>
                     </div>
                 }
+                @if (_editRole == UserRole.Teacher)
+                {
+                    <div class="field">
+                        <label>سطوح مجاز مدرس</label>
+                        <div style="display:flex;flex-wrap:wrap;gap:10px">
+                            @foreach (var item in Enum.GetValues<LanguageLevel>())
+                            {
+                                <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px">
+                                    <input type="checkbox" checked="@_editTeacherLevels.Contains(item)"
+                                           @onchange="e => ToggleEditTeacherLevel(item, (bool)(e.Value ?? false))" />
+                                    @item
+                                </label>
+                            }
+                        </div>
+                    </div>
+                }
             </div>
             <div class="toolbar toolbar--spaced">
                 <AppButton Variant="primary" Type="button" Busy="_isBusy" OnClick="SaveEdit">ذخیره</AppButton>
@@ -135,14 +167,13 @@
         </ActionsTemplate>
     </DataTable>
 
-    <ConfirmDialog
-        IsOpen="_showDeleteConfirm"
-        Title="حذف کاربر"
-        Message="کاربر غیرفعال می‌شود و دیگر قابل ورود نخواهد بود. ادامه می‌دهید؟"
-        ConfirmText="تایید"
-        Busy="_isBusy"
-        OnClose="CancelDelete"
-        OnConfirm="DeleteSelectedAsync" />
+    <ConfirmDialog IsOpen="_showDeleteConfirm"
+                   Title="حذف کاربر"
+                   Message="کاربر غیرفعال می‌شود و دیگر قابل ورود نخواهد بود. ادامه می‌دهید؟"
+                   ConfirmText="تایید"
+                   Busy="_isBusy"
+                   OnClose="CancelDelete"
+                   OnConfirm="DeleteSelectedAsync" />
 </section>
 
 @code {
@@ -158,6 +189,8 @@
     private string _createPassword = string.Empty;
     private UserRole _createRole = UserRole.Student;
     private LanguageLevel _createLevel = LanguageLevel.A1;
+    private HashSet<LanguageLevel> _createTeacherLevels = new();
+    private HashSet<LanguageLevel> _editTeacherLevels = new();
 
     private User? _editingUser;
     private UserRole _editRole;
@@ -221,7 +254,7 @@
         }
     }
 
-    private void OpenEdit(User user)
+    private async Task OpenEdit(User user)
     {
         _editingUser = user;
         _editingPasswordUser = null;
@@ -229,6 +262,12 @@
         _editRole = user.Role;
         _editLevel = user.Level ?? LanguageLevel.A1;
         _editActiveString = user.IsActive ? "true" : "false";
+        _editTeacherLevels = new HashSet<LanguageLevel>();
+        if (user.Role == UserRole.Teacher)
+        {
+            var levels = await Users.GetTeacherLevelsAsync(user.Id);
+            _editTeacherLevels = levels.ToHashSet();
+        }
     }
 
     private async Task SaveEdit()
@@ -239,13 +278,10 @@
         }
 
         var editActive = bool.Parse(_editActiveString);
-        var newLevel = _editRole == UserRole.Student ? _editLevel : (LanguageLevel?)null;
-        var changed = _editingUser.Role != _editRole
-            || _editingUser.IsActive != editActive
-            || _editingUser.Level != newLevel;
-        if (!changed)
+
+        if (_editRole == UserRole.Teacher && _editTeacherLevels.Count == 0)
         {
-            _editingUser = null;
+            _errorMessage = "برای مدرس حداقل یک سطح زبانی انتخاب کنید.";
             return;
         }
 
@@ -266,6 +302,11 @@
             if (_editRole == UserRole.Student && _editingUser.Level != _editLevel)
             {
                 await Users.SetLevelAsync(_editingUser.Id, _editLevel);
+            }
+
+            if (_editRole == UserRole.Teacher)
+            {
+                await Users.SetTeacherLevelsAsync(_editingUser.Id, _editTeacherLevels.ToList());
             }
 
             _statusMessage = "تغییرات کاربر با موفقیت ثبت شد.";
@@ -343,12 +384,19 @@
             _isBusy = true;
             _errorMessage = null;
             var level = _createRole == UserRole.Student ? _createLevel : (LanguageLevel?)null;
-            await Users.CreateAsync(_createUsername.Trim(), PasswordHasher.Hash(_createPassword), _createRole, level);
+            var teacherLevels = _createRole == UserRole.Teacher ? _createTeacherLevels.ToList() : null;
+            if (_createRole == UserRole.Teacher && (teacherLevels is null || teacherLevels.Count == 0))
+            {
+                _errorMessage = "برای مدرس حداقل یک سطح زبانی انتخاب کنید.";
+                return;
+            }
+            await Users.CreateAsync(_createUsername.Trim(), PasswordHasher.Hash(_createPassword), _createRole, level, teacherLevels);
             _statusMessage = "کاربر جدید ایجاد شد.";
             _createUsername = string.Empty;
             _createPassword = string.Empty;
             _createRole = UserRole.Student;
             _createLevel = LanguageLevel.A1;
+            _createTeacherLevels.Clear();
             _showCreate = false;
             await ReloadAsync();
         }
@@ -405,5 +453,17 @@
     {
         _showDeleteConfirm = false;
         _deleteUser = null;
+    }
+
+    private void ToggleCreateTeacherLevel(LanguageLevel level, bool on)
+    {
+        if (on) _createTeacherLevels.Add(level);
+        else _createTeacherLevels.Remove(level);
+    }
+
+    private void ToggleEditTeacherLevel(LanguageLevel level, bool on)
+    {
+        if (on) _editTeacherLevels.Add(level);
+        else _editTeacherLevels.Remove(level);
     }
 }

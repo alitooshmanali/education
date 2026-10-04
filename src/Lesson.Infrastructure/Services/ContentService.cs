@@ -70,10 +70,51 @@ public sealed class ContentService : IContentService
         => _db.Contents.Include(x => x.Levels).Include(x => x.Folder)
             .FirstOrDefaultAsync(x => x.Id == contentId, cancellationToken);
 
-    public async Task<LessonContent> UploadAsync(UploadContentRequest request, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<LanguageLevel>> GetAllowedUploadLevelsAsync(long userId, bool isAdmin, CancellationToken cancellationToken = default)
+    {
+        if (isAdmin)
+            return Enum.GetValues<LanguageLevel>().ToList();
+
+        return await _db.TeacherLevels.AsNoTracking()
+            .Where(x => x.UserId == userId)
+            .Select(x => x.Level)
+            .ToListAsync(cancellationToken);
+    }
+
+    private async Task EnsureTeacherLevelsAllowedAsync(
+        long? actorUserId,
+        bool isAdmin,
+        IReadOnlyList<LanguageLevel> levels,
+        CancellationToken cancellationToken)
+    {
+        if (isAdmin || actorUserId is null)
+            return;
+
+        var allowed = await _db.TeacherLevels.AsNoTracking()
+            .Where(x => x.UserId == actorUserId.Value)
+            .Select(x => x.Level)
+            .ToListAsync(cancellationToken);
+
+        if (allowed.Count == 0)
+            throw new InvalidOperationException("هیچ سطح زبانی برای این مدرس تعریف نشده است.");
+
+        var forbidden = levels.Distinct().Where(l => !allowed.Contains(l)).ToList();
+        if (forbidden.Count > 0)
+            throw new InvalidOperationException(
+                "مدرس فقط می‌تواند محتوای مربوط به سطوح مجاز خود را بارگذاری کند. سطوح غیرمجاز: " +
+                string.Join(", ", forbidden));
+    }
+
+    public async Task<LessonContent> UploadAsync(
+        UploadContentRequest request,
+        long? actorUserId = null,
+        bool isAdmin = true,
+        CancellationToken cancellationToken = default)
     {
         if (request.Levels is null || request.Levels.Count == 0)
             throw new InvalidOperationException("حداقل یک سطح زبانی باید انتخاب شود.");
+
+        await EnsureTeacherLevelsAllowedAsync(actorUserId, isAdmin, request.Levels, cancellationToken);
 
         var folder = await _db.Folders.FirstAsync(x => x.Id == request.FolderId, cancellationToken);
         var ext = Path.GetExtension(request.OriginalFileName).ToLowerInvariant();
@@ -126,10 +167,17 @@ public sealed class ContentService : IContentService
         await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task SetLevelsAsync(long contentId, IReadOnlyList<LanguageLevel> levels, CancellationToken cancellationToken = default)
+    public async Task SetLevelsAsync(
+        long contentId,
+        IReadOnlyList<LanguageLevel> levels,
+        long? actorUserId = null,
+        bool isAdmin = true,
+        CancellationToken cancellationToken = default)
     {
         if (levels is null || levels.Count == 0)
             throw new InvalidOperationException("حداقل یک سطح زبانی باید انتخاب شود.");
+
+        await EnsureTeacherLevelsAllowedAsync(actorUserId, isAdmin, levels, cancellationToken);
 
         var content = await _db.Contents.Include(x => x.Levels).FirstAsync(x => x.Id == contentId, cancellationToken);
         content.Levels.Clear();

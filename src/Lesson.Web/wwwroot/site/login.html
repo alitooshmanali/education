@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ورود به پلتفرم — اساطیر آینده</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy-900:#061d38; --navy:#0A2B51; --navy-700:#0f3763; --navy-500:#1c4d85;
+  --navy-200:#c3d2e6; --navy-50:#eef3fa;
+  --sand:#D1AB7B; --sand-700:#a9803f; --sand-600:#c39a63; --sand-100:#F3E7D6; --sand-50:#FBF6EE;
+  --cream:#F9F6ED; --paper:#fff;
+  --ink:#132133; --ink-soft:#3b4a5d; --muted:#6B7787;
+  --on-dark-muted:#a8b8cc;
+  --line:#E6E1D6; --line-cool:#e3e8f0;
+  --ok:#0f7a57;
+  --r-xs:8px; --r-sm:12px; --r-md:16px; --r-lg:22px; --r-xl:28px; --r-pill:999px;
+  --sh-xs:0 1px 2px rgba(10,43,81,.06);
+  --sh-sm:0 2px 8px rgba(10,43,81,.06),0 1px 2px rgba(10,43,81,.05);
+  --sh-md:0 10px 30px rgba(10,43,81,.09);
+  --sh-lg:0 24px 60px rgba(10,43,81,.16);
+  --sh-gold:0 10px 28px rgba(168,128,63,.28);
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+body{
+  margin:0;background:var(--cream);color:var(--ink);
+  font-family:Vazirmatn,system-ui,"Segoe UI",Tahoma,sans-serif;
+  font-size:14.5px;line-height:1.9;-webkit-font-smoothing:antialiased;
+  min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr;
+}
+h1,h2,h3{margin:0;line-height:1.5;font-weight:900;letter-spacing:-.2px}
+p{margin:0 0 10px}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit}
+:focus-visible{outline:3px solid var(--sand);outline-offset:2px;border-radius:6px}
+
+/* ---- brand side ---- */
+.brandside{
+  background:linear-gradient(150deg,var(--navy-900) 0%,var(--navy) 55%,var(--navy-700) 100%);
+  color:#fff;padding:48px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;
+}
+.brandside::before{content:"";position:absolute;inset-inline-end:-120px;top:-120px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(209,171,123,.24),transparent 70%)}
+.brandside::after{content:"";position:absolute;inset-inline-start:-90px;bottom:-90px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(28,77,133,.5),transparent 70%)}
+.bs-in{position:relative;z-index:2}
+.blogo{display:flex;align-items:center;gap:14px;margin-bottom:56px}
+.blogo .mk{width:56px;height:56px;flex:none}
+.blogo b{display:block;font-size:19px;font-weight:900;color:#fff;line-height:1.4}
+.blogo small{display:block;font-size:10.5px;letter-spacing:2.6px;color:var(--on-dark-muted);direction:ltr}
+.brandside h1{font-size:clamp(26px,3vw,38px);line-height:1.45;margin-bottom:18px}
+.brandside h1 em{font-style:normal;color:var(--sand)}
+.brandside .lead{color:#dbe4ef;font-size:15px;line-height:2.1;max-width:460px;margin-bottom:34px}
+.rolecards{display:grid;gap:12px;max-width:520px}
+.rolecard{
+  display:flex;align-items:center;gap:15px;padding:16px 18px;border-radius:var(--r-md);
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);
+  transition:.18s var(--ease);backdrop-filter:blur(6px);
+}
+.rolecard:hover{background:rgba(255,255,255,.14);border-color:rgba(209,171,123,.5);transform:translateY(-2px)}
+.rolecard .ib{width:44px;height:44px;flex:none;border-radius:var(--r-sm);display:grid;place-items:center;background:rgba(209,171,123,.18);color:var(--sand)}
+.rolecard .ib svg{width:21px;height:21px}
+.rolecard b{display:block;font-size:14.5px;color:#fff;font-weight:800;margin-bottom:2px}
+.rolecard span{display:block;font-size:11.5px;color:var(--on-dark-muted);line-height:1.8}
+.rolecard .cta{margin-inline-start:auto;color:var(--sand);display:grid;place-items:center;width:30px;height:30px;border-radius:var(--r-xs);border:1px solid rgba(209,171,123,.4);flex:none}
+.rolecard .cta svg{width:15px;height:15px}
+.bs-foot{position:relative;z-index:2;display:flex;gap:22px;flex-wrap:wrap;font-size:11.5px;color:var(--on-dark-muted);padding-top:34px;border-top:1px solid rgba(255,255,255,.12)}
+.bs-foot span{display:inline-flex;align-items:center;gap:8px}
+.bs-foot svg{width:15px;height:15px;color:var(--sand)}
+
+/* ---- form side ---- */
+.formside{display:flex;align-items:center;justify-content:center;padding:40px 32px}
+.box{width:100%;max-width:412px}
+.box > .eyebrow{
+  display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;
+  color:var(--sand-700);background:var(--sand-100);padding:6px 14px;border-radius:var(--r-pill);margin-bottom:20px;
+}
+.box h2{font-size:25px;margin-bottom:8px}
+.box .sub{color:var(--muted);font-size:13.5px;margin-bottom:28px}
+.tabs{display:flex;gap:3px;background:#f1f3f6;padding:4px;border-radius:var(--r-pill);margin-bottom:24px}
+.tabs button{
+  flex:1;border:0;background:none;font:inherit;font-size:12.5px;font-weight:700;color:var(--muted);
+  padding:9px 8px;border-radius:var(--r-pill);cursor:pointer;transition:.16s;white-space:nowrap;
+}
+.tabs button.on{background:#fff;color:var(--navy);box-shadow:var(--sh-xs)}
+.field{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
+.field label{font-size:12px;font-weight:700;color:var(--ink-soft)}
+.ctrl{display:flex;align-items:center;gap:10px;background:#fcfcfa;border:1px solid var(--line-cool);border-radius:var(--r-sm);padding:0 13px;transition:.16s}
+.ctrl:focus-within{border-color:var(--sand);background:#fff;box-shadow:0 0 0 3px rgba(209,171,123,.16)}
+.ctrl svg{width:18px;height:18px;color:var(--muted);flex:none}
+.ctrl input{width:100%;border:0;background:transparent;font:inherit;font-size:13.5px;color:var(--ink);padding:12px 0;outline:none;min-height:48px}
+.row-between{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;font-size:12.5px}
+.check{display:inline-flex;align-items:center;gap:8px;color:var(--ink-soft);cursor:pointer}
+.check input{width:17px;height:17px;accent-color:var(--navy);cursor:pointer}
+.row-between a{color:var(--navy);font-weight:700}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;width:100%;
+  border:1px solid transparent;border-radius:var(--r-pill);padding:13px 22px;
+  font:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:.16s var(--ease);
+}
+.btn:hover{transform:translateY(-1px)}
+.btn-gold{background:var(--sand);color:var(--navy-900);box-shadow:var(--sh-gold)}
+.btn-gold:hover{background:var(--sand-600)}
+.btn-ghost{background:#fff;border-color:var(--line);color:var(--ink-soft);margin-top:11px}
+.btn-ghost:hover{border-color:var(--navy-200);background:var(--navy-50);color:var(--navy)}
+.btn svg{width:17px;height:17px;flex:none}
+.divider{display:flex;align-items:center;gap:13px;margin:24px 0 18px;color:var(--muted);font-size:11.5px}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+.notice{display:flex;gap:10px;align-items:flex-start;background:var(--navy-50);color:var(--navy);border-radius:var(--r-sm);padding:12px 14px;font-size:12px;line-height:1.85;margin-top:22px}
+.notice svg{width:17px;height:17px;flex:none;margin-top:2px}
+.back{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--muted);margin-top:24px}
+.back:hover{color:var(--navy)}
+.back svg{width:15px;height:15px}
+.demo-creds{background:var(--sand-50);border:1px dashed var(--sand);border-radius:var(--r-sm);padding:13px 15px;font-size:11.5px;color:var(--sand-700);line-height:2;margin-top:22px}
+.demo-creds b{color:var(--ink)}
+.demo-creds code{font-family:ui-monospace,Menlo,monospace;direction:ltr;display:inline-block;background:#fff;border:1px solid var(--sand-100);border-radius:5px;padding:1px 7px;color:var(--navy)}
+
+.toast{position:fixed;inset-block-end:24px;inset-inline-start:24px;background:var(--navy-900);color:#fff;padding:13px 20px;border-radius:var(--r-md);font-size:12.5px;box-shadow:var(--sh-lg);display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(12px);transition:.25s var(--ease);pointer-events:none;z-index:60}
+.toast.on{opacity:1;transform:none}
+.toast svg{width:18px;height:18px;color:var(--sand);flex:none}
+
+@media(max-width:940px){
+  body{grid-template-columns:1fr}
+  .brandside{padding:32px 24px}
+  .blogo{margin-bottom:32px}
+  .brandside .lead{margin-bottom:24px}
+  .bs-foot{padding-top:24px}
+  .formside{padding:32px 20px 48px}
+}
+</style>
+</head>
+<body>
+
+<section class="brandside">
+  <div class="bs-in">
+    <div class="blogo">
+      <span class="mk" id="logoMark"></span>
+      <span><b>اساطیر آینده</b><small>platform</small></span>
+    </div>
+    <h1>پلتفرم آموزش <em>اساطیر آینده</em></h1>
+    <p class="lead">یک حساب کاربری، سه تجربهٔ متفاوت. بر اساس نقش خود وارد شوید — مدیریت آموزشگاه، تدریس، یا یادگیری.</p>
+
+    <div class="rolecards">
+      <a class="rolecard" href="platform-admin.html">
+        <span class="ib" id="iAdmin"></span>
+        <span><b>پنل مدیر</b><span>مدیریت کاربران، کلاس‌ها، مالی و گزارش‌ها</span></span>
+        <span class="cta" id="cAdmin"></span>
+      </a>
+      <a class="rolecard" href="platform-teacher.html">
+        <span class="ib" id="iTeacher"></span>
+        <span><b>پنل مدرس</b><span>برنامهٔ کلاس‌ها، نمره‌دهی، حضور و غیاب و محتوا</span></span>
+        <span class="cta" id="cTeacher"></span>
+      </a>
+      <a class="rolecard" href="platform-student.html">
+        <span class="ib" id="iStudent"></span>
+        <span><b>پنل زبان‌آموز</b><span>ویدیوهای آموزشی، آزمون‌ها، نمره و کارنامه</span></span>
+        <span class="cta" id="cStudent"></span>
+      </a>
+    </div>
+  </div>
+  <div class="bs-foot">
+    <span id="f1"></span>
+    <span id="f2"></span>
+    <span id="f3"></span>
+  </div>
+</section>
+
+<section class="formside">
+  <div class="box">
+    <span class="eyebrow" id="eyebrow"></span>
+    <h2>ورود به پلتفرم</h2>
+    <p class="sub">برای ورود، نام کاربری و گذرواژه‌ای که آموزشگاه در اختیار شما گذاشته است را وارد کنید.</p>
+
+    <div class="tabs" id="tabs">
+      <button class="on" data-role="student">زبان‌آموز</button>
+      <button data-role="teacher">مدرس</button>
+      <button data-role="admin">مدیر</button>
+    </div>
+
+    <form id="loginForm">
+      <div class="field">
+        <label>نام کاربری یا شمارهٔ تماس</label>
+        <div class="ctrl"><span id="icUser"></span><input type="text" id="uname" placeholder="۰۹۱۲ ۰۰۰ ۰۰۰۰" required></div>
+      </div>
+      <div class="field">
+        <label>گذرواژه</label>
+        <div class="ctrl"><span id="icLock"></span><input type="password" id="pass" placeholder="••••••••" required></div>
+      </div>
+      <div class="row-between">
+        <label class="check"><input type="checkbox" checked> مرا به خاطر بسپار</label>
+        <a href="#" data-demo="بازیابی گذرواژه از طریق پیامک">فراموشی گذرواژه؟</a>
+      </div>
+      <button class="btn btn-gold" type="submit" id="submitBtn">ورود به پنل</button>
+      <button class="btn btn-ghost" type="button" data-demo="ورود مهمان فعال شد — نمایش آزمایشی پنل">ورود به‌عنوان مهمان (نمایش آزمایشی)</button>
+    </form>
+
+    <div class="demo-creds">
+      برای ورود واقعی به پلتفرم از <a href="/login">/login</a> استفاده کنید. حساب‌های نمایشی — نام کاربری و گذرواژه هر دو <code>demo</code>
+    </div>
+
+    <div class="notice" id="notice">
+      <span id="icInfo"></span>
+      <span>در نسخهٔ نهایی، پس از ورود به‌صورت خودکار به پنل متناسب با نقش شما هدایت می‌شوید.</span>
+    </div>
+
+    <a class="back" href="index.html"><span id="icBack"></span>بازگشت به وب‌سایت آموزشگاه</a>
+  </div>
+</section>
+
+<div class="toast" id="toast"><span id="icToast"></span><span id="toastMsg"></span></div>
+
+<script>
+const LOGO = `
+<svg viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="اساطیر آینده">
+  <defs><linearGradient id="g1" x1="0" y1="1" x2="1" y2="0">
+    <stop offset="0%" stop-color="#b98f58"/><stop offset="55%" stop-color="#D1AB7B"/><stop offset="100%" stop-color="#e6cda6"/>
+  </linearGradient></defs>
+  <circle cx="60" cy="60" r="52" fill="none" stroke="#ffffff" stroke-width="4.2" stroke-linecap="round" stroke-dasharray="252 74" stroke-dashoffset="118"/>
+  <path d="M60 24 L84 96 H70.5 L60 60.5 L49.5 96 H36 Z" fill="#ffffff"/>
+  <path d="M22 74 C 40 44, 66 30, 100 40 C 82 40, 62 50, 48 66 C 38 78, 34 88, 40 96 C 30 90, 24 82, 22 74 Z" fill="url(#g1)"/>
+</svg>`;
+const ICO = {
+  shield:'<path d="M12 22s8-3.6 8-10V5l-8-3-8 3v7c0 6.4 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>',
+  book:'<path d="M2 4h7a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H2z"/><path d="M22 4h-7a3 3 0 0 0-3 3v13a2.5 2.5 0 0 1 2.5-2.5H22z"/>',
+  user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  'chev-l':'<path d="M15 6l-6 6 6 6"/>',
+  'arrow-l':'<path d="M19 12H5M12 5l-7 7 7 7"/>',
+  lock:'<rect x="4.5" y="10.5" width="15" height="10" rx="2.4"/><path d="M8 10.5V7.6a4 4 0 0 1 8 0v2.9"/>',
+  check:'<path d="M20 6L9 17l-5-5"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.1"/>',
+  shield2:'<path d="M12 22s8-3.6 8-10V5l-8-3-8 3v7c0 6.4 8 10 8 10z"/>'
+};
+const ic = n => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICO[n]+'</svg>';
+
+document.getElementById('logoMark').innerHTML = LOGO;
+document.getElementById('iAdmin').innerHTML   = ic('shield');
+document.getElementById('iTeacher').innerHTML = ic('book');
+document.getElementById('iStudent').innerHTML = ic('user');
+document.getElementById('cAdmin').innerHTML   = ic('chev-l');
+document.getElementById('cTeacher').innerHTML = ic('chev-l');
+document.getElementById('cStudent').innerHTML = ic('chev-l');
+document.getElementById('eyebrow').innerHTML  = ic('shield2') + '<span>Platform</span>';
+document.getElementById('icUser').innerHTML   = ic('user');
+document.getElementById('icLock').innerHTML   = ic('lock');
+document.getElementById('icInfo').innerHTML   = ic('info');
+document.getElementById('icBack').innerHTML   = ic('arrow-l');
+document.getElementById('icToast').innerHTML  = ic('check');
+document.getElementById('f1').innerHTML = ic('check') + '<span>دسترسی ۲۴ ساعته به منابع</span>';
+document.getElementById('f2').innerHTML = ic('check') + '<span>نمره‌دهی خودکار آزمون‌ها</span>';
+document.getElementById('f3').innerHTML = ic('check') + '<span>پشتیبانی آموزشی</span>';
+
+const HOME = {admin:'platform-admin.html', teacher:'platform-teacher.html', student:'platform-student.html'};
+const LABEL = {admin:'مدیر آموزشگاه', teacher:'مدرس', student:'زبان‌آموز'};
+let role = 'student';
+
+document.getElementById('tabs').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-role]'); if(!b) return;
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  role = b.dataset.role;
+  document.getElementById('submitBtn').textContent = 'ورود به پنل ' + LABEL[role];
+});
+
+let tt;
+function toast(m){
+  document.getElementById('toastMsg').textContent = m;
+  const t = document.getElementById('toast');
+  t.classList.add('on'); clearTimeout(tt);
+  tt = setTimeout(()=>t.classList.remove('on'), 2600);
+}
+document.addEventListener('click', e=>{
+  const d = e.target.closest('[data-demo]');
+  if (d){ e.preventDefault(); toast(d.dataset.demo); }
+});
+
+document.getElementById('loginForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  toast('ورود موفق — انتقال به پنل ' + LABEL[role]);
+  setTimeout(()=>{ window.location.href = HOME[role]; }, 700);
+});
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

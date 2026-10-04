@@ -1,0 +1,53 @@
+@page "/teacher/contents"
+@attribute [Authorize(Roles = nameof(UserRole.Teacher))]
+@inject IUserService Users
+@inject IContentService Contents
+@inject ICurrentUserContext Current
+
+<div class="page-header">
+    <h1>محتوای سطوح من</h1>
+    <p class="muted">فقط محتوایی نمایش داده می‌شود که حداقل یک سطح مشترک با سطوح مجاز شما داشته باشد. هنگام بارگذاری فقط همان سطوح قابل انتخاب‌اند.</p>
+</div>
+
+@if (_levels.Count == 0)
+{
+    <div class="alert alert-error">سطحی برای این مدرس تعریف نشده است.</div>
+}
+else
+{
+    <p>سطوح مجاز: <strong>@string.Join("، ", _levels)</strong></p>
+    <div class="card pad">
+        @if (_items.Count == 0)
+        {
+            <p class="muted">محتوایی برای سطوح شما یافت نشد.</p>
+        }
+        else
+        {
+            <ul>
+                @foreach (var c in _items)
+                {
+                    <li style="margin-bottom:8px">
+                        <strong>@c.DisplayName</strong>
+                        <span class="muted">(@c.Type) — @string.Join(", ", c.Levels)</span>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+    <p class="muted" style="margin-top:16px">برای بارگذاری از پنل کامل Admin/مدرس یا API استفاده کنید؛ سرویس محتوا سطوح غیرمجاز را رد می‌کند.</p>
+}
+
+@code {
+    private List<LanguageLevel> _levels = new();
+    private List<ContentDto> _items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Current.UserId is not long uid) return;
+        _levels = (await Users.GetTeacherLevelsAsync(uid)).ToList();
+        if (_levels.Count == 0) return;
+
+        var all = await Contents.GetAllAsync();
+        _items = all.Where(c => c.Levels.Any(l => _levels.Contains(l))).ToList();
+    }
+}

@@ -23,6 +23,7 @@ public interface IApplicationDbContext
     DbSet<QuizAnswer> QuizAnswers { get; }
     DbSet<QuizRetakeGrant> QuizRetakeGrants { get; }
     DbSet<ContentFeedback> ContentFeedbacks { get; }
+    DbSet<TeacherLevel> TeacherLevels { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

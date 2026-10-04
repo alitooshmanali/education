@@ -1,0 +1,46 @@
+@page "/teacher"
+@attribute [Authorize(Roles = nameof(UserRole.Teacher))]
+@inject IUserService Users
+@inject IContentService Contents
+@inject ICurrentUserContext Current
+
+<div class="page-header">
+    <h1>داشبورد مدرس</h1>
+    <p class="muted">محتوای قابل مدیریت فقط برای سطوح تخصیص‌یافته به شماست.</p>
+</div>
+
+@if (_levels.Count > 0)
+{
+    <div class="stat-grid" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px">
+        @foreach (var lv in _levels)
+        {
+            <div class="card pad" style="min-width:120px">
+                <strong>@lv</strong>
+                <div class="muted" style="font-size:12px">سطح مجاز</div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-error">هیچ سطحی برای شما تعریف نشده. با مدیر آموزشگاه تماس بگیرید.</div>
+}
+
+<div class="card pad">
+    <h2 style="margin-bottom:12px">دسترسی سریع</h2>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <a class="btn btn-primary" href="/teacher/contents">مدیریت محتوا</a>
+        <a class="btn btn-secondary" href="/teacher/quizzes">آزمون‌ها</a>
+        <a class="btn btn-ghost" href="/site/platform-teacher.html">پیش‌نمایش UI کامل (نسخه نمایشی)</a>
+    </div>
+</div>
+
+@code {
+    private List<LanguageLevel> _levels = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Current.UserId is long uid)
+            _levels = (await Users.GetTeacherLevelsAsync(uid)).ToList();
+    }
+}

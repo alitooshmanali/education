@@ -11,10 +11,10 @@
 
     <aside class="app-sidebar" data-open="@_isNavOpen" aria-label="Primary navigation">
         <div class="brand">
-            <div class="brand__mark">ZA</div>
+            <div class="brand__mark">AA</div>
             <div class="brand__text">
-                <strong>آموزشگاه زبان Zalia</strong>
-                <span>پلتفرم جامع آموزش زبان انگلیسی</span>
+                <strong>اساطیر آینده</strong>
+                <span>پلتفرم آموزش آنلاین</span>
             </div>
         </div>
 
@@ -26,6 +26,20 @@
                     <NavLink class="nav-item" href="/student" Match="NavLinkMatch.All"><AppIcon Name="dashboard" /> داشبورد</NavLink>
                     <NavLink class="nav-item" href="/student/videos"><AppIcon Name="video" /> محتوا</NavLink>
                     <NavLink class="nav-item" href="/student/quizzes"><AppIcon Name="audit" /> آزمون‌ها</NavLink>
+                </section>
+            }
+            else if (_isTeacher)
+            {
+                <section class="nav-section">
+                    <div class="nav-label">پنل مدرس</div>
+                    <NavLink class="nav-item" href="/teacher" Match="NavLinkMatch.All"><AppIcon Name="dashboard" /> داشبورد</NavLink>
+                    <NavLink class="nav-item" href="/teacher/contents"><AppIcon Name="video" /> محتوای سطوح من</NavLink>
+                    <NavLink class="nav-item" href="/teacher/quizzes"><AppIcon Name="audit" /> آزمون‌ها</NavLink>
+                </section>
+                <section class="nav-section nav-section--footer">
+                    <button class="nav-item nav-item--ghost" type="button" @onclick="Logout" aria-label="خروج">
+                        <AppIcon Name="logout" /> خروج
+                    </button>
                 </section>
             }
             else if (_isAdmin)
@@ -84,7 +98,7 @@
                 <div class="user-chip">
                     <div class="user-meta">
                         <strong>@_displayName</strong>
-                        <span>@(_isAdmin ? "مدیر" : _isStudent ? "دانشجو" : "کاربر")</span>
+                        <span>@(_isAdmin ? "مدیر" : _isTeacher ? "مدرس" : _isStudent ? "دانشجو" : "کاربر")</span>
                     </div>
                     <div class="avatar" aria-hidden="true">@(_displayName?.FirstOrDefault())</div>
                     <button class="btn btn-secondary btn-compact" type="button" @onclick="Logout"><AppIcon Name="logout" /> خروج</button>
@@ -102,6 +116,7 @@
     private const string DefaultTheme = "system";
     private bool _isAdmin;
     private bool _isStudent;
+    private bool _isTeacher;
     private string _displayName = "کاربر";
     private bool _isNavOpen;
     private bool _isDarkMode;
@@ -117,6 +132,7 @@
         var user = auth.User;
         _isAdmin = user.IsInRole(nameof(UserRole.Admin));
         _isStudent = user.IsInRole(nameof(UserRole.Student));
+        _isTeacher = user.IsInRole(nameof(UserRole.Teacher));
         _displayName = user.Identity?.Name ?? "کاربر";
         _pageTitle = _isAdmin ? "داشبورد مدیریت" : _isStudent ? "داشبورد دانشجو" : "Lesson";
     }

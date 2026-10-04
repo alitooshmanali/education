@@ -303,7 +303,7 @@
                 bufferStream.Length,
                 _uploadLevels.ToList());
 
-            var entity = await Contents.UploadAsync(request, ct);
+            var entity = await Contents.UploadAsync(request, cancellationToken: ct);
             _uploadedContentId = entity.Id;
 
             ct.ThrowIfCancellationRequested();

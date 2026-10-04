@@ -28,6 +28,8 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy => policy.RequireRole(nameof(UserRole.Admin)));
     options.AddPolicy("StudentOnly", policy => policy.RequireRole(nameof(UserRole.Student)));
+    options.AddPolicy("TeacherOnly", policy => policy.RequireRole(nameof(UserRole.Teacher)));
+    options.AddPolicy("Staff", policy => policy.RequireRole(nameof(UserRole.Admin), nameof(UserRole.Teacher)));
 });
 
 builder.Services.Configure<LessonStorageOptions>(builder.Configuration.GetSection("LessonStorage"));
@@ -54,12 +56,16 @@ var app = builder.Build();
 
 app.UseExceptionHandler("/error");
 app.UseStatusCodePagesWithReExecute("/error/{0}");
+app.UseDefaultFiles();
 app.UseStaticFiles();
 app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorComponents<Lesson.Web.App>().AddInteractiveServerRenderMode();
+
+// Public marketing website
+app.MapGet("/site", () => Results.Redirect("/site/index.html"));
 
 // ---------- Auth ----------
 app.MapPost("/api/auth/login", async (HttpContext context, Lesson.Infrastructure.Abstractions.IAuthenticationService auth) =>
@@ -96,7 +102,13 @@ app.MapPost("/api/auth/login", async (HttpContext context, Lesson.Infrastructure
 
     var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
     await context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
-    return Results.Redirect(result.User.Role == UserRole.Admin ? "/admin" : "/student");
+    var home = result.User.Role switch
+    {
+        UserRole.Admin => "/admin",
+        UserRole.Teacher => "/teacher",
+        _ => "/student"
+    };
+    return Results.Redirect(home);
 });
 
 app.MapMethods("/api/auth/logout", ["GET", "POST"], async (HttpContext context, Lesson.Infrastructure.Abstractions.IAuthenticationService auth) =>
@@ -117,9 +129,11 @@ app.MapGet("/api/contents/{id:long}/stream", async (HttpContext context, long id
     var userId = long.Parse(context.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
     var device = context.User.FindFirstValue("lesson.device") ?? string.Empty;
     var session = context.User.FindFirstValue("lesson.session") ?? string.Empty;
-    var isAdmin = context.User.IsInRole(nameof(UserRole.Admin));
+    // Admin and Teacher can open streams without student permission checks
+    var isStaff = context.User.IsInRole(nameof(UserRole.Admin))
+                  || context.User.IsInRole(nameof(UserRole.Teacher));
 
-    var result = await streaming.OpenAsync(id, userId, device, session, isAdmin);
+    var result = await streaming.OpenAsync(id, userId, device, session, isStaff);
     if (result is null)
         return Results.Forbid();
 
