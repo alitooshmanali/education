@@ -1,0 +1,90 @@
+@inject TeacherSessionState Session
+@inject ITeacherWorkspaceService Workspace
+@inject ICurrentUserContext Current
+@implements IDisposable
+
+<div class="teacher-context" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:18px;padding:12px 16px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:12px">
+    <div class="field" style="margin:0;min-width:140px">
+        <label style="font-size:11px">سطح</label>
+        <select @bind="_levelStr" @bind:after="OnLevelChanged">
+            <option value="">— انتخاب سطح —</option>
+            @foreach (var lv in _levels)
+            {
+                <option value="@((int)lv.Level)">@lv.Level (@lv.ClassCount کلاس)</option>
+            }
+        </select>
+    </div>
+    <div class="field" style="margin:0;min-width:200px">
+        <label style="font-size:11px">کلاس</label>
+        <select @bind="_classStr" @bind:after="OnClassChanged" disabled="@(_classes.Count == 0)">
+            <option value="">— انتخاب کلاس —</option>
+            @foreach (var c in _classes)
+            {
+                <option value="@c.Id">@c.Code — @c.Title</option>
+            }
+        </select>
+    </div>
+    @if (Session.SelectedClass is { } sc)
+    {
+        <span class="muted" style="font-size:12.5px">
+            @string.Join("، ", sc.Days.Select(d => d.DayNameFa))
+            · @sc.StartTime.ToString(@"hh\:mm")–@sc.EndTime.ToString(@"hh\:mm")
+        </span>
+    }
+</div>
+
+@code {
+    private List<TeacherLevelOption> _levels = new();
+    private List<ClassRoomDto> _classes = new();
+    private string _levelStr = "";
+    private string _classStr = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnSessionChanged;
+        if (Current.UserId is long uid)
+        {
+            _levels = (await Workspace.GetMyLevelsAsync(uid)).ToList();
+            if (Session.SelectedLevel is { } lv)
+            {
+                _levelStr = ((int)lv).ToString();
+                _classes = (await Workspace.GetMyClassesAsync(uid, lv)).ToList();
+            }
+            if (Session.SelectedClassId is { } cid)
+                _classStr = cid.ToString();
+        }
+    }
+
+    private async Task OnLevelChanged()
+    {
+        if (!Enum.TryParse<LanguageLevel>(_levelStr, out var lv) && !int.TryParse(_levelStr, out var li))
+        {
+            Session.SetLevel(null);
+            _classes = new();
+            _classStr = "";
+            return;
+        }
+        if (int.TryParse(_levelStr, out var n))
+            lv = (LanguageLevel)n;
+        Session.SetLevel(lv);
+        if (Current.UserId is long uid)
+            _classes = (await Workspace.GetMyClassesAsync(uid, lv)).ToList();
+        _classStr = "";
+    }
+
+    private async Task OnClassChanged()
+    {
+        if (!long.TryParse(_classStr, out var id))
+        {
+            Session.SetClass(null);
+            return;
+        }
+        var cls = _classes.FirstOrDefault(c => c.Id == id);
+        Session.SetClass(cls);
+        await Task.CompletedTask;
+    }
+
+    private void OnSessionChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Session.Changed -= OnSessionChanged;
+}

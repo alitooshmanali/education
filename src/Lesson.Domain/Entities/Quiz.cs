@@ -29,6 +29,11 @@ public sealed class Quiz : BaseEntity
     public long? FolderId { get; set; }
     public Folder? Folder { get; set; }
 
+    public long? ClassId { get; set; }
+    public ClassRoom? Class { get; set; }
+    public long? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
+
     public ICollection<QuizQuestion> Questions { get; set; } = new List<QuizQuestion>();
     public ICollection<QuizAssignment> Assignments { get; set; } = new List<QuizAssignment>();
     public ICollection<QuizAttempt> Attempts { get; set; } = new List<QuizAttempt>();

@@ -1,0 +1,281 @@
+@page "/admin/classes"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject IClassService Classes
+@inject IUserService Users
+
+<section class="page">
+    <PageHeader Title="کلاس‌ها و دوره‌ها" Subtitle="تعریف کلاس، سطح، مدرس و برنامهٔ زمانی — محتوا توسط مدرس هر کلاس بارگذاری می‌شود." />
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="alert alert-error">@_error</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(_status))
+    {
+        <div class="alert alert-success">@_status</div>
+    }
+
+    <div class="toolbar" style="margin-bottom:16px">
+        <button class="btn btn-primary" type="button" @onclick="StartCreate">کلاس جدید</button>
+        <a class="btn btn-ghost" href="/site/platform-admin.html">پیش‌نمایش UI کامل ادمین</a>
+    </div>
+
+    @if (_showForm)
+    {
+        <section class="panel pad panel-narrow" style="margin-bottom:20px">
+            <h3>@(_editId is null ? "ایجاد کلاس" : "ویرایش کلاس")</h3>
+            <div class="form-grid">
+                <div class="field">
+                    <label>کد کلاس</label>
+                    <input @bind="_code" placeholder="مثلاً EN-A1-01 یا ۱۰۱" />
+                </div>
+                <div class="field">
+                    <label>عنوان</label>
+                    <input @bind="_title" placeholder="مکالمه پیشرفته" />
+                </div>
+                <div class="field">
+                    <label>حوزه</label>
+                    <select @bind="_subject">
+                        @foreach (var s in Enum.GetValues<SubjectArea>())
+                        {
+                            <option value="@s">@SubjectLabel(s)</option>
+                        }
+                    </select>
+                </div>
+                <div class="field">
+                    <label>سطح</label>
+                    <select @bind="_level">
+                        @foreach (var l in Enum.GetValues<LanguageLevel>())
+                        {
+                            <option value="@l">@l</option>
+                        }
+                    </select>
+                </div>
+                <div class="field">
+                    <label>مدرس</label>
+                    <select @bind="_teacherIdStr">
+                        <option value="">— بدون مدرس —</option>
+                        @foreach (var t in _teachers)
+                        {
+                            <option value="@t.Id">@t.Username</option>
+                        }
+                    </select>
+                </div>
+                <div class="field">
+                    <label>ظرفیت</label>
+                    <input type="number" min="1" @bind="_capacity" />
+                </div>
+                <div class="field">
+                    <label>ساعت شروع</label>
+                    <input type="time" @bind="_startTime" />
+                </div>
+                <div class="field">
+                    <label>ساعت پایان</label>
+                    <input type="time" @bind="_endTime" />
+                </div>
+                <div class="field" style="grid-column:1/-1">
+                    <label>روزهای هفته</label>
+                    <div style="display:flex;flex-wrap:wrap;gap:10px">
+                        @for (var i = 0; i < 7; i++)
+                        {
+                            var day = i;
+                            <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px">
+                                <input type="checkbox" checked="@_days.Contains(day)"
+                                       @onchange="e => ToggleDay(day, (bool)(e.Value ?? false))" />
+                                @_dayNames[day]
+                            </label>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="toolbar toolbar--spaced">
+                <button class="btn btn-primary" type="button" disabled="@_busy" @onclick="SaveAsync">ذخیره</button>
+                <button class="btn btn-ghost" type="button" @onclick="CancelForm">لغو</button>
+            </div>
+            <p class="muted" style="font-size:12.5px;margin-top:12px">
+                اگر مدرس در همان روز و بازهٔ زمانی کلاس دیگری داشته باشد، ذخیره رد می‌شود.
+            </p>
+        </section>
+    }
+
+    <div class="tbl-wrap card">
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th>کد</th>
+                    <th>عنوان</th>
+                    <th>حوزه</th>
+                    <th>سطح</th>
+                    <th>مدرس</th>
+                    <th>روزها</th>
+                    <th>ساعت</th>
+                    <th>ظرفیت</th>
+                    <th>وضعیت</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (_items.Count == 0)
+                {
+                    <tr><td colspan="10"><div class="empty">کلاسی ثبت نشده است.</div></td></tr>
+                }
+                else
+                {
+                    @foreach (var c in _items)
+                    {
+                        <tr>
+                            <td><b>@c.Code</b></td>
+                            <td>@c.Title</td>
+                            <td>@SubjectLabel(c.Subject)</td>
+                            <td><span class="pill">@c.Level</span></td>
+                            <td>@(c.TeacherUsername ?? "—")</td>
+                            <td>@string.Join("، ", c.Days.Select(d => d.DayNameFa))</td>
+                            <td class="num">@c.StartTime.ToString(@"hh\:mm") – @c.EndTime.ToString(@"hh\:mm")</td>
+                            <td class="num">@c.EnrolledCount / @c.Capacity</td>
+                            <td><span class="pill">@StatusLabel(c.Status)</span></td>
+                            <td class="end">
+                                <button class="btn btn-sm btn-ghost" type="button" @onclick="() => StartEdit(c)">ویرایش</button>
+                                <button class="btn btn-sm btn-outline" type="button" @onclick="() => DeactivateAsync(c.Id)">حذف</button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private static readonly string[] _dayNames = ["یک‌شنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه", "شنبه"];
+
+    private List<ClassRoomDto> _items = new();
+    private List<User> _teachers = new();
+    private string? _error;
+    private string? _status;
+    private bool _busy;
+    private bool _showForm;
+    private long? _editId;
+
+    private string _code = "";
+    private string _title = "";
+    private SubjectArea _subject = SubjectArea.English;
+    private LanguageLevel _level = LanguageLevel.A1;
+    private string _teacherIdStr = "";
+    private int _capacity = 12;
+    private TimeOnly _startTime = new(17, 0);
+    private TimeOnly _endTime = new(19, 0);
+    private HashSet<int> _days = new() { 6 }; // Saturday default
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        _items = (await Classes.GetAllAsync()).Where(x => x.Status != ClassStatus.Inactive).ToList();
+        _teachers = (await Users.GetTeachersAsync()).Where(t => t.IsActive).ToList();
+    }
+
+    private void StartCreate()
+    {
+        _editId = null;
+        _code = "";
+        _title = "";
+        _subject = SubjectArea.English;
+        _level = LanguageLevel.A1;
+        _teacherIdStr = "";
+        _capacity = 12;
+        _startTime = new TimeOnly(17, 0);
+        _endTime = new TimeOnly(19, 0);
+        _days = new HashSet<int> { 6 };
+        _showForm = true;
+        _error = null;
+    }
+
+    private void StartEdit(ClassRoomDto c)
+    {
+        _editId = c.Id;
+        _code = c.Code;
+        _title = c.Title;
+        _subject = c.Subject;
+        _level = c.Level;
+        _teacherIdStr = c.TeacherId?.ToString() ?? "";
+        _capacity = c.Capacity;
+        _startTime = TimeOnly.FromTimeSpan(c.StartTime);
+        _endTime = TimeOnly.FromTimeSpan(c.EndTime);
+        _days = c.Days.Select(d => d.DayOfWeek).ToHashSet();
+        _showForm = true;
+        _error = null;
+    }
+
+    private void CancelForm() => _showForm = false;
+
+    private void ToggleDay(int day, bool on)
+    {
+        if (on) _days.Add(day);
+        else _days.Remove(day);
+    }
+
+    private async Task SaveAsync()
+    {
+        try
+        {
+            _busy = true;
+            _error = null;
+            long? teacherId = long.TryParse(_teacherIdStr, out var tid) ? tid : null;
+            var req = new UpsertClassRequest(
+                _code, _title, _subject, _level, teacherId, _capacity,
+                _startTime.ToTimeSpan(), _endTime.ToTimeSpan(), _days.ToList());
+
+            if (_editId is long id)
+                await Classes.UpdateAsync(id, req);
+            else
+                await Classes.CreateAsync(req);
+
+            _status = "کلاس ذخیره شد.";
+            _showForm = false;
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task DeactivateAsync(long id)
+    {
+        try
+        {
+            await Classes.DeleteAsync(id);
+            _status = "کلاس غیرفعال شد.";
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+
+    private static string SubjectLabel(SubjectArea s) => s switch
+    {
+        SubjectArea.English => "انگلیسی",
+        SubjectArea.Computer => "کامپیوتر",
+        SubjectArea.Music => "موسیقی",
+        SubjectArea.Painting => "نقاشی",
+        _ => s.ToString()
+    };
+
+    private static string StatusLabel(ClassStatus s) => s switch
+    {
+        ClassStatus.Active => "فعال",
+        ClassStatus.Full => "تکمیل ظرفیت",
+        ClassStatus.NoTeacher => "بدون مدرس",
+        ClassStatus.Inactive => "غیرفعال",
+        _ => s.ToString()
+    };
+}

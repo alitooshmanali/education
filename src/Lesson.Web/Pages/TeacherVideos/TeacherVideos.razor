@@ -1,0 +1,80 @@
+@page "/teacher/videos"
+@attribute [Authorize(Roles = nameof(UserRole.Teacher))]
+@inject TeacherSessionState Session
+@inject ITeacherWorkspaceService Workspace
+@inject ICurrentUserContext Current
+@implements IDisposable
+
+<section class="page">
+    <PageHeader Title="ویدیوهای آموزشی" Subtitle="ویدیوها در پوشه قرار می‌گیرند. پیش‌فرض همه می‌بینند؛ می‌توانید دسترسی را محدود کنید. پخش فقط با Play و به‌صورت chunk." />
+    <TeacherClassSelector />
+
+    @if (Session.SelectedClassId is null)
+    {
+        <div class="card pad"><p class="muted">کلاس را انتخاب کنید.</p></div>
+    }
+    else
+    {
+        <div class="toolbar" style="margin-bottom:12px">
+            <a class="btn btn-primary" href="/teacher/folders">مدیریت پوشه</a>
+            <span class="muted" style="font-size:12.5px">بارگذاری فایل ویدیو از مسیر محتوا با ClassId کلاس جاری انجام می‌شود.</span>
+        </div>
+        <div class="tbl-wrap card">
+            <table class="tbl">
+                <thead>
+                    <tr><th>عنوان</th><th>پوشه</th><th>حجم</th><th>دسترسی</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @if (_items.Count == 0)
+                    {
+                        <tr><td colspan="5"><div class="empty">ویدیویی برای این کلاس نیست.</div></td></tr>
+                    }
+                    else foreach (var v in _items)
+                    {
+                        <tr>
+                            <td><b>@v.DisplayName</b></td>
+                            <td>@v.FolderName</td>
+                            <td class="num">@FormatSize(v.FileSize)</td>
+                            <td>@(v.IsRestricted ? "محدود" : "همهٔ کلاس")</td>
+                            <td class="end">
+                                <button class="btn btn-sm btn-ghost" type="button"
+                                        @onclick="() => ToggleRestrict(v)">@(v.IsRestricted ? "باز کردن برای همه" : "محدودسازی")</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@code {
+    private List<TeacherContentListItemDto> _items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnChanged;
+        await LoadAsync();
+    }
+
+    private async void OnChanged() { await LoadAsync(); await InvokeAsync(StateHasChanged); }
+
+    private async Task LoadAsync()
+    {
+        _items = new();
+        if (Current.UserId is long uid && Session.SelectedClassId is long cid)
+            _items = (await Workspace.GetClassContentsAsync(uid, cid, ContentType.Video)).ToList();
+    }
+
+    private async Task ToggleRestrict(TeacherContentListItemDto v)
+    {
+        if (Current.UserId is not long uid) return;
+        // محدود بدون لیست = هیچ‌کس؛ باز = همه
+        await Workspace.SetContentRestrictionAsync(uid, v.Id, !v.IsRestricted, null);
+        await LoadAsync();
+    }
+
+    private static string FormatSize(long b) => b < 1024 * 1024 ? $"{b / 1024.0:0.#} KB" : $"{b / (1024.0 * 1024):0.#} MB";
+
+    public void Dispose() => Session.Changed -= OnChanged;
+}

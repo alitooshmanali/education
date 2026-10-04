@@ -1,11 +1,103 @@
 @page "/teacher/quizzes"
 @attribute [Authorize(Roles = nameof(UserRole.Teacher))]
+@inject TeacherSessionState Session
+@inject ITeacherWorkspaceService Workspace
+@inject IQuizService Quizzes
+@inject ICurrentUserContext Current
+@implements IDisposable
 
-<div class="page-header">
-    <h1>آزمون‌های مدرس</h1>
-    <p class="muted">مدیریت آزمون‌های مرتبط با سطوح مجاز شما (منطق کامل در نسخه بعدی به سرویس Quiz متصل می‌شود).</p>
-</div>
+<section class="page">
+    <PageHeader Title="آزمون‌ها"
+                Subtitle="گرامر: توضیح + تصویر اختیاری + سوال ۲ تا ۴ گزینه‌ای + زمان‌سنج. جامع: تعیین سطح با سوال/جواب و زمان. شرکت مجدد فقط با GrantRetake." />
+    <TeacherClassSelector />
 
-<div class="card pad">
-    <a class="btn btn-primary" href="/site/platform-teacher.html">مشاهده پیش‌نمایش پنل مدرس</a>
-</div>
+    @if (Session.SelectedClassId is null)
+    {
+        <div class="card pad"><p class="muted">کلاس را انتخاب کنید.</p></div>
+    }
+    else
+    {
+        <div class="notice info" style="margin-bottom:14px">
+            قوانین: هر سوال ۲–۴ گزینه و دقیقاً یک پاسخ صحیح؛ مجموع نمرات سوال ≤ نمره کل آزمون؛ با اتمام زمان، نمره تا همان‌جا محاسبه می‌شود.
+        </div>
+        <div class="tbl-wrap card">
+            <table class="tbl">
+                <thead>
+                    <tr><th>عنوان</th><th>نوع</th><th>زمان (دقیقه)</th><th>نمره کل</th><th>سوالات</th></tr>
+                </thead>
+                <tbody>
+                    @if (_items.Count == 0)
+                    {
+                        <tr><td colspan="5"><div class="empty">آزمونی برای این کلاس نیست.</div></td></tr>
+                    }
+                    else foreach (var q in _items)
+                    {
+                        <tr>
+                            <td><b>@q.Title</b></td>
+                            <td>@(q.Type == QuizType.Grammar ? "گرامر" : "جامع / تعیین سطح")</td>
+                            <td class="num">@q.TimeLimitMinutes</td>
+                            <td class="num">@q.TotalScore</td>
+                            <td class="num">@q.QuestionCount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <section class="panel pad panel-narrow" style="margin-top:20px">
+            <h3>اعطای شرکت مجدد</h3>
+            <div class="form-grid">
+                <div class="field">
+                    <label>شناسه آزمون</label>
+                    <input @bind="_retakeQuizId" placeholder="Quiz Id" />
+                </div>
+                <div class="field">
+                    <label>شناسه دانش‌آموز</label>
+                    <input @bind="_retakeUserId" placeholder="User Id" />
+                </div>
+            </div>
+            <button class="btn btn-primary" type="button" @onclick="GrantRetakeAsync">اجازهٔ شرکت مجدد</button>
+            @if (!string.IsNullOrEmpty(_msg)) { <p class="muted" style="margin-top:8px">@_msg</p> }
+        </section>
+    }
+</section>
+
+@code {
+    private List<TeacherQuizListItemDto> _items = new();
+    private string _retakeQuizId = "";
+    private string _retakeUserId = "";
+    private string? _msg;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnChanged;
+        await LoadAsync();
+    }
+
+    private async void OnChanged() { await LoadAsync(); await InvokeAsync(StateHasChanged); }
+
+    private async Task LoadAsync()
+    {
+        _items = new();
+        if (Current.UserId is long uid && Session.SelectedClassId is long cid)
+            _items = (await Workspace.GetClassQuizzesAsync(uid, cid)).ToList();
+    }
+
+    private async Task GrantRetakeAsync()
+    {
+        try
+        {
+            if (Current.UserId is not long teacherId) return;
+            if (!long.TryParse(_retakeQuizId, out var qid) || !long.TryParse(_retakeUserId, out var sid))
+            {
+                _msg = "شناسه‌ها نامعتبرند.";
+                return;
+            }
+            await Quizzes.GrantRetakeAsync(qid, sid, teacherId);
+            _msg = "اجازهٔ شرکت مجدد ثبت شد.";
+        }
+        catch (Exception ex) { _msg = ex.Message; }
+    }
+
+    public void Dispose() => Session.Changed -= OnChanged;
+}

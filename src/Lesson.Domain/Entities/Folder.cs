@@ -13,6 +13,13 @@ public sealed class Folder : BaseEntity
     /// <summary>Each folder belongs to exactly one level.</summary>
     public LanguageLevel Level { get; set; }
 
+    /// <summary>کلاس مدرس — پوشه‌های هر کلاس جدا هستند.</summary>
+    public long? ClassId { get; set; }
+    public ClassRoom? Class { get; set; }
+
+    public long? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
+
     public long? ParentFolderId { get; set; }
     public Folder? ParentFolder { get; set; }
     public ICollection<Folder> ChildFolders { get; set; } = new List<Folder>();

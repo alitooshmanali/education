@@ -24,6 +24,9 @@ public interface IApplicationDbContext
     DbSet<QuizRetakeGrant> QuizRetakeGrants { get; }
     DbSet<ContentFeedback> ContentFeedbacks { get; }
     DbSet<TeacherLevel> TeacherLevels { get; }
+    DbSet<ClassRoom> ClassRooms { get; }
+    DbSet<ClassScheduleDay> ClassScheduleDays { get; }
+    DbSet<ContentStudentAccess> ContentStudentAccesses { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

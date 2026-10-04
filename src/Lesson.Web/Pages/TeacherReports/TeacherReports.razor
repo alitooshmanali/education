@@ -1,0 +1,72 @@
+@page "/teacher/reports"
+@attribute [Authorize(Roles = nameof(UserRole.Teacher))]
+@inject TeacherSessionState Session
+@inject ITeacherWorkspaceService Workspace
+@inject ICurrentUserContext Current
+@implements IDisposable
+
+<section class="page">
+    <PageHeader Title="گزارش عملکرد کلاس"
+                Subtitle="به تفکیک دانش‌آموز: ویدیو/داستان تکمیل‌شده، شرکت در آزمون، میانگین نمره و رضایت." />
+    <TeacherClassSelector />
+
+    @if (Session.SelectedClassId is null)
+    {
+        <div class="card pad"><p class="muted">کلاس را انتخاب کنید تا گزارش همان کلاس لود شود.</p></div>
+    }
+    else
+    {
+        <div class="tbl-wrap card">
+            <table class="tbl">
+                <thead>
+                    <tr>
+                        <th>دانش‌آموز</th>
+                        <th>ویدیو تکمیل</th>
+                        <th>داستان تکمیل</th>
+                        <th>آزمون‌ها</th>
+                        <th>میانگین نمره</th>
+                        <th>رضایت (از ۵)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (_rows.Count == 0)
+                    {
+                        <tr><td colspan="6"><div class="empty">داده‌ای نیست.</div></td></tr>
+                    }
+                    else foreach (var r in _rows)
+                    {
+                        <tr>
+                            <td><b>@r.Username</b></td>
+                            <td class="num">@r.VideosCompleted</td>
+                            <td class="num">@r.StoriesCompleted</td>
+                            <td class="num">@r.QuizzesTaken</td>
+                            <td class="num">@(r.AvgQuizScore?.ToString("0.#") ?? "—")</td>
+                            <td class="num">@(r.AvgSatisfaction?.ToString("0.0") ?? "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@code {
+    private List<TeacherStudentReportDto> _rows = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnChanged;
+        await LoadAsync();
+    }
+
+    private async void OnChanged() { await LoadAsync(); await InvokeAsync(StateHasChanged); }
+
+    private async Task LoadAsync()
+    {
+        _rows = new();
+        if (Current.UserId is long uid && Session.SelectedClassId is long cid)
+            _rows = (await Workspace.GetClassStudentReportsAsync(uid, cid)).ToList();
+    }
+
+    public void Dispose() => Session.Changed -= OnChanged;
+}

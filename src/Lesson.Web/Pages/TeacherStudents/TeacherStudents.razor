@@ -1,0 +1,59 @@
+@page "/teacher/students"
+@attribute [Authorize(Roles = nameof(UserRole.Teacher))]
+@inject TeacherSessionState Session
+@inject ITeacherWorkspaceService Workspace
+@inject ICurrentUserContext Current
+@implements IDisposable
+
+<section class="page">
+    <PageHeader Title="دانش‌آموزان کلاس" Subtitle="دانش‌آموزان هم‌سطح با کلاس انتخاب‌شده." />
+    <TeacherClassSelector />
+
+    @if (Session.SelectedClassId is null)
+    {
+        <div class="card pad"><p class="muted">کلاس را انتخاب کنید.</p></div>
+    }
+    else
+    {
+        <div class="tbl-wrap card">
+            <table class="tbl">
+                <thead><tr><th>نام کاربری</th><th>سطح</th><th>وضعیت</th></tr></thead>
+                <tbody>
+                    @if (_rows.Count == 0)
+                    {
+                        <tr><td colspan="3"><div class="empty">دانش‌آموزی در این سطح نیست.</div></td></tr>
+                    }
+                    else foreach (var s in _rows)
+                    {
+                        <tr>
+                            <td><b>@s.Username</b></td>
+                            <td>@(s.Level?.ToString() ?? "—")</td>
+                            <td>@(s.IsActive ? "فعال" : "غیرفعال")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@code {
+    private List<TeacherClassStudentDto> _rows = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnChanged;
+        await LoadAsync();
+    }
+
+    private async void OnChanged() { await LoadAsync(); await InvokeAsync(StateHasChanged); }
+
+    private async Task LoadAsync()
+    {
+        _rows = new();
+        if (Current.UserId is long uid && Session.SelectedClassId is long cid)
+            _rows = (await Workspace.GetClassStudentsAsync(uid, cid)).ToList();
+    }
+
+    public void Dispose() => Session.Changed -= OnChanged;
+}

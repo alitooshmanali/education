@@ -1,0 +1,71 @@
+@page "/teacher/podcasts"
+@attribute [Authorize(Roles = nameof(UserRole.Teacher))]
+@inject TeacherSessionState Session
+@inject ITeacherWorkspaceService Workspace
+@inject ICurrentUserContext Current
+@implements IDisposable
+
+<section class="page">
+    <PageHeader Title="پادکست‌ها" Subtitle="مشابه ویدیو: پوشه + دسترسی پیش‌فرض همه؛ امکان محدودسازی برای هر دانش‌آموز." />
+    <TeacherClassSelector />
+
+    @if (Session.SelectedClassId is null)
+    {
+        <div class="card pad"><p class="muted">کلاس را انتخاب کنید.</p></div>
+    }
+    else
+    {
+        <div class="tbl-wrap card">
+            <table class="tbl">
+                <thead><tr><th>عنوان</th><th>پوشه</th><th>دسترسی</th><th></th></tr></thead>
+                <tbody>
+                    @if (_items.Count == 0)
+                    {
+                        <tr><td colspan="4"><div class="empty">پادکستی نیست.</div></td></tr>
+                    }
+                    else foreach (var v in _items)
+                    {
+                        <tr>
+                            <td><b>@v.DisplayName</b></td>
+                            <td>@v.FolderName</td>
+                            <td>@(v.IsRestricted ? "محدود" : "همه")</td>
+                            <td class="end">
+                                <button class="btn btn-sm btn-ghost" type="button" @onclick="() => ToggleRestrict(v)">
+                                    @(v.IsRestricted ? "باز برای همه" : "محدودسازی")
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@code {
+    private List<TeacherContentListItemDto> _items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnChanged;
+        await LoadAsync();
+    }
+
+    private async void OnChanged() { await LoadAsync(); await InvokeAsync(StateHasChanged); }
+
+    private async Task LoadAsync()
+    {
+        _items = new();
+        if (Current.UserId is long uid && Session.SelectedClassId is long cid)
+            _items = (await Workspace.GetClassContentsAsync(uid, cid, ContentType.Audio)).ToList();
+    }
+
+    private async Task ToggleRestrict(TeacherContentListItemDto v)
+    {
+        if (Current.UserId is not long uid) return;
+        await Workspace.SetContentRestrictionAsync(uid, v.Id, !v.IsRestricted, null);
+        await LoadAsync();
+    }
+
+    public void Dispose() => Session.Changed -= OnChanged;
+}

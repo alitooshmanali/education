@@ -167,13 +167,14 @@
         </ActionsTemplate>
     </DataTable>
 
-    <ConfirmDialog IsOpen="_showDeleteConfirm"
-                   Title="حذف کاربر"
-                   Message="کاربر غیرفعال می‌شود و دیگر قابل ورود نخواهد بود. ادامه می‌دهید؟"
-                   ConfirmText="تایید"
-                   Busy="_isBusy"
-                   OnClose="CancelDelete"
-                   OnConfirm="DeleteSelectedAsync" />
+    <ConfirmDialog
+        IsOpen="_showDeleteConfirm"
+        Title="حذف کاربر"
+        Message="کاربر غیرفعال می‌شود و دیگر قابل ورود نخواهد بود. ادامه می‌دهید؟"
+        ConfirmText="تایید"
+        Busy="_isBusy"
+        OnClose="CancelDelete"
+        OnConfirm="DeleteSelectedAsync" />
 </section>
 
 @code {

@@ -21,6 +21,16 @@ public sealed class LessonContent : BaseEntity
     public long FolderId { get; set; }
     public Folder? Folder { get; set; }
 
+    public long? ClassId { get; set; }
+    public ClassRoom? Class { get; set; }
+    public long? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
+
+    /// <summary>اگر true فقط دانش‌آموزان لیست ContentStudentAccess می‌بینند؛ وگرنه همهٔ کلاس.</summary>
+    public bool IsRestricted { get; set; }
+
+    public ICollection<ContentStudentAccess> StudentAccesses { get; set; } = new List<ContentStudentAccess>();
+
     /// <summary>Levels where this content is visible. At least one required.</summary>
     public ICollection<ContentLevel> Levels { get; set; } = new List<ContentLevel>();
 

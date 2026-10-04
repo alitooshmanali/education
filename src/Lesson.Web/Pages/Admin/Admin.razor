@@ -6,8 +6,17 @@
 @inject IPermissionService Permissions
 @inject IFeedbackService Feedbacks
 @inject IQuizService Quizzes
+@inject IClassService Classes
 
-<PageHeader Eyebrow="Admin" Title="داشبورد مدیریت" Subtitle="خلاصه وضعیت سیستم و رضایت دانشجویان" />
+<PageHeader Eyebrow="Admin" Title="داشبورد مدیریت" Subtitle="کلاس‌ها و مدرسان را ادمین تعریف می‌کند؛ محتوا و آزمون را مدرس هر کلاس." />
+
+<div class="toolbar" style="margin-bottom:20px;display:flex;flex-wrap:wrap;gap:10px">
+    <a class="btn btn-primary" href="/admin/classes">کلاس‌ها</a>
+    <a class="btn btn-secondary" href="/admin/teachers">مدرسان</a>
+    <a class="btn btn-secondary" href="/admin/schedule">برنامهٔ هفتگی</a>
+    <a class="btn btn-ghost" href="/admin/users">کاربران</a>
+    <a class="btn btn-ghost" href="/site/platform-admin.html">UI کامل ادمین</a>
+</div>
 
 <section class="grid stats">
     <div class="stat-card">

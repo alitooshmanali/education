@@ -146,8 +146,22 @@ public sealed class ContentService : IContentService
             MimeType = mime,
             FileSize = bytes.Length,
             Type = type,
-            FolderId = folder.Id
+            FolderId = folder.Id,
+            ClassId = request.ClassId,
+            CreatedByUserId = actorUserId
         };
+
+        // مدرس فقط برای کلاس‌های خودش محتوا می‌گذارد
+        if (!isAdmin && actorUserId is long teacherId && request.ClassId is long classId)
+        {
+            var owns = await _db.ClassRooms.AnyAsync(
+                c => c.Id == classId && c.TeacherId == teacherId && c.IsActive, cancellationToken);
+            if (!owns)
+                throw new InvalidOperationException("این کلاس به شما اختصاص ندارد.");
+            var cls = await _db.ClassRooms.AsNoTracking().FirstAsync(c => c.Id == classId, cancellationToken);
+            if (!request.Levels.Contains(cls.Level))
+                throw new InvalidOperationException($"محتوای این کلاس باید سطح {cls.Level} داشته باشد.");
+        }
 
         foreach (var level in request.Levels.Distinct())
         {

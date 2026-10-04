@@ -1,0 +1,74 @@
+@page "/admin/teachers"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject IUserService Users
+@inject IClassService Classes
+
+<section class="page">
+    <PageHeader Title="مدرسان" Subtitle="هر مدرس می‌تواند چند کلاس در سطوح مختلف داشته باشد؛ تداخل زمانی مجاز نیست." />
+
+    @if (_rows.Count == 0)
+    {
+        <div class="card pad"><p class="muted">مدرسی ثبت نشده. از بخش کاربران یک کاربر با نقش Teacher بسازید.</p>
+            <a class="btn btn-primary" href="/admin/users">مدیریت کاربران</a>
+        </div>
+    }
+    else
+    {
+        <div class="tbl-wrap card">
+            <table class="tbl">
+                <thead>
+                    <tr>
+                        <th>مدرس</th>
+                        <th>سطوح مجاز</th>
+                        <th>کلاس‌های فعال</th>
+                        <th>وضعیت</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in _rows)
+                    {
+                        <tr>
+                            <td><b>@r.Username</b></td>
+                            <td>@(r.Levels.Count == 0 ? "—" : string.Join("، ", r.Levels))</td>
+                            <td>
+                                @if (r.Classes.Count == 0)
+                                {
+                                    <span class="muted">بدون کلاس</span>
+                                }
+                                else
+                                {
+                                    @foreach (var c in r.Classes)
+                                    {
+                                        <div style="font-size:12.5px;margin-bottom:4px">
+                                            <b>@c.Code</b> — @c.Title (@c.Level)
+                                            <span class="muted">@string.Join("، ", c.Days.Select(d => d.DayNameFa)) @c.StartTime.ToString(@"hh\:mm")-@c.EndTime.ToString(@"hh\:mm")</span>
+                                        </div>
+                                    }
+                                }
+                            </td>
+                            <td>@(r.IsActive ? "فعال" : "غیرفعال")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@code {
+    private sealed record TeacherRow(string Username, bool IsActive, List<LanguageLevel> Levels, List<ClassRoomDto> Classes);
+    private List<TeacherRow> _rows = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var teachers = await Users.GetTeachersAsync();
+        var allClasses = await Classes.GetAllAsync();
+        _rows = new List<TeacherRow>();
+        foreach (var t in teachers)
+        {
+            var levels = (await Users.GetTeacherLevelsAsync(t.Id)).ToList();
+            var cls = allClasses.Where(c => c.TeacherId == t.Id && c.Status != ClassStatus.Inactive).ToList();
+            _rows.Add(new TeacherRow(t.Username, t.IsActive, levels, cls));
+        }
+    }
+}

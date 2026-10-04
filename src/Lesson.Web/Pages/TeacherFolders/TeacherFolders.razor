@@ -1,0 +1,106 @@
+@page "/teacher/folders"
+@attribute [Authorize(Roles = nameof(UserRole.Teacher))]
+@inject TeacherSessionState Session
+@inject ITeacherWorkspaceService Workspace
+@inject ICurrentUserContext Current
+@implements IDisposable
+
+<section class="page">
+    <PageHeader Title="پوشه‌بندی محتوا" Subtitle="می‌توانید چند پوشه بسازید تا بخشی از دانش‌آموزان فقط پوشهٔ خاص را ببینند (با دسترسی پوشه)." />
+    <TeacherClassSelector />
+
+    @if (Session.SelectedClassId is null)
+    {
+        <div class="card pad"><p class="muted">کلاس را انتخاب کنید.</p></div>
+    }
+    else
+    {
+        <div class="toolbar" style="margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+            <div class="field" style="margin:0">
+                <label>نام پوشه</label>
+                <input @bind="_newName" placeholder="مثلاً Grammar / Unit1" />
+            </div>
+            <button class="btn btn-primary" type="button" disabled="@_busy" @onclick="AddAsync">افزودن</button>
+        </div>
+        @if (!string.IsNullOrEmpty(_error)) { <div class="alert alert-error">@_error</div> }
+        <div class="card pad">
+            @if (_tree.Count == 0)
+            {
+                <p class="muted">پوشه‌ای نیست. با Add بسازید.</p>
+            }
+            else
+            {
+                <ul>
+                    @foreach (var n in _tree)
+                    {
+                        @RenderNode(n)
+                    }
+                </ul>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private List<FolderNodeDto> _tree = new();
+    private string _newName = "";
+    private string? _error;
+    private bool _busy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnChanged;
+        await LoadAsync();
+    }
+
+    private async void OnChanged() { await LoadAsync(); await InvokeAsync(StateHasChanged); }
+
+    private async Task LoadAsync()
+    {
+        _tree = new();
+        if (Current.UserId is long uid && Session.SelectedClassId is long cid)
+            _tree = (await Workspace.GetClassFoldersAsync(uid, cid)).ToList();
+    }
+
+    private async Task AddAsync()
+    {
+        try
+        {
+            _busy = true; _error = null;
+            if (Current.UserId is not long uid || Session.SelectedClassId is not long cid) return;
+            await Workspace.CreateClassFolderAsync(uid, cid, _newName, null);
+            _newName = "";
+            await LoadAsync();
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private async Task DeleteAsync(long id)
+    {
+        try
+        {
+            if (Current.UserId is not long uid) return;
+            await Workspace.DeleteClassFolderAsync(uid, id);
+            await LoadAsync();
+        }
+        catch (Exception ex) { _error = ex.Message; }
+    }
+
+    private RenderFragment RenderNode(FolderNodeDto n) => __builder =>
+    {
+        <li style="margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <b>@n.Name</b>
+            <span class="muted" style="font-size:12px">@n.RelativePath</span>
+            <button class="btn btn-sm btn-outline" type="button" @onclick="() => DeleteAsync(n.Id)">حذف</button>
+            @if (n.Children.Count > 0)
+            {
+                <ul style="width:100%;margin-inline-start:16px">
+                    @foreach (var c in n.Children) { @RenderNode(c) }
+                </ul>
+            }
+        </li>
+    };
+
+    public void Dispose() => Session.Changed -= OnChanged;
+}

@@ -1,0 +1,60 @@
+@page "/teacher/stories"
+@attribute [Authorize(Roles = nameof(UserRole.Teacher))]
+@inject TeacherSessionState Session
+@inject ITeacherWorkspaceService Workspace
+@inject ICurrentUserContext Current
+@implements IDisposable
+
+<section class="page">
+    <PageHeader Title="داستان‌ها (Story)" Subtitle="بنر تصویر + متن داستان + صدای اختیاری برای همراهی هنگام خواندن." />
+    <TeacherClassSelector />
+
+    @if (Session.SelectedClassId is null)
+    {
+        <div class="card pad"><p class="muted">کلاس را انتخاب کنید.</p></div>
+    }
+    else
+    {
+        <div class="tbl-wrap card">
+            <table class="tbl">
+                <thead><tr><th>عنوان</th><th>پوشه</th><th>بنر</th><th>صدا</th></tr></thead>
+                <tbody>
+                    @if (_items.Count == 0)
+                    {
+                        <tr><td colspan="4"><div class="empty">داستانی ثبت نشده. از سرویس Story با ClassId کلاس جاری ایجاد کنید.</div></td></tr>
+                    }
+                    else foreach (var s in _items)
+                    {
+                        <tr>
+                            <td><b>@s.Title</b></td>
+                            <td>@s.FolderName</td>
+                            <td>@(s.HasImage ? "دارد" : "—")</td>
+                            <td>@(s.HasVoice ? "دارد" : "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@code {
+    private List<TeacherStoryListItemDto> _items = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnChanged;
+        await LoadAsync();
+    }
+
+    private async void OnChanged() { await LoadAsync(); await InvokeAsync(StateHasChanged); }
+
+    private async Task LoadAsync()
+    {
+        _items = new();
+        if (Current.UserId is long uid && Session.SelectedClassId is long cid)
+            _items = (await Workspace.GetClassStoriesAsync(uid, cid)).ToList();
+    }
+
+    public void Dispose() => Session.Changed -= OnChanged;
+}

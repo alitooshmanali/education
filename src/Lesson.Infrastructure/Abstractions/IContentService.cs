@@ -23,7 +23,8 @@ public sealed record UploadContentRequest(
     Stream Content,
     long FileSize,
     IReadOnlyList<LanguageLevel> Levels,
-    ContentType? PreferredType = null);
+    ContentType? PreferredType = null,
+    long? ClassId = null);
 
 public sealed record ContentProgressDto(
     long? ContentId,

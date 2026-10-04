@@ -1,0 +1,48 @@
+@page "/admin/schedule"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject IClassService Classes
+
+<section class="page">
+    <PageHeader Title="برنامهٔ هفتگی" Subtitle="نمای تجمیعی کلاس‌ها بر اساس روز — تداخل مدرس در زمان ذخیرهٔ کلاس کنترل می‌شود." />
+
+    <div class="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px">
+        @for (var d = 0; d < 7; d++)
+        {
+            var day = d;
+            var items = _byDay.GetValueOrDefault(day) ?? new List<ClassRoomDto>();
+            <div class="card pad">
+                <h3 style="margin-bottom:12px">@_dayNames[day]</h3>
+                @if (items.Count == 0)
+                {
+                    <p class="muted" style="font-size:13px">کلاسی نیست</p>
+                }
+                else
+                {
+                    @foreach (var c in items.OrderBy(x => x.StartTime))
+                    {
+                        <div style="border-bottom:1px solid var(--color-border);padding:10px 0;font-size:13px">
+                            <b>@c.Code</b> @c.Title
+                            <div class="muted">@c.StartTime.ToString(@"hh\:mm") – @c.EndTime.ToString(@"hh\:mm") · @c.Level · @(c.TeacherUsername ?? "بدون مدرس")</div>
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@code {
+    private static readonly string[] _dayNames = ["یک‌شنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه", "شنبه"];
+    private Dictionary<int, List<ClassRoomDto>> _byDay = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var all = (await Classes.GetAllAsync()).Where(c => c.Status != ClassStatus.Inactive).ToList();
+        _byDay = Enumerable.Range(0, 7).ToDictionary(i => i, _ => new List<ClassRoomDto>());
+        foreach (var c in all)
+        {
+            foreach (var d in c.Days)
+                _byDay[d.DayOfWeek].Add(c);
+        }
+    }
+}

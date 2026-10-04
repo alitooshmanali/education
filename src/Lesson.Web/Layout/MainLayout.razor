@@ -33,8 +33,13 @@
                 <section class="nav-section">
                     <div class="nav-label">پنل مدرس</div>
                     <NavLink class="nav-item" href="/teacher" Match="NavLinkMatch.All"><AppIcon Name="dashboard" /> داشبورد</NavLink>
-                    <NavLink class="nav-item" href="/teacher/contents"><AppIcon Name="video" /> محتوای سطوح من</NavLink>
+                    <NavLink class="nav-item" href="/teacher/students"><AppIcon Name="users" /> دانش‌آموزان</NavLink>
+                    <NavLink class="nav-item" href="/teacher/folders"><AppIcon Name="folder" /> پوشه‌ها</NavLink>
+                    <NavLink class="nav-item" href="/teacher/videos"><AppIcon Name="video" /> ویدیو</NavLink>
+                    <NavLink class="nav-item" href="/teacher/podcasts"><AppIcon Name="video" /> پادکست</NavLink>
+                    <NavLink class="nav-item" href="/teacher/stories"><AppIcon Name="audit" /> داستان</NavLink>
                     <NavLink class="nav-item" href="/teacher/quizzes"><AppIcon Name="audit" /> آزمون‌ها</NavLink>
+                    <NavLink class="nav-item" href="/teacher/reports"><AppIcon Name="audit" /> گزارش‌ها</NavLink>
                 </section>
                 <section class="nav-section nav-section--footer">
                     <button class="nav-item nav-item--ghost" type="button" @onclick="Logout" aria-label="خروج">
@@ -50,14 +55,18 @@
                 </section>
 
                 <section class="nav-section">
-                    <div class="nav-label">مدیریت</div>
+                    <div class="nav-label">مدیریت آموزشگاه</div>
                     <NavLink class="nav-item" href="/admin/users"><AppIcon Name="users" /> کاربران</NavLink>
-                    <NavLink class="nav-item" href="/admin/folders"><AppIcon Name="folder" /> گروه‌ها</NavLink>
-                    <NavLink class="nav-item" href="/admin/contents"><AppIcon Name="video" /> محتوا</NavLink>
+                    <NavLink class="nav-item" href="/admin/teachers"><AppIcon Name="users" /> مدرسان</NavLink>
+                    <NavLink class="nav-item" href="/admin/classes"><AppIcon Name="folder" /> کلاس‌ها</NavLink>
+                    <NavLink class="nav-item" href="/admin/schedule"><AppIcon Name="audit" /> برنامهٔ هفتگی</NavLink>
+                </section>
+                <section class="nav-section">
+                    <div class="nav-label">سیستم</div>
                     <NavLink class="nav-item" href="/admin/permissions"><AppIcon Name="permission" /> دسترسی‌ها</NavLink>
                     <NavLink class="nav-item" href="/admin/devices"><AppIcon Name="device" /> دستگاه‌ها</NavLink>
-                    <NavLink class="nav-item" href="/admin/quizzes"><AppIcon Name="audit" /> آزمون‌ها</NavLink>
                     <NavLink class="nav-item" href="/admin/audit"><AppIcon Name="audit" /> لاگ‌ها</NavLink>
+                    <NavLink class="nav-item" href="/site/platform-admin.html"><AppIcon Name="dashboard" /> UI کامل ادمین</NavLink>
                 </section>
 
                 <section class="nav-section nav-section--footer">

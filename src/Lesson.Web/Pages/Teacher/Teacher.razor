@@ -1,46 +1,65 @@
 @page "/teacher"
 @attribute [Authorize(Roles = nameof(UserRole.Teacher))]
-@inject IUserService Users
-@inject IContentService Contents
+@inject TeacherSessionState Session
+@inject ITeacherWorkspaceService Workspace
 @inject ICurrentUserContext Current
+@implements IDisposable
 
-<div class="page-header">
-    <h1>داشبورد مدرس</h1>
-    <p class="muted">محتوای قابل مدیریت فقط برای سطوح تخصیص‌یافته به شماست.</p>
-</div>
+<section class="page">
+    <PageHeader Title="داشبورد مدرس" Subtitle="ابتدا سطح و کلاس را انتخاب کنید؛ فقط دادهٔ همان کلاس بارگذاری می‌شود." />
+    <TeacherClassSelector />
 
-@if (_levels.Count > 0)
-{
-    <div class="stat-grid" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px">
-        @foreach (var lv in _levels)
-        {
-            <div class="card pad" style="min-width:120px">
-                <strong>@lv</strong>
-                <div class="muted" style="font-size:12px">سطح مجاز</div>
-            </div>
-        }
-    </div>
-}
-else
-{
-    <div class="alert alert-error">هیچ سطحی برای شما تعریف نشده. با مدیر آموزشگاه تماس بگیرید.</div>
-}
-
-<div class="card pad">
-    <h2 style="margin-bottom:12px">دسترسی سریع</h2>
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <a class="btn btn-primary" href="/teacher/contents">مدیریت محتوا</a>
-        <a class="btn btn-secondary" href="/teacher/quizzes">آزمون‌ها</a>
-        <a class="btn btn-ghost" href="/site/platform-teacher.html">پیش‌نمایش UI کامل (نسخه نمایشی)</a>
-    </div>
-</div>
+    @if (Session.SelectedClassId is null)
+    {
+        <div class="card pad"><p class="muted">برای مشاهدهٔ داشبورد، یک کلاس انتخاب کنید.</p></div>
+    }
+    else if (_dash is null)
+    {
+        <p class="muted">در حال بارگذاری…</p>
+    }
+    else
+    {
+        <section class="grid stats">
+            <div class="stat-card"><div class="stat-label">دانش‌آموزان سطح</div><div class="stat-value">@_dash.StudentCount</div></div>
+            <div class="stat-card"><div class="stat-label">پوشه‌ها</div><div class="stat-value">@_dash.FolderCount</div></div>
+            <div class="stat-card"><div class="stat-label">ویدیو</div><div class="stat-value">@_dash.VideoCount</div></div>
+            <div class="stat-card"><div class="stat-label">پادکست</div><div class="stat-value">@_dash.PodcastCount</div></div>
+            <div class="stat-card"><div class="stat-label">داستان</div><div class="stat-value">@_dash.StoryCount</div></div>
+            <div class="stat-card"><div class="stat-label">آزمون</div><div class="stat-value">@_dash.QuizCount</div></div>
+        </section>
+        <div class="toolbar" style="margin-top:20px;display:flex;flex-wrap:wrap;gap:10px">
+            <a class="btn btn-primary" href="/teacher/folders">پوشه‌ها</a>
+            <a class="btn btn-secondary" href="/teacher/videos">ویدیو</a>
+            <a class="btn btn-secondary" href="/teacher/podcasts">پادکست</a>
+            <a class="btn btn-secondary" href="/teacher/stories">داستان</a>
+            <a class="btn btn-secondary" href="/teacher/quizzes">آزمون‌ها</a>
+            <a class="btn btn-ghost" href="/teacher/students">دانش‌آموزان</a>
+            <a class="btn btn-ghost" href="/teacher/reports">گزارش‌ها</a>
+        </div>
+    }
+</section>
 
 @code {
-    private List<LanguageLevel> _levels = new();
+    private TeacherDashboardDto? _dash;
 
     protected override async Task OnInitializedAsync()
     {
-        if (Current.UserId is long uid)
-            _levels = (await Users.GetTeacherLevelsAsync(uid)).ToList();
+        Session.Changed += OnChanged;
+        await LoadAsync();
     }
+
+    private async void OnChanged()
+    {
+        await LoadAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadAsync()
+    {
+        _dash = null;
+        if (Current.UserId is long uid && Session.SelectedClassId is long cid)
+            _dash = await Workspace.GetDashboardAsync(uid, cid);
+    }
+
+    public void Dispose() => Session.Changed -= OnChanged;
 }

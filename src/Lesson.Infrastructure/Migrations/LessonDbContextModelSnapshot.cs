@@ -111,6 +111,79 @@ namespace Lesson.Infrastructure.Migrations
                     b.ToTable("AuthenticationSessions", (string)null);
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.ClassRoom", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<int>("EnrolledCount")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Subject")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("TeacherId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code");
+
+                    b.HasIndex("TeacherId");
+
+                    b.ToTable("ClassRooms", (string)null);
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.ClassScheduleDay", b =>
+                {
+                    b.Property<long>("ClassId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int");
+
+                    b.HasKey("ClassId", "DayOfWeek");
+
+                    b.ToTable("ClassScheduleDays", (string)null);
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.ContentFeedback", b =>
                 {
                     b.Property<long>("Id")
@@ -238,6 +311,21 @@ namespace Lesson.Infrastructure.Migrations
                     b.ToTable("ContentProgresses", (string)null);
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.ContentStudentAccess", b =>
+                {
+                    b.Property<long>("ContentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("ContentId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ContentStudentAccesses", (string)null);
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.Folder", b =>
                 {
                     b.Property<long>("Id")
@@ -246,8 +334,14 @@ namespace Lesson.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<long?>("ClassId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("CreatedByUserId")
+                        .HasColumnType("bigint");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -273,6 +367,10 @@ namespace Lesson.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("CreatedByUserId");
+
                     b.HasIndex("Level");
 
                     b.HasIndex("ParentFolderId");
@@ -288,12 +386,18 @@ namespace Lesson.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<long?>("ClassId")
+                        .HasColumnType("bigint");
+
                     b.Property<byte[]>("Content")
                         .IsRequired()
                         .HasColumnType("varbinary(max)");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("CreatedByUserId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("DisplayName")
                         .IsRequired()
@@ -317,6 +421,9 @@ namespace Lesson.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsRestricted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("MimeType")
                         .IsRequired()
                         .HasMaxLength(128)
@@ -334,6 +441,10 @@ namespace Lesson.Infrastructure.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("FolderId");
 
@@ -396,8 +507,14 @@ namespace Lesson.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<long?>("ClassId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("CreatedByUserId")
+                        .HasColumnType("bigint");
 
                     b.Property<long?>("FolderId")
                         .HasColumnType("bigint");
@@ -437,6 +554,10 @@ namespace Lesson.Infrastructure.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("FolderId");
 
@@ -689,8 +810,14 @@ namespace Lesson.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<long?>("ClassId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("CreatedByUserId")
+                        .HasColumnType("bigint");
 
                     b.Property<long>("FolderId")
                         .HasColumnType("bigint");
@@ -721,6 +848,10 @@ namespace Lesson.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("CreatedByUserId");
+
                     b.HasIndex("FolderId");
 
                     b.HasIndex("ImageContentId");
@@ -730,6 +861,21 @@ namespace Lesson.Infrastructure.Migrations
                     b.HasIndex("VoiceContentId");
 
                     b.ToTable("Stories", (string)null);
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.TeacherLevel", b =>
+                {
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "Level");
+
+                    b.HasIndex("Level");
+
+                    b.ToTable("TeacherLevels", (string)null);
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.User", b =>
@@ -858,6 +1004,27 @@ namespace Lesson.Infrastructure.Migrations
                     b.Navigation("UserDevice");
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.ClassRoom", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.User", "Teacher")
+                        .WithMany()
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.ClassScheduleDay", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.ClassRoom", "Class")
+                        .WithMany("ScheduleDays")
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.ContentFeedback", b =>
                 {
                     b.HasOne("Lesson.Domain.Entities.LessonContent", null)
@@ -917,23 +1084,66 @@ namespace Lesson.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.ContentStudentAccess", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.LessonContent", "Content")
+                        .WithMany("StudentAccesses")
+                        .HasForeignKey("ContentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Lesson.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Content");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.Folder", b =>
                 {
+                    b.HasOne("Lesson.Domain.Entities.ClassRoom", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId");
+
+                    b.HasOne("Lesson.Domain.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId");
+
                     b.HasOne("Lesson.Domain.Entities.Folder", "ParentFolder")
                         .WithMany("ChildFolders")
                         .HasForeignKey("ParentFolderId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Class");
+
+                    b.Navigation("CreatedByUser");
 
                     b.Navigation("ParentFolder");
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.LessonContent", b =>
                 {
+                    b.HasOne("Lesson.Domain.Entities.ClassRoom", "Class")
+                        .WithMany("Contents")
+                        .HasForeignKey("ClassId");
+
+                    b.HasOne("Lesson.Domain.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId");
+
                     b.HasOne("Lesson.Domain.Entities.Folder", "Folder")
                         .WithMany("Contents")
                         .HasForeignKey("FolderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Class");
+
+                    b.Navigation("CreatedByUser");
 
                     b.Navigation("Folder");
                 });
@@ -965,6 +1175,14 @@ namespace Lesson.Infrastructure.Migrations
 
             modelBuilder.Entity("Lesson.Domain.Entities.Quiz", b =>
                 {
+                    b.HasOne("Lesson.Domain.Entities.ClassRoom", "Class")
+                        .WithMany("Quizzes")
+                        .HasForeignKey("ClassId");
+
+                    b.HasOne("Lesson.Domain.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId");
+
                     b.HasOne("Lesson.Domain.Entities.Folder", "Folder")
                         .WithMany("Quizzes")
                         .HasForeignKey("FolderId")
@@ -974,6 +1192,10 @@ namespace Lesson.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("IntroImageContentId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Class");
+
+                    b.Navigation("CreatedByUser");
 
                     b.Navigation("Folder");
 
@@ -1102,6 +1324,14 @@ namespace Lesson.Infrastructure.Migrations
 
             modelBuilder.Entity("Lesson.Domain.Entities.Story", b =>
                 {
+                    b.HasOne("Lesson.Domain.Entities.ClassRoom", "Class")
+                        .WithMany("Stories")
+                        .HasForeignKey("ClassId");
+
+                    b.HasOne("Lesson.Domain.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId");
+
                     b.HasOne("Lesson.Domain.Entities.Folder", "Folder")
                         .WithMany("Stories")
                         .HasForeignKey("FolderId")
@@ -1118,11 +1348,26 @@ namespace Lesson.Infrastructure.Migrations
                         .HasForeignKey("VoiceContentId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.Navigation("Class");
+
+                    b.Navigation("CreatedByUser");
+
                     b.Navigation("Folder");
 
                     b.Navigation("ImageContent");
 
                     b.Navigation("VoiceContent");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.TeacherLevel", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.User", "User")
+                        .WithMany("TeacherLevels")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.UserDevice", b =>
@@ -1134,6 +1379,17 @@ namespace Lesson.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.ClassRoom", b =>
+                {
+                    b.Navigation("Contents");
+
+                    b.Navigation("Quizzes");
+
+                    b.Navigation("ScheduleDays");
+
+                    b.Navigation("Stories");
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.Folder", b =>
@@ -1156,6 +1412,8 @@ namespace Lesson.Infrastructure.Migrations
                     b.Navigation("Levels");
 
                     b.Navigation("ProgressRecords");
+
+                    b.Navigation("StudentAccesses");
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.Quiz", b =>
@@ -1209,6 +1467,8 @@ namespace Lesson.Infrastructure.Migrations
                     b.Navigation("QuizAttempts");
 
                     b.Navigation("QuizRetakeGrants");
+
+                    b.Navigation("TeacherLevels");
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.UserDevice", b =>

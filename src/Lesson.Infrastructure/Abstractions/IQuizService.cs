@@ -53,7 +53,8 @@ public sealed record CreateQuizRequest(
     decimal TotalScore,
     long? FolderId,
     IReadOnlyList<CreateQuestionRequest> Questions,
-    IReadOnlyList<long>? AssignedUserIds);
+    IReadOnlyList<long>? AssignedUserIds,
+    long? ClassId = null);
 
 public sealed record CreateQuestionRequest(
     string Text,

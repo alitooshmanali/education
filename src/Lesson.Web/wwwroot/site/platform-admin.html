@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>داشبورد مدیر — پلتفرم اساطیر آینده</title>
+<title>پنل مدیریت — پلتفرم اساطیر آینده</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
+
 :root{
   /* brand */ --navy-900:#061d38; --navy:#0A2B51; --navy-700:#0f3763; --navy-500:#1c4d85;
   --navy-200:#c3d2e6; --navy-50:#eef3fa;
@@ -261,7 +262,8 @@ svg{display:block}
 .vcard:hover{transform:translateY(-3px);box-shadow:var(--sh-md)}
 .vcard::before{content:"";position:absolute;inset-inline-end:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(209,171,123,.26),transparent 70%)}
 .vcard>*{position:relative;z-index:2}
-.vcard svg[data-ico],.vcard>svg{width:42px;height:42px;color:var(--sand);margin-bottom:auto;flex:none}
+.vcard>span[data-ico]{display:block;margin-bottom:auto}
+.vcard svg{width:46px;height:46px;color:var(--sand);flex:none}
 .vcard .vt{display:block;font-size:13.5px;font-weight:800;line-height:1.7;margin-top:12px}
 .vcard .vd{position:absolute;top:16px;inset-inline-start:16px;font-size:10.5px;font-weight:700;background:rgba(255,255,255,.16);padding:3px 10px;border-radius:var(--r-pill);direction:ltr}
 .vcard .vbar{display:block;height:4px;border-radius:99px;background:rgba(255,255,255,.22);margin-top:11px;overflow:hidden}
@@ -302,6 +304,174 @@ svg{display:block}
   .kpis{grid-template-columns:1fr}
   .c4{grid-template-columns:1fr}
 }
+
+/* ================= admin-only components (extends shared tokens, no new colors) ================= */
+
+/* ---------- sidebar menus / submenus ---------- */
+.mgroup{margin:1px 0}
+.menu-head{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:var(--r-sm);color:#dbe4ef;font-size:13.5px;font-weight:700;cursor:pointer;border:0;background:none;width:100%;text-align:start;transition:.16s var(--ease)}
+.menu-head:hover{background:rgba(255,255,255,.1);color:#fff}
+.menu-head>svg.i{width:18px;height:18px;flex:none;opacity:.9}
+.menu-head .chev{margin-inline-start:auto;width:15px;height:15px;transition:.22s var(--ease);opacity:.65;transform:rotate(-90deg)}
+.menu-head.on{color:#fff}
+.menu-head.on .chev{transform:rotate(90deg)}
+.submenu{max-height:0;overflow:hidden;transition:max-height .3s var(--ease)}
+.submenu.on{max-height:520px}
+.sub-item{display:flex;align-items:center;gap:9px;padding:8px 12px 8px 36px;border-radius:var(--r-xs);color:#c3d2e6;font-size:12.5px;font-weight:600;cursor:pointer;border:0;background:none;width:100%;text-align:start;transition:.15s var(--ease);position:relative}
+[dir="rtl"] .sub-item{padding:8px 36px 8px 12px}
+.sub-item::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.42;flex:none}
+.sub-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.sub-item.on{background:rgba(209,171,123,.18);color:#fff;font-weight:800}
+.sub-item.on::before{background:var(--sand);opacity:1;width:7px;height:7px}
+.sub-item .cnt{margin-inline-start:auto;font-size:10.5px;font-weight:800;background:rgba(255,255,255,.14);padding:1px 8px;border-radius:var(--r-pill);direction:ltr}
+.sub-item .cnt.bad{background:var(--sand);color:var(--navy-900)}
+
+/* ---------- modal ---------- */
+.mback{position:fixed;inset:0;background:rgba(6,29,56,.58);backdrop-filter:blur(3px);z-index:70;display:none;align-items:flex-start;justify-content:center;padding:26px 18px;overflow-y:auto}
+.mback.on{display:flex}
+.modal{background:#fff;border-radius:var(--r-lg);width:100%;max-width:600px;box-shadow:var(--sh-lg);display:flex;flex-direction:column;max-height:94vh;animation:pop .22s var(--ease);border:1px solid var(--line)}
+.modal.wide{max-width:960px}
+.modal.slim{max-width:440px}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.m-head{display:flex;align-items:center;gap:13px;padding:17px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.m-head h3{font-size:15.5px}
+.m-head .sub{font-size:11.5px;color:var(--muted);font-weight:500;line-height:1.7}
+.m-ico{width:40px;height:40px;flex:none;border-radius:var(--r-sm);background:var(--navy-50);color:var(--navy);display:grid;place-items:center}
+.m-ico svg{width:20px;height:20px}
+.m-ico.gold{background:var(--sand-100);color:var(--sand-700)}
+.m-ico.bad{background:var(--bad-soft);color:var(--bad)}
+.m-x{margin-inline-start:auto;width:34px;height:34px;border:1px solid var(--line);background:#fff;border-radius:var(--r-xs);color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:.15s}
+.m-x:hover{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.m-x svg{width:17px;height:17px}
+.m-body{padding:20px;overflow-y:auto}
+.m-foot{display:flex;gap:10px;justify-content:flex-end;padding:15px 20px;border-top:1px solid var(--line);background:#fcfbf8;flex-wrap:wrap;border-radius:0 0 var(--r-lg) var(--r-lg)}
+
+/* ---------- forms ---------- */
+.frm{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.frm.c1{grid-template-columns:1fr}
+.full{grid-column:1/-1}
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fld>label{font-size:12px;font-weight:700;color:var(--ink-soft)}
+.fld .hint{font-size:10.5px;color:var(--muted);line-height:1.7}
+.inp{width:100%;border:1px solid var(--line-cool);background:#fcfcfa;border-radius:var(--r-sm);padding:11px 13px;font:inherit;font-size:13px;color:var(--ink);outline:none;transition:.15s var(--ease)}
+.inp:focus{border-color:var(--sand);background:#fff;box-shadow:0 0 0 3px rgba(209,171,123,.16)}
+.inp.err{border-color:var(--bad);background:var(--bad-soft)}
+select.inp{cursor:pointer}
+textarea.inp{min-height:88px;resize:vertical;line-height:1.9}
+.er{font-size:11px;color:var(--bad);font-weight:700;display:flex;align-items:center;gap:5px}
+.er svg{width:13px;height:13px;flex:none}
+
+/* ---------- check / switch / chips ---------- */
+.chk{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;cursor:pointer;color:var(--ink-soft);font-weight:600}
+.chk input{appearance:none;-webkit-appearance:none;width:18px;height:18px;border:1.6px solid var(--navy-200);border-radius:5px;background:#fff;cursor:pointer;position:relative;flex:none;margin:0;transition:.14s}
+.chk input:checked{background:var(--navy);border-color:var(--navy)}
+.chk input:checked::after{content:"";position:absolute;inset-inline-start:5px;top:2px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+.switch{position:relative;display:inline-block;width:42px;height:24px;flex:none;cursor:pointer}
+.switch input{appearance:none;-webkit-appearance:none;width:100%;height:100%;margin:0;border-radius:99px;background:#dfe4ec;transition:.2s;cursor:pointer;border:0}
+.switch input:checked{background:var(--ok)}
+.switch::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s var(--ease);box-shadow:var(--sh-xs);pointer-events:none}
+.switch:has(input:checked)::after{inset-inline-start:21px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1px solid var(--line-cool);background:#fcfcfa;border-radius:var(--r-pill);padding:7px 14px;font:inherit;font-size:12px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:.15s var(--ease)}
+.chip:hover{border-color:var(--navy-200);color:var(--navy)}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.chip.lv{min-width:52px;text-align:center;direction:ltr;font-weight:800;letter-spacing:.4px}
+
+/* ---------- permission matrix ---------- */
+.matrix{width:100%;border-collapse:collapse;font-size:12.5px}
+.matrix th{font-size:11px;font-weight:800;color:var(--muted);padding:10px 12px;background:#fbfaf7;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+.matrix th:first-child{text-align:start}
+.matrix td{padding:11px 12px;border-bottom:1px solid var(--line-cool);text-align:center}
+.matrix td:first-child{text-align:start;font-weight:700;color:var(--ink)}
+.matrix tr:last-child td{border-bottom:0}
+.matrix tbody tr:hover{background:#fcfbf8}
+.matrix .cnt2{font-size:10.5px;color:var(--muted);font-weight:600;display:block}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:3px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto;padding-bottom:0}
+.tabs::-webkit-scrollbar{height:4px}
+.tabs button{border:0;background:none;font:inherit;font-size:13px;font-weight:700;color:var(--muted);padding:11px 15px;cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:.15s}
+.tabs button:hover{color:var(--navy)}
+.tabs button.on{color:var(--navy);border-color:var(--sand)}
+
+/* ---------- filters ---------- */
+.filters{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.filters .fld{min-width:168px;flex:0 1 auto}
+.filters .fld.grow2{flex:1 1 240px}
+
+/* ---------- icon buttons ---------- */
+.icobtn{width:33px;height:33px;border:1px solid var(--line);background:#fff;border-radius:var(--r-xs);display:grid;place-items:center;color:var(--ink-soft);cursor:pointer;transition:.15s var(--ease);flex:none}
+.icobtn svg{width:16px;height:16px}
+.icobtn:hover{border-color:var(--navy-200);background:var(--navy-50);color:var(--navy)}
+.icobtn.gear:hover{background:var(--sand-50);border-color:var(--sand);color:var(--sand-700)}
+.icobtn.gold{background:var(--sand-50);border-color:var(--sand-100);color:var(--sand-700)}
+.icobtn.danger:hover{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.icobtn:disabled{opacity:.42;cursor:not-allowed;transform:none}
+
+/* ---------- timetable ---------- */
+.tt{display:grid;grid-template-columns:76px repeat(6,minmax(0,1fr));gap:7px;min-width:860px}
+.tt-h{font-size:11px;font-weight:800;color:var(--muted);text-align:center;padding:8px 4px;background:#fbfaf7;border-radius:var(--r-xs);border:1px solid var(--line-cool)}
+.tt-h.row-h{text-align:start;padding-inline-start:10px}
+.tt-c{background:#fcfcfa;border:1px solid var(--line-cool);border-radius:var(--r-xs);padding:8px;font-size:10.5px;min-height:70px;line-height:1.7;color:var(--muted)}
+.tt-c.busy{background:var(--navy-50);border-color:var(--navy-200);color:var(--navy)}
+.tt-c.busy b{display:block;font-size:11px;font-weight:800;line-height:1.6}
+.tt-c.busy span{display:block;direction:ltr;font-size:10px;font-weight:700;color:var(--navy-500)}
+.tt-c.gold{background:var(--sand-50);border-color:var(--sand-100);color:var(--sand-700)}
+.scrollx{overflow-x:auto;padding-bottom:6px}
+
+/* ---------- misc ---------- */
+.empty{text-align:center;padding:34px 20px;color:var(--muted);font-size:12.5px}
+.empty svg{width:36px;height:36px;color:var(--navy-200);margin:0 auto 10px}
+.stars{display:inline-flex;gap:2px;color:var(--sand)}
+.stars svg{width:14px;height:14px;fill:currentColor;stroke:none}
+.rate{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:var(--navy);direction:ltr}
+.tbl.dense th{padding:11px 14px}
+.tbl.dense td{padding:11px 14px;font-size:12.5px}
+.tbl .mini-bar{display:flex;align-items:center;gap:9px;min-width:132px}
+.legend-list{display:flex;flex-direction:column;gap:10px}
+.legend-list div{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-soft)}
+.legend-list i{width:11px;height:11px;border-radius:3px;flex:none}
+.legend-list b{margin-inline-start:auto;font-weight:900;color:var(--navy);direction:ltr}
+.stk{display:flex;height:12px;border-radius:99px;overflow:hidden;background:#eef1f5}
+.stk i{display:block;height:100%}
+.dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px 16px;font-size:12.5px}
+.dl dt{color:var(--muted)}
+.dl dd{margin:0;font-weight:600}
+.hr{height:1px;background:var(--line-cool);margin:18px 0}
+.side-note{background:var(--sand-50);border:1px dashed var(--sand);border-radius:var(--r-sm);padding:12px 14px;font-size:11.5px;color:var(--sand-700);line-height:1.95}
+.code{background:var(--navy-900);color:#dbe4ef;border-radius:var(--r-sm);padding:14px 16px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;line-height:2;direction:ltr;text-align:left;overflow-x:auto;white-space:pre}
+.sel-line{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line-cool);font-size:12.5px}
+.sel-line:last-child{border-bottom:0}
+.sel-line .rb{flex:1;min-width:0}
+.ord{display:flex;flex-direction:column;gap:2px}
+.ord button{width:22px;height:16px;border:1px solid var(--line);background:#fff;border-radius:4px;cursor:pointer;display:grid;place-items:center;color:var(--muted)}
+.ord button svg{width:11px;height:11px;transform:rotate(90deg)}
+.ord button:disabled{opacity:.35;cursor:not-allowed}
+.tree{display:flex;flex-direction:column;gap:2px}
+.tree .tk{display:flex;align-items:center;gap:11px;padding:11px 14px;border:1px solid var(--line-cool);border-radius:var(--r-sm);background:#fff;font-size:12.5px}
+.tree .tk.child{margin-inline-start:26px;border-style:dashed}
+.tree .tk b{font-weight:800}
+.tree .tk .path{direction:ltr;font-size:11px;color:var(--muted);background:#f4f6f9;padding:2px 8px;border-radius:var(--r-pill)}
+.tree .tk .sp{margin-inline-start:auto;display:flex;align-items:center;gap:9px}
+.lvl-card{border:1px solid var(--line);border-radius:var(--r-md);padding:15px 16px;background:#fff;box-shadow:var(--sh-xs)}
+.lvl-card .lb{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.lvl-card .lv{font-size:19px;font-weight:900;color:var(--navy);direction:ltr;letter-spacing:.5px}
+.lvl-card p{font-size:11.5px;color:var(--muted);line-height:1.9;min-height:44px}
+.lvl-card .st{display:flex;gap:14px;font-size:11.5px;color:var(--ink-soft);border-top:1px solid var(--line-cool);padding-top:10px;margin-top:10px}
+.lvl-card .st b{color:var(--navy);font-weight:900}
+.lvl-card .st span{display:flex;align-items:center;gap:5px}
+.lvl-card .st svg{width:13px;height:13px;color:var(--sand-700)}
+
+@media(max-width:1200px){
+  .frm{grid-template-columns:1fr}
+  .filters .fld{min-width:140px}
+}
+@media(max-width:900px){
+  .modal,.modal.wide,.modal.slim{max-width:100%}
+  .mback{padding:12px}
+  .m-body{padding:16px}
+}
+
 </style>
 </head>
 <body>
@@ -309,12 +479,64 @@ svg{display:block}
   <aside class="sb" id="sb">
     <div class="sb-top">
       <span class="sb-logo" id="sbLogo"></span>
-      <span><b>اساطیر آینده</b><small id="sbSub">admin</small></span>
+      <span><b>اساطیر آینده</b><small>ADMIN&nbsp;PANEL</small></span>
     </div>
-    <div class="sb-scroll" id="sbNav"></div>
+    <div class="sb-scroll">
+
+      <button class="nav" data-pg="dash" data-ico="grid"><span>داشبورد</span></button>
+
+      <div class="mgroup">
+        <button class="menu-head" data-toggle="users" data-ico="users"><span>کاربران سیستم</span></button>
+        <div class="submenu" data-menu="users">
+          <button class="sub-item" data-pg="users">فهرست کاربران<span class="cnt">۱۶</span></button>
+          <button class="sub-item" data-pg="roles">نقش‌ها و سطح دسترسی</button>
+        </div>
+      </div>
+
+      <div class="mgroup">
+        <button class="menu-head" data-toggle="edu" data-ico="book-open"><span>آموزش و کلاس‌ها</span></button>
+        <div class="submenu" data-menu="edu">
+          <button class="sub-item" data-pg="teachers">تعریف استاد و دوره</button>
+          <button class="sub-item" data-pg="classes">کلاس‌ها</button>
+          <button class="sub-item" data-pg="schedule">برنامهٔ هفتگی</button>
+          <button class="sub-item" data-pg="levels">سطوح A1 تا C2</button>
+        </div>
+      </div>
+
+      <div class="mgroup">
+        <button class="menu-head" data-toggle="ent" data-ico="list"><span>DataEntries</span></button>
+        <div class="submenu" data-menu="ent">
+          <button class="sub-item" data-pg="ent">موجودیت‌ها و فیلدها</button>
+          <button class="sub-item" data-pg="entries">ورود داده</button>
+        </div>
+      </div>
+
+      <div class="mgroup">
+        <button class="menu-head" data-toggle="pages" data-ico="globe"><span>WebPages</span></button>
+        <div class="submenu" data-menu="pages">
+          <button class="sub-item" data-pg="pages">فهرست صفحات</button>
+          <button class="sub-item" data-pg="menu">چیدمان منو</button>
+        </div>
+      </div>
+
+      <div class="mgroup">
+        <button class="menu-head" data-toggle="rep" data-ico="chart"><span>گزارشات</span></button>
+        <div class="submenu" data-menu="rep">
+          <button class="sub-item" data-pg="r1">رضایت دوره‌ها</button>
+          <button class="sub-item" data-pg="r2">عملکرد استادها</button>
+          <button class="sub-item" data-pg="r3">عملکرد دانشجوها</button>
+          <button class="sub-item" data-pg="r4">محتوای آموزشی</button>
+          <button class="sub-item" data-pg="r5">عملکرد دانشجو به تفکیک</button>
+        </div>
+      </div>
+
+      <div class="nav-label">سیستم</div>
+      <button class="nav" data-pg="settings" data-ico="settings"><span>تنظیمات آموزشگاه</span></button>
+
+    </div>
     <div class="sb-foot">
       <span class="mini-go" id="sbFootIco"></span>
-      <span id="sbFootTxt"></span>
+      <span>پنل مدیریت — نسخهٔ ۱٫۰<br>اساطیر آینده ۱۴۰۵</span>
     </div>
   </aside>
 
@@ -324,476 +546,530 @@ svg{display:block}
     <header class="top">
       <button class="burger" id="burger" aria-label="فهرست"></button>
       <div class="top-t">
-        <h1 id="pageTitle">—</h1>
-        <div class="crumb" id="pageSub">—</div>
+        <h1 id="pageTitle">داشبورد مدیریت</h1>
+        <div class="crumb" id="pageSub">نمای کلی آموزشگاه — ۱۴۰۵/۰۷/۱۲</div>
       </div>
       <div class="top-tools">
-        <span class="ctrl" style="width:220px">
+        <span class="ctrl" style="width:210px">
           <span data-ico="search"></span>
-          <input type="search" id="gSearch" placeholder="جستجو در پلتفرم…">
+          <input type="search" id="gSearch" placeholder="جستجوی سراسری…">
         </span>
+        <button class="btn btn-ghost btn-sm" id="btnSeed" title="بازگرداندن داده‌های نمونه">
+          <span data-ico="refresh"></span> بازنشانی نمونه
+        </button>
         <button class="bell" id="bell" aria-label="اعلان‌ها"><i></i></button>
         <span class="uchip" id="uchip"></span>
       </div>
     </header>
     <main class="wrap" id="wrap">
-<!-- ==================== ADMIN ==================== -->
-<div class="page on" id="pg-dash">
+<!-- ================= DASHBOARD ================= -->
+<section class="page on" id="pg-dash">
   <div class="kpis">
     <div class="kpi">
-      <div class="kh"><span class="kt">زبان‌آموزان فعال</span><span class="ib"><span data-ico="users"></span></span></div>
-      <div class="kv">۲٫۴۸۰</div>
-      <div class="kd up"><span data-ico="trend-up"></span>۸٪ نسبت به ترم قبل</div>
+      <div class="kh"><div class="kt">کاربران سیستم</div><span class="ib" data-ico="users"></span></div>
+      <div class="kv" id="kpiUsers">۱۶</div>
+      <div class="kd up"><span data-ico="trend-up"></span> ۳ کاربر تازه این هفته</div>
     </div>
     <div class="kpi">
-      <div class="kh"><span class="kt">کلاس‌های فعال این ترم</span><span class="ib gold"><span data-ico="book-open"></span></span></div>
-      <div class="kv">۱۲۴</div>
-      <div class="kd up"><span data-ico="trend-up"></span>۱۸ کلاس تازه تشکیل‌شده</div>
+      <div class="kh"><div class="kt">کلاس‌های فعال</div><span class="ib gold" data-ico="book-open"></span></div>
+      <div class="kv" id="kpiClasses">۷</div>
+      <div class="kd flat"><span data-ico="clock"></span> ۲ کلاس در انتظار تکمیل ظرفیت</div>
     </div>
     <div class="kpi">
-      <div class="kh"><span class="kt">درآمد ترم جاری</span><span class="ib ok"><span data-ico="wallet"></span></span></div>
-      <div class="kv">۲٫۴ <small>میلیارد تومان</small></div>
-      <div class="kd up"><span data-ico="trend-up"></span>۱۲٪ رشد نسبت به تابستان</div>
+      <div class="kh"><div class="kt">استادان دوره‌دار</div><span class="ib ok" data-ico="award"></span></div>
+      <div class="kv" id="kpiTeachers">۵</div>
+      <div class="kd up"><span data-ico="trend-up"></span> میانگین امتیاز ۴٫۶ از ۵</div>
     </div>
     <div class="kpi">
-      <div class="kh"><span class="kt">نرخ ماندگاری زبان‌آموز</span><span class="ib warn"><span data-ico="target"></span></span></div>
-      <div class="kv">۹۶<small>٪</small></div>
-      <div class="kd up"><span data-ico="trend-up"></span>۲ واحد بهبود</div>
+      <div class="kh"><div class="kt">رضایت از دوره‌ها</div><span class="ib warn" data-ico="star"></span></div>
+      <div class="kv">۴٫۷<small>/ ۵</small></div>
+      <div class="kd up"><span data-ico="trend-up"></span> ۰٫۳+ نسبت به ترم پیش</div>
     </div>
   </div>
 
   <div class="grid c21">
     <div class="panel">
       <div class="p-head">
-        <div><h3>درآمد شش ماه گذشته</h3><div class="ph-sub">مبالغ بر حسب میلیون تومان</div></div>
-        <div class="seg"><button class="on">۶ ماه</button><button data-demo="نمای سه‌ماهه در نسخهٔ نهایی">۳ ماه</button><button data-demo="نمای سالانه در نسخهٔ نهایی">سال</button></div>
+        <div><h2>درصد رضایت دوره‌ها در شش ماه گذشته</h2><div class="ph-sub">میانگین امتیاز پایان‌ترم دانشجویان، از ۵</div></div>
+        <div class="seg" id="segSatisfy">
+          <button class="on" data-sat="all">همهٔ دوره‌ها</button>
+          <button data-sat="en">انگلیسی</button>
+          <button data-sat="comp">کامپیوتر</button>
+          <button data-sat="music">موسیقی</button>
+        </div>
       </div>
       <div class="p-body">
-        <div class="bars">
-          <div class="barw"><div class="bar" style="height:52%" title="۳۲۰ میلیون"></div><span>فروردین</span></div>
-          <div class="barw"><div class="bar" style="height:67%" title="۴۱۰ میلیون"></div><span>اردیبهشت</span></div>
-          <div class="barw"><div class="bar" style="height:63%" title="۳۸۵ میلیون"></div><span>خرداد</span></div>
-          <div class="barw"><div class="bar" style="height:77%" title="۴۷۰ میلیون"></div><span>تیر</span></div>
-          <div class="barw"><div class="bar" style="height:85%" title="۵۲۰ میلیون"></div><span>مرداد</span></div>
-          <div class="barw"><div class="bar" style="height:100%" title="۶۱۰ میلیون"></div><span>شهریور</span></div>
-        </div>
+        <div class="bars" id="barsSatisfy"></div>
         <div class="chart-legend">
-          <span><i style="background:#1c4d85"></i>درآمد دوره‌ها</span>
-          <span><i style="background:#D1AB7B"></i>اوج شهریور — ثبت‌نام ترم پاییز</span>
+          <span><i style="background:var(--navy)"></i> رضایت دوره (از ۵)</span>
+          <span><i style="background:var(--sand)"></i> حد قابل قبول آموزشگاه: ۴٫۰</span>
         </div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="p-head"><h3>توزیع زبان‌آموزان</h3></div>
+      <div class="p-head"><h2>ترکیب نقش کاربران</h2></div>
       <div class="p-body">
         <div class="donut-wrap">
-          <div class="donut" style="background:conic-gradient(#0A2B51 0 58%, #1c4d85 58% 76%, #D1AB7B 76% 90%, #c3d2e6 90% 100%)">
-            <i><b>۲٫۴۸۰</b><span>زبان‌آموز فعال</span></i>
+          <div class="donut" id="donutUsers">
+            <i><b id="donutUsersN">—</b><span>کاربر فعال</span></i>
           </div>
-          <div class="legend">
-            <div><i style="background:#0A2B51"></i>زبان انگلیسی<b>۵۸٪</b></div>
-            <div><i style="background:#1c4d85"></i>کامپیوتر<b>۱۸٪</b></div>
-            <div><i style="background:#D1AB7B"></i>موسیقی<b>۱۴٪</b></div>
-            <div><i style="background:#c3d2e6"></i>نقاشی<b>۱۰٪</b></div>
-          </div>
+          <div class="legend" id="legendUsers"></div>
         </div>
+        <div class="hr"></div>
+        <div class="side-note">هر کاربر در لحظهٔ ایجاد، نقش و سطح دسترسی خود را از ماتریس بخش‌ها می‌گیرد. با زدن آیکون چرخ‌دنده در فهرست کاربران، ماتریس همان کاربر باز می‌شود.</div>
       </div>
     </div>
   </div>
 
-  <div class="grid c12">
-    <div class="panel">
-      <div class="p-head"><h3>هشدارهای مدیریتی</h3><span class="bdg bad">۳ مورد نیازمند اقدام</span></div>
-      <div class="p-body">
-        <div class="notice bad"><span data-ico="alert"></span><span><b>۱۲ زبان‌آموز</b> شهریهٔ ترم جاری را پرداخت نکرده‌اند — مجموع بدهی ۱۸۴ میلیون تومان.</span></div>
-        <div class="notice warn"><span data-ico="clock"></span><span>ظرفیت کلاس <b>«مکالمهٔ فشرده — ترم ۷»</b> پر شده است؛ درخواست تشکیل کلاس دوم در انتظار تأیید.</span></div>
-        <div class="notice info"><span data-ico="user"></span><span>درخواست همکاری <b>۲ مدرس جدید</b> برای حوزهٔ کامپیوتر در صف بررسی است.</span></div>
-        <div class="notice ok"><span data-ico="check-sq"></span><span>ارسال کارنامهٔ ترم تابستان برای <b>۱۰۰٪</b> زبان‌آموزان تکمیل شد.</span></div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="p-head"><h3>آخرین ثبت‌نام‌ها</h3><a class="btn btn-sm btn-ghost" href="#" data-demo="فهرست کامل ثبت‌نام‌ها">مشاهدهٔ همه</a></div>
-      <div class="p-body flush">
-        <div class="rows">
-          <div class="row">
-            <span class="av">ر.م</span>
-            <span class="rb"><b>رضا محمدی</b><span>زبان انگلیسی — آمادگی آیلتس</span></span>
-            <span class="re"><span class="bdg ok">پرداخت‌شده</span><b class="mono">۵٫۴ م</b></span>
-          </div>
-          <div class="row">
-            <span class="av gold">ن.ه</span>
-            <span class="rb"><b>نیلوفر حسینی</b><span>موسیقی — گیتار مقدماتی</span></span>
-            <span class="re"><span class="bdg ok">پرداخت‌شده</span><b class="mono">۳٫۴ م</b></span>
-          </div>
-          <div class="row">
-            <span class="av">ا.ک</span>
-            <span class="rb"><b>امیر کاظمی</b><span>کامپیوتر — اکسل پیشرفته</span></span>
-            <span class="re"><span class="bdg warn">قسط اول</span><b class="mono">۱٫۵ م</b></span>
-          </div>
-          <div class="row">
-            <span class="av ok">ز.ص</span>
-            <span class="rb"><b>زهرا صادقی</b><span>نقاشی — رنگ روغن</span></span>
-            <span class="re"><span class="bdg grey">در انتظار</span><b class="mono">۴٫۱ م</b></span>
-          </div>
-          <div class="row">
-            <span class="av">م.ر</span>
-            <span class="rb"><b>مهدی رستمی</b><span>زبان انگلیسی — مکالمهٔ فشرده</span></span>
-            <span class="re"><span class="bdg ok">پرداخت‌شده</span><b class="mono">۳٫۶ م</b></span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="page" id="pg-users">
-  <div class="panel">
-    <div class="p-head">
-      <div><h3>مدیریت کاربران</h3><div class="ph-sub">۲٫۴۸۰ زبان‌آموز · ۲۸ مدرس · ۹ کاربر مدیریتی</div></div>
-      <button class="btn btn-gold btn-sm" data-demo="فرم افزودن کاربر در نسخهٔ نهایی"><span data-ico="plus"></span>افزودن کاربر</button>
-    </div>
-    <div class="p-body" style="padding-bottom:0">
-      <div class="toolbar">
-        <div class="seg">
-          <button class="on" data-filter="u" data-v="all">همه</button>
-          <button data-filter="u" data-v="active">فعال</button>
-          <button data-filter="u" data-v="pending">در انتظار تأیید</button>
-          <button data-filter="u" data-v="inactive">غیرفعال</button>
-        </div>
-        <div class="ctrl grow" style="max-width:260px"><span data-ico="search"></span><input type="search" placeholder="جستجوی نام یا شمارهٔ تماس…"></div>
-        <button class="btn btn-ghost btn-sm" data-demo="خروجی اکسل در نسخهٔ نهایی"><span data-ico="download"></span>خروجی اکسل</button>
-      </div>
-    </div>
-    <div class="tbl-wrap">
-      <table class="tbl">
-        <thead><tr>
-          <th>کاربر</th><th>نقش</th><th>دورهٔ فعال</th><th>پیشرفت</th><th>شمارهٔ تماس</th><th>وضعیت</th><th class="end">عملیات</th>
-        </tr></thead>
-        <tbody>
-          <tr data-row data-f="u" data-v="active">
-            <td><div class="who"><span class="av">ر.م</span><span><b>رضا محمدی</b><span class="mono">ST-1405-0184</span></span></div></td>
-            <td><span class="bdg">زبان‌آموز</span></td>
-            <td>آمادگی آیلتس</td>
-            <td><div class="prog-row"><div class="prog"><i style="width:78%"></i></div><span class="pv">۷۸٪</span></div></td>
-            <td class="mono">۰۹۱۲ ۴۴۸ ۷۲۱۰</td>
-            <td><span class="bdg ok">فعال</span></td>
-            <td class="end"><div class="acts"><button class="btn btn-sm btn-ghost" data-demo="پروندهٔ کاربر">پرونده</button><button class="btn btn-sm btn-ghost" data-demo="ویرایش کاربر"><span data-ico="edit"></span></button></div></td>
-          </tr>
-          <tr data-row data-f="u" data-v="active">
-            <td><div class="who"><span class="av gold">ن.ه</span><span><b>نیلوفر حسینی</b><span class="mono">ST-1405-0191</span></span></div></td>
-            <td><span class="bdg">زبان‌آموز</span></td>
-            <td>گیتار مقدماتی</td>
-            <td><div class="prog-row"><div class="prog gold"><i style="width:45%"></i></div><span class="pv">۴۵٪</span></div></td>
-            <td class="mono">۰۹۳۵ ۲۱۷ ۸۸۴۰</td>
-            <td><span class="bdg ok">فعال</span></td>
-            <td class="end"><div class="acts"><button class="btn btn-sm btn-ghost" data-demo="پروندهٔ کاربر">پرونده</button><button class="btn btn-sm btn-ghost" data-demo="ویرایش کاربر"><span data-ico="edit"></span></button></div></td>
-          </tr>
-          <tr data-row data-f="u" data-v="pending">
-            <td><div class="who"><span class="av">ا.ک</span><span><b>امیر کاظمی</b><span class="mono">ST-1405-0203</span></span></div></td>
-            <td><span class="bdg">زبان‌آموز</span></td>
-            <td>اکسل پیشرفته</td>
-            <td><div class="prog-row"><div class="prog"><i style="width:12%"></i></div><span class="pv">۱۲٪</span></div></td>
-            <td class="mono">۰۹۱۹ ۵۵۳ ۱۰۲۷</td>
-            <td><span class="bdg warn">در انتظار تأیید</span></td>
-            <td class="end"><div class="acts"><button class="btn btn-sm btn-ghost" data-demo="پروندهٔ کاربر">پرونده</button><button class="btn btn-sm btn-ghost" data-demo="ویرایش کاربر"><span data-ico="edit"></span></button></div></td>
-          </tr>
-          <tr data-row data-f="u" data-v="inactive">
-            <td><div class="who"><span class="av">ز.ص</span><span><b>زهرا صادقی</b><span class="mono">ST-1404-0917</span></span></div></td>
-            <td><span class="bdg">زبان‌آموز</span></td>
-            <td>رنگ روغن</td>
-            <td><div class="prog-row"><div class="prog bad"><i style="width:8%"></i></div><span class="pv">۸٪</span></div></td>
-            <td class="mono">۰۹۳۰ ۸۸۴ ۵۵۱۹</td>
-            <td><span class="bdg bad">غیرفعال</span></td>
-            <td class="end"><div class="acts"><button class="btn btn-sm btn-ghost" data-demo="پروندهٔ کاربر">پرونده</button><button class="btn btn-sm btn-ghost" data-demo="ویرایش کاربر"><span data-ico="edit"></span></button></div></td>
-          </tr>
-          <tr data-row data-f="u" data-v="active">
-            <td><div class="who"><span class="av gold">س.ا</span><span><b>سارا امینی</b><span class="mono">TC-1401-0004</span></span></div></td>
-            <td><span class="bdg gold">مدرس</span></td>
-            <td>آمادگی آیلتس · مکالمهٔ فشرده</td>
-            <td><div class="prog-row"><div class="prog ok"><i style="width:100%"></i></div><span class="pv">فعال</span></div></td>
-            <td class="mono">۰۹۱۲ ۱۰۷ ۳۳۶۵</td>
-            <td><span class="bdg ok">فعال</span></td>
-            <td class="end"><div class="acts"><button class="btn btn-sm btn-ghost" data-demo="پروندهٔ مدرس">پرونده</button><button class="btn btn-sm btn-ghost" data-demo="ویرایش مدرس"><span data-ico="edit"></span></button></div></td>
-          </tr>
-          <tr data-row data-f="u" data-v="active">
-            <td><div class="who"><span class="av gold">م.ک</span><span><b>محمدرضا کاظمی</b><span class="mono">TC-1402-0011</span></span></div></td>
-            <td><span class="bdg gold">مدرس</span></td>
-            <td>پایتون · طراحی وب · اکسل</td>
-            <td><div class="prog-row"><div class="prog ok"><i style="width:100%"></i></div><span class="pv">فعال</span></div></td>
-            <td class="mono">۰۹۳۸ ۶۶۲ ۹۹۱۴</td>
-            <td><span class="bdg ok">فعال</span></td>
-            <td class="end"><div class="acts"><button class="btn btn-sm btn-ghost" data-demo="پروندهٔ مدرس">پرونده</button><button class="btn btn-sm btn-ghost" data-demo="ویرایش مدرس"><span data-ico="edit"></span></button></div></td>
-          </tr>
-          <tr data-row data-f="u" data-v="pending">
-            <td><div class="who"><span class="av gold">ه.ن</span><span><b>هانیه نوری</b><span class="mono">TC-1405-0029</span></span></div></td>
-            <td><span class="bdg gold">مدرس جدید</span></td>
-            <td>در انتظار تخصیص کلاس</td>
-            <td><div class="prog-row"><div class="prog gold"><i style="width:0%"></i></div><span class="pv">—</span></div></td>
-            <td class="mono">۰۹۰۵ ۳۳۱ ۷۷۸۰</td>
-            <td><span class="bdg warn">در انتظار تأیید</span></td>
-            <td class="end"><div class="acts"><button class="btn btn-sm btn-primary" data-demo="تأیید مدرس جدید">تأیید</button><button class="btn btn-sm btn-ghost" data-demo="رد درخواست"><span data-ico="x"></span></button></div></td>
-          </tr>
-          <tr data-row data-f="u" data-v="active">
-            <td><div class="who"><span class="av">ک.د</span><span><b>کامران دهقان</b><span class="mono">AD-1393-0001</span></span></div></td>
-            <td><span class="bdg">مدیر آموزشگاه</span></td>
-            <td>—</td>
-            <td><div class="prog-row"><div class="prog"><i style="width:100%"></i></div><span class="pv">—</span></div></td>
-            <td class="mono">۰۹۱۲ ۰۰۰ ۱۲۲۴</td>
-            <td><span class="bdg ok">فعال</span></td>
-            <td class="end"><div class="acts"><button class="btn btn-sm btn-ghost" data-demo="دسترسی‌های مدیر">دسترسی‌ها</button></div></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="p-foot"><span>نمایش ۸ کاربر از ۲٫۵۱۷</span><a class="btn btn-sm btn-ghost" href="#" data-demo="صفحهٔ بعد">صفحهٔ بعد</a></div>
-  </div>
-</div>
-
-<div class="page" id="pg-classes">
-  <div class="panel">
-    <div class="p-head">
-      <div><h3>کلاس‌ها و دوره‌های فعال</h3><div class="ph-sub">ترم پاییز ۱۴۰۵ — ۱۲۴ کلاس در چهار حوزه</div></div>
-      <button class="btn btn-gold btn-sm" data-demo="تعریف کلاس جدید"><span data-ico="plus"></span>کلاس جدید</button>
-    </div>
-    <div class="p-body" style="padding-bottom:0">
-      <div class="toolbar">
-        <div class="seg">
-          <button class="on" data-filter="c" data-v="all">همه حوزه‌ها</button>
-          <button data-filter="c" data-v="en">زبان انگلیسی</button>
-          <button data-filter="c" data-v="it">کامپیوتر</button>
-          <button data-filter="c" data-v="mu">موسیقی</button>
-          <button data-filter="c" data-v="ar">نقاشی</button>
-        </div>
-      </div>
-    </div>
-    <div class="tbl-wrap">
-      <table class="tbl">
-        <thead><tr><th>دوره</th><th>حوزه</th><th>مدرس</th><th>روز و ساعت</th><th>ظرفیت</th><th>میانگین نمره</th><th class="end">وضعیت</th></tr></thead>
-        <tbody>
-          <tr data-row data-f="c" data-v="en">
-            <td><b>آمادگی آیلتس — گروه A</b></td><td><span class="bdg">زبان انگلیسی</span></td>
-            <td><div class="who"><span class="av gold sm">س.ا</span><span><b>سارا امینی</b></span></div></td>
-            <td class="nowrap">شنبه و دوشنبه · ۱۸:۰۰</td>
-            <td><div class="prog-row"><div class="prog"><i style="width:100%"></i></div><span class="pv">۱۰/۱۰</span></div></td>
-            <td class="num">۸۷٫۴</td><td class="end"><span class="bdg ok">تکمیل</span></td>
-          </tr>
-          <tr data-row data-f="c" data-v="en">
-            <td><b>مکالمهٔ فشرده — ترم ۷</b></td><td><span class="bdg">زبان انگلیسی</span></td>
-            <td><div class="who"><span class="av gold sm">س.ا</span><span><b>سارا امینی</b></span></div></td>
-            <td class="nowrap">یک‌شنبه و سه‌شنبه · ۱۹:۳۰</td>
-            <td><div class="prog-row"><div class="prog bad"><i style="width:100%"></i></div><span class="pv">۱۰/۱۰</span></div></td>
-            <td class="num">۹۱٫۲</td><td class="end"><span class="bdg bad">ظرفیت پر</span></td>
-          </tr>
-          <tr data-row data-f="c" data-v="en">
-            <td><b>مکالمهٔ فشرده — ترم ۷ (گروه B)</b></td><td><span class="bdg">زبان انگلیسی</span></td>
-            <td><div class="who"><span class="av gold sm">ا.ن</span><span><b>الهام نوری</b></span></div></td>
-            <td class="nowrap">یک‌شنبه و سه‌شنبه · ۱۷:۰۰</td>
-            <td><div class="prog-row"><div class="prog"><i style="width:40%"></i></div><span class="pv">۴/۱۰</span></div></td>
-            <td class="num">—</td><td class="end"><span class="bdg warn">تشکیل در انتظار</span></td>
-          </tr>
-          <tr data-row data-f="c" data-v="en">
-            <td><b>زبان عمومی — ترم ۳</b></td><td><span class="bdg">زبان انگلیسی</span></td>
-            <td><div class="who"><span class="av gold sm">ر.ف</span><span><b>ریما فرهادی</b></span></div></td>
-            <td class="nowrap">دوشنبه و چهارشنبه · ۱۶:۰۰</td>
-            <td><div class="prog-row"><div class="prog"><i style="width:80%"></i></div><span class="pv">۸/۱۰</span></div></td>
-            <td class="num">۷۹٫۵</td><td class="end"><span class="bdg ok">در حال برگزاری</span></td>
-          </tr>
-          <tr data-row data-f="c" data-v="it">
-            <td><b>اکسل پیشرفته</b></td><td><span class="bdg">کامپیوتر</span></td>
-            <td><div class="who"><span class="av gold sm">م.ک</span><span><b>محمدرضا کاظمی</b></span></div></td>
-            <td class="nowrap">شنبه و چهارشنبه · ۱۰:۰۰</td>
-            <td><div class="prog-row"><div class="prog"><i style="width:90%"></i></div><span class="pv">۹/۱۰</span></div></td>
-            <td class="num">۸۴٫۱</td><td class="end"><span class="bdg ok">در حال برگزاری</span></td>
-          </tr>
-          <tr data-row data-f="c" data-v="it">
-            <td><b>برنامه‌نویسی پایتون</b></td><td><span class="bdg">کامپیوتر</span></td>
-            <td><div class="who"><span class="av gold sm">م.ک</span><span><b>محمدرضا کاظمی</b></span></div></td>
-            <td class="nowrap">یک‌شنبه و پنجشنبه · ۱۸:۳۰</td>
-            <td><div class="prog-row"><div class="prog"><i style="width:70%"></i></div><span class="pv">۷/۱۰</span></div></td>
-            <td class="num">۸۲٫۸</td><td class="end"><span class="bdg ok">در حال برگزاری</span></td>
-          </tr>
-          <tr data-row data-f="c" data-v="mu">
-            <td><b>گیتار — مقدماتی</b></td><td><span class="bdg gold">موسیقی</span></td>
-            <td><div class="who"><span class="av gold sm">ن.ر</span><span><b>نگار رستمی</b></span></div></td>
-            <td class="nowrap">سه‌شنبه · ۱۷:۳۰</td>
-            <td><div class="prog-row"><div class="prog"><i style="width:40%"></i></div><span class="pv">۲/۴</span></div></td>
-            <td class="num">۸۸٫۰</td><td class="end"><span class="bdg ok">در حال برگزاری</span></td>
-          </tr>
-          <tr data-row data-f="c" data-v="ar">
-            <td><b>رنگ روغن — کارگاه</b></td><td><span class="bdg gold">نقاشی</span></td>
-            <td><div class="who"><span class="av gold sm">ع.ص</span><span><b>علی صادقی</b></span></div></td>
-            <td class="nowrap">پنجشنبه · ۱۵:۰۰</td>
-            <td><div class="prog-row"><div class="prog"><i style="width:75%"></i></div><span class="pv">۶/۸</span></div></td>
-            <td class="num">۹۰٫۳</td><td class="end"><span class="bdg ok">در حال برگزاری</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="grid c3">
-    <div class="mini"><span class="ib ok"><span data-ico="check-sq"></span></span><span><b>۱۰۸ کلاس</b><span>در حال برگزاری</span></span></div>
-    <div class="mini"><span class="ib warn"><span data-ico="clock"></span></span><span><b>۱۱ کلاس</b><span>در انتظار تشکیل</span></span></div>
-    <div class="mini"><span class="ib bad"><span data-ico="alert"></span></span><span><b>۵ کلاس</b><span>ظرفیت تکمیل</span></span></div>
-  </div>
-</div>
-
-<div class="page" id="pg-finance">
-  <div class="kpis">
-    <div class="kpi"><div class="kh"><span class="kt">درآمد ترم جاری</span><span class="ib ok"><span data-ico="wallet"></span></span></div><div class="kv">۲٫۴ <small>میلیارد</small></div><div class="kd up"><span data-ico="trend-up"></span>۱۲٪ رشد</div></div>
-    <div class="kpi"><div class="kh"><span class="kt">وصول‌شده</span><span class="ib"><span data-ico="check-sq"></span></span></div><div class="kv">۲٫۲۱۶ <small>میلیون</small></div><div class="kd flat">۹۲٪ کل مطالبات</div></div>
-    <div class="kpi"><div class="kh"><span class="kt">مطالبات معوق</span><span class="ib bad"><span data-ico="alert"></span></span></div><div class="kv">۱۸۴ <small>میلیون</small></div><div class="kd down"><span data-ico="trend-down"></span>۱۲ زبان‌آموز</div></div>
-    <div class="kpi"><div class="kh"><span class="kt">میانگین شهریهٔ سرانه</span><span class="ib gold"><span data-ico="chart"></span></span></div><div class="kv">۳٫۹ <small>میلیون</small></div><div class="kd up"><span data-ico="trend-up"></span>۵٪ نسبت به ترم قبل</div></div>
-  </div>
-
-  <div class="grid c12">
-    <div class="panel">
-      <div class="p-head"><h3>مطالبات معوق</h3><span class="bdg bad">۱۲ مورد</span></div>
-      <div class="p-body flush">
-        <div class="rows">
-          <div class="row"><span class="av bad">ز.ص</span><span class="rb"><b>زهرا صادقی</b><span>رنگ روغن — قسط دوم</span></span><span class="re"><b class="mono">۲٫۱ م</b><button class="btn btn-sm btn-ghost" data-demo="ارسال یادآوری پرداخت">یادآوری</button></span></div>
-          <div class="row"><span class="av bad">ا.ک</span><span class="rb"><b>امیر کاظمی</b><span>اکسل پیشرفته — قسط دوم</span></span><span class="re"><b class="mono">۱٫۴ م</b><button class="btn btn-sm btn-ghost" data-demo="ارسال یادآوری پرداخت">یادآوری</button></span></div>
-          <div class="row"><span class="av bad">س.م</span><span class="rb"><b>سعید مرادی</b><span>پایتون — قسط سوم</span></span><span class="re"><b class="mono">۱٫۶ م</b><button class="btn btn-sm btn-ghost" data-demo="ارسال یادآوری پرداخت">یادآوری</button></span></div>
-          <div class="row"><span class="av warn">ف.ر</span><span class="rb"><b>فاطمه رحیمی</b><span>زبان عمومی ترم ۵ — معوق</span></span><span class="re"><b class="mono">۰٫۹ م</b><button class="btn btn-sm btn-ghost" data-demo="ارسال یادآوری پرداخت">یادآوری</button></span></div>
-        </div>
-      </div>
-      <div class="p-foot"><span>مجموع ۹ مورد دیگر — ۹٫۸ میلیون تومان</span><a class="btn btn-sm btn-ghost" href="#" data-demo="فهرست کامل بدهی‌ها">مشاهدهٔ همه</a></div>
-    </div>
-
-    <div class="panel">
-      <div class="p-head"><h3>ترکیب درآمد به تفکیک حوزه</h3></div>
-      <div class="p-body">
-        <div class="donut-wrap">
-          <div class="donut" style="background:conic-gradient(#0A2B51 0 61%, #1c4d85 61% 78%, #D1AB7B 78% 91%, #c3d2e6 91% 100%)">
-            <i><b>۲٫۴</b><span>میلیارد تومان</span></i>
-          </div>
-          <div class="legend">
-            <div><i style="background:#0A2B51"></i>زبان انگلیسی<b>۶۱٪</b></div>
-            <div><i style="background:#1c4d85"></i>کامپیوتر<b>۱۷٪</b></div>
-            <div><i style="background:#D1AB7B"></i>موسیقی<b>۱۳٪</b></div>
-            <div><i style="background:#c3d2e6"></i>نقاشی<b>۹٪</b></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="page" id="pg-reports">
   <div class="grid c21">
     <div class="panel">
-      <div class="p-head"><div><h3>میانگین نمره به تفکیک حوزه</h3><div class="ph-sub">ترم پاییز ۱۴۰۵ — از ۱۰۰</div></div></div>
-      <div class="p-body">
-        <div class="bars">
-          <div class="barw"><div class="bar" style="height:86%" title="۸۶٫۲"></div><span>زبان انگلیسی</span></div>
-          <div class="barw"><div class="bar" style="height:83%" title="۸۳٫۴"></div><span>کامپیوتر</span></div>
-          <div class="barw"><div class="bar" style="height:89%" title="۸۸٫۷"></div><span>موسیقی</span></div>
-          <div class="barw"><div class="bar" style="height:91%" title="۹۰٫۵"></div><span>نقاشی</span></div>
-        </div>
-        <div class="chart-legend"><span><i style="background:#1c4d85"></i>میانگین کل آموزشگاه: ۸۶٫۴</span></div>
+      <div class="p-head">
+        <div><h2>آخرین موجودیت‌های ثبت‌شده</h2><div class="ph-sub">DataEntries — پنج رکورد تازه در همهٔ موجودیت‌ها</div></div>
+        <button class="btn btn-ghost btn-sm" data-pg-go="entries"><span data-ico="plus"></span> ورود دادهٔ تازه</button>
       </div>
+      <div class="p-body flush"><div class="rows" id="recentRows"></div></div>
     </div>
+
     <div class="panel">
-      <div class="p-head"><h3>وضعیت قبولی آزمون‌ها</h3></div>
+      <div class="p-head"><h2>کارهای در انتظار مدیر</h2><span class="bdg bad">۵ مورد</span></div>
       <div class="p-body">
-        <div class="row" style="padding:0 0 14px"><span class="rb"><b>قبولی در تلاش اول</b><span>۱٫۸۴۴ زبان‌آموز</span></span><span class="re"><b class="num">۷۴٪</b></span></div>
-        <div class="prog" style="margin-bottom:16px"><i class="ok" style="width:74%"></i></div>
-        <div class="row" style="padding:0 0 14px"><span class="rb"><b>قبولی در تلاش دوم</b><span>۴۲۱ زبان‌آموز</span></span><span class="re"><b class="num">۱۷٪</b></span></div>
-        <div class="prog gold" style="margin-bottom:16px"><i style="width:17%"></i></div>
-        <div class="row" style="padding:0 0 14px"><span class="rb"><b>نیازمند تلاش مجدد</b><span>۲۱۵ زبان‌آموز</span></span><span class="re"><b class="num">۹٪</b></span></div>
-        <div class="prog bad"><i style="width:9%"></i></div>
+        <div class="notice bad"><span data-ico="alert"></span><div><b>دو کلاس بدون استاد:</b> «انگلیسی مقدماتی B» و «موسیقی مقدماتی» باید به یک استاد دوره‌دار تخصیص یابند.</div></div>
+        <div class="notice warn"><span data-ico="clock"></span><div><b>تضاد زمانی در برنامهٔ هفتگی:</b> استاد «نیلوفر حسینی» شنبه ساعت <span class="num">۱۷:۰۰–۱۹:۳۰</span> در دو کلاس هم‌زمان تعریف شده است.</div></div>
+        <div class="notice info"><span data-ico="globe"></span><div><b>۴ برگهٔ پیش‌نویس:</b> صفحه‌های «درباره ما» و «آزمون تعیین سطح» منتشر نشده‌اند و برای نقش زبان‌آموز پنهان‌اند.</div></div>
+        <div class="notice sand"><span data-ico="file"></span><div><b>۲ سطح بدون محتوا:</b> سطح <span class="en">C1</span> و <span class="en">C2</span> درس انگلیسی هنوز هیچ وصلهٔ محتوایی ندارند.</div></div>
+        <div class="notice ok"><span data-ico="check-sq"></span><div><b>گزارش ترم آماده است:</b> گزارش عملکرد استادان برای ترم پاییز تکمیل و قابل دریافت است.</div></div>
       </div>
     </div>
   </div>
+</section>
 
+<!-- ================= USERS ================= -->
+<section class="page" id="pg-users">
   <div class="panel">
-    <div class="p-head"><div><h3>گزارش عملکرد مدرسان</h3><div class="ph-sub">بر پایهٔ نمرهٔ زبان‌آموزان و رضایت کلاسی</div></div>
-      <button class="btn btn-ghost btn-sm" data-demo="خروجی گزارش PDF"><span data-ico="download"></span>خروجی گزارش</button></div>
+    <div class="p-head">
+      <div><h2>کاربران سیستم</h2><div class="ph-sub">فهرست، افزودن، ویرایش، حذف و تعیین سطح دسترسی هر کاربر</div></div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" data-demo="خروجی اکسل فهرست کاربران ساخته شد"><span data-ico="download"></span> خروجی</button>
+        <button class="btn btn-primary btn-sm" data-act="user-add"><span data-ico="plus"></span> کاربر تازه</button>
+      </div>
+    </div>
+    <div class="p-body">
+      <div class="filters">
+        <div class="ctrl grow"><span data-ico="search"></span><input type="search" id="uq" placeholder="نام، تلفن یا کد کاربر…"></div>
+        <div class="fld"><label>نقش</label>
+          <select class="inp" id="fRole">
+            <option value="">همهٔ نقش‌ها</option>
+            <option value="admin">مدیر آموزشگاه</option>
+            <option value="teacher">استاد</option>
+            <option value="student">زبان‌آموز</option>
+          </select>
+        </div>
+        <div class="fld"><label>وضعیت</label>
+          <select class="inp" id="fStatus"><option value="">همه</option><option value="active">فعال</option><option value="pending">در انتظار تأیید</option><option value="blocked">مسدود</option></select>
+        </div>
+        <div class="fld"><label>دوره</label>
+          <select class="inp" id="fCourse"><option value="">همهٔ دوره‌ها</option><option>انگلیسی</option><option>کامپیوتر</option><option>موسیقی</option><option>نقاشی</option></select>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="uReset"><span data-ico="refresh"></span> پاک‌کردن فیلترها</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th style="width:44px"><label class="chk"><input type="checkbox" id="uAll"></label></th>
+              <th>کاربر</th>
+              <th>نقش</th>
+              <th>دوره / تخصص</th>
+              <th>وضعیت</th>
+              <th>آخرین ورود</th>
+              <th class="end" style="width:150px">عملیات</th>
+            </tr>
+          </thead>
+          <tbody id="usersBody"></tbody>
+        </table>
+      </div>
+      <div class="p-foot" style="margin:18px -22px -20px;padding:14px 22px">
+        <span id="uCount">—</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" data-demo="صفحهٔ پیشین"><span data-ico="chev-r"></span> پیشین</button>
+          <button class="btn btn-ghost btn-sm" data-demo="صفحهٔ بعد"><span data-ico="chev-l"></span> بعد</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ROLES ================= -->
+<section class="page" id="pg-roles">
+  <div class="grid c11">
+    <div class="panel mb0">
+      <div class="p-head"><div><h2>نقش‌های پیش‌فرض سیستم</h2><div class="ph-sub">سه نقش پایه؛ سطح دسترسی هر نقش با ماتریس پایین تنظیم می‌شود</div></div></div>
+      <div class="p-body">
+        <div class="rows">
+          <div class="row"><span class="av lg">مد</span><span class="rb"><b>مدیر آموزشگاه</b><span>دسترسی کامل به همهٔ بخش‌ها، کاربران، مالی و گزارشات</span></span><span class="bdg gold">بدون محدودیت</span></div>
+          <div class="row"><span class="av lg gold">اس</span><span class="rb"><b>استاد</b><span>فقط دورهٔ خودش: تعریف کلاس، بارگذاری محتوا، آزمون و نمره‌دهی</span></span><span class="bdg">۷ دسترسی</span></div>
+          <div class="row"><span class="av lg ok">زآ</span><span class="rb"><b>زبان‌آموز</b><span>مشاهدهٔ محتوای دورهٔ ثبت‌نامی، شرکت در آزمون و مشاهدهٔ کارنامه</span></span><span class="bdg">۴ دسترسی</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel mb0">
+      <div class="p-head"><h2>ماتریس دسترسی نقش‌ها</h2><span class="bdg grey">نمایشی</span></div>
+      <div class="p-body flush">
+        <div class="tbl-wrap">
+          <table class="matrix">
+            <thead><tr><th>بخش</th><th>مشاهده</th><th>افزودن</th><th>ویرایش</th><th>حذف</th></tr></thead>
+            <tbody>
+              <tr><td>کاربران سیستم</td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox" checked></label></td></tr>
+              <tr><td>تعریف استاد و کلاس</td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox" checked></label></td></tr>
+              <tr><td>DataEntries</td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox" checked></label></td></tr>
+              <tr><td>WebPages</td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox"></label></td></tr>
+              <tr><td>گزارشات</td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox"></label></td><td><label class="chk"><input type="checkbox"></label></td><td><label class="chk"><input type="checkbox"></label></td></tr>
+              <tr><td>مالی و شهریه</td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox" checked></label></td><td><label class="chk"><input type="checkbox"></label></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="p-foot"><span>این جدول سطح دسترسی نقش «مدیر» را نشان می‌دهد. برای هر کاربر، ماتریس اختصاصی از دکمهٔ چرخ‌دنده ساخته می‌شود.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TEACHERS ================= -->
+<section class="page" id="pg-teachers">
+  <div class="notice info mb0" style="margin-bottom:18px"><span data-ico="info"></span><div><b>قاعدهٔ سیستم:</b> هر استاد فقط مسئولیت <b>یک دوره</b> را برعهده دارد. در تعریف کلاس، دوره به‌صورت خودکار از پروندهٔ استاد خوانده می‌شود و قابل تغییر نیست.</div></div>
+  <div class="panel">
+    <div class="p-head">
+      <div><h2>استادان و دوره‌های تحت مسئولیت</h2><div class="ph-sub">برای تعریف کلاس، تاریخ و ساعت، هر استاد روی چرخ‌دنده بزنید</div></div>
+      <button class="btn btn-primary btn-sm" data-act="teacher-add"><span data-ico="plus"></span> استاد تازه</button>
+    </div>
     <div class="tbl-wrap">
       <table class="tbl">
-        <thead><tr><th>مدرس</th><th>حوزه</th><th>کلاس‌های فعال</th><th>زبان‌آموز</th><th>میانگین نمرهٔ کلاس‌ها</th><th>رضایت</th></tr></thead>
-        <tbody>
-          <tr data-row><td><div class="who"><span class="av gold sm">س.ا</span><span><b>سارا امینی</b></span></div></td><td>زبان انگلیسی</td><td class="num">۶</td><td class="num">۵۸</td><td class="num">۸۸٫۹</td><td><span class="bdg ok">۴٫۹ از ۵</span></td></tr>
-          <tr data-row><td><div class="who"><span class="av gold sm">م.ک</span><span><b>محمدرضا کاظمی</b></span></div></td><td>کامپیوتر</td><td class="num">۵</td><td class="num">۴۶</td><td class="num">۸۴٫۶</td><td><span class="bdg ok">۴٫۷ از ۵</span></td></tr>
-          <tr data-row><td><div class="who"><span class="av gold sm">ن.ر</span><span><b>نگار رستمی</b></span></div></td><td>موسیقی</td><td class="num">۴</td><td class="num">۱۹</td><td class="num">۸۹٫۱</td><td><span class="bdg ok">۴٫۹ از ۵</span></td></tr>
-          <tr data-row><td><div class="who"><span class="av gold sm">ع.ص</span><span><b>علی صادقی</b></span></div></td><td>نقاشی</td><td class="num">۳</td><td class="num">۲۲</td><td class="num">۹۰٫۴</td><td><span class="bdg ok">۵٫۰ از ۵</span></td></tr>
-          <tr data-row><td><div class="who"><span class="av gold sm">ا.ن</span><span><b>الهام نوری</b></span></div></td><td>زبان انگلیسی</td><td class="num">۴</td><td class="num">۳۴</td><td class="num">۸۲٫۳</td><td><span class="bdg warn">۴٫۴ از ۵</span></td></tr>
-        </tbody>
+        <thead><tr><th>استاد</th><th>دورهٔ تحت مسئولیت</th><th>کلاس‌ها</th><th>دانشجو</th><th>امتیاز رضایت</th><th>وضعیت</th><th class="end" style="width:120px">عملیات</th></tr></thead>
+        <tbody id="teachersBody"></tbody>
       </table>
     </div>
   </div>
-</div>
+</section>
 
-<div class="page" id="pg-settings">
-  <div class="grid c11">
-    <div class="panel">
-      <div class="p-head"><h3>تنظیمات عمومی پلتفرم</h3></div>
-      <div class="p-body">
-        <div class="field" style="margin-bottom:14px"><label>نام نمایشی آموزشگاه</label>
-          <div class="ctrl"><span data-ico="flag"></span><input type="text" value="آموزشگاه اساطیر آینده"></div></div>
-        <div class="field" style="margin-bottom:14px"><label>آدرس پلتفرم زبان‌آموز</label>
-          <div class="ctrl"><span data-ico="globe"></span><input type="text" value="panel.asatir-e-ayande.ir" class="mono"></div></div>
-        <div class="field" style="margin-bottom:14px"><label>حد نصاب پیش‌فرض قبولی (درصد)</label>
-          <div class="ctrl"><span data-ico="target"></span><input type="text" value="۶۰"></div></div>
-        <div class="field"><label>طول هر جلسه (دقیقه)</label>
-          <div class="ctrl"><span data-ico="clock"></span><input type="text" value="۹۰"></div></div>
-      </div>
-      <div class="p-foot"><span>آخرین تغییر: ۱۲ مهر ۱۴۰۵ توسط کامران دهقان</span>
-        <button class="btn btn-primary btn-sm" data-demo="تنظیمات ذخیره شد">ذخیرهٔ تنظیمات</button></div>
+<!-- ================= CLASSES ================= -->
+<section class="page" id="pg-classes">
+  <div class="panel">
+    <div class="p-head">
+      <div><h2>کلاس‌ها</h2><div class="ph-sub">هر کلاس: روزهای هفته، ساعت شروع/پایان، سطح CEFR و فهرست دانشجویان</div></div>
+      <button class="btn btn-primary btn-sm" data-act="class-add"><span data-ico="plus"></span> کلاس تازه</button>
     </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>کد کلاس</th><th>عنوان</th><th>استاد</th><th>سطح</th><th>روزهای هفته</th><th>ساعت</th><th>دانشجو</th><th>وضعیت</th><th class="end" style="width:150px">عملیات</th></tr></thead>
+        <tbody id="classesBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
-    <div class="panel">
-      <div class="p-head"><h3>وضعیت پنل‌های پلتفرم</h3></div>
-      <div class="p-body">
-        <div class="notice ok"><span data-ico="check-sq"></span><span>پنل مدیریت — فعال · ۹ کاربر با دسترسی</span></div>
-        <div class="notice ok"><span data-ico="check-sq"></span><span>پنل مدرس — فعال · ۲۸ مدرس</span></div>
-        <div class="notice ok"><span data-ico="check-sq"></span><span>پنل زبان‌آموز — فعال · ۲٫۴۸۰ کاربر</span></div>
-        <div class="notice warn"><span data-ico="clock"></span><span>پشتیبان‌گیری خودکار بعدی: امشب ساعت ۰۲:۰۰</span></div>
-        <div class="notice info"><span data-ico="shield"></span><span>احراز هویت دومرحله‌ای برای نقش مدیر فعال است.</span></div>
+<!-- ================= SCHEDULE ================= -->
+<section class="page" id="pg-schedule">
+  <div class="panel">
+    <div class="p-head">
+      <div><h2>برنامهٔ هفتگی استادان</h2><div class="ph-sub">نمای شنبه تا پنجشنبه — خانه‌های اشغال‌شده کلاس همان استاد در آن بازهٔ زمانی است</div></div>
+      <div class="filters" style="padding:0">
+        <div class="fld" style="min-width:190px"><label>استاد</label><select class="inp" id="schTeacher"></select></div>
+      </div>
+    </div>
+    <div class="p-body">
+      <div class="scrollx"><div class="tt" id="ttGrid"></div></div>
+      <div class="chart-legend">
+        <span><i style="background:var(--navy)"></i> کلاس فعال</span>
+        <span><i style="background:var(--sand)"></i> تضاد زمانی / نیازمند اصلاح</span>
       </div>
     </div>
   </div>
-</div>
+</section>
 
-<script>
-const PF = {
-  role:'admin',
-  roleLabel:'پنل مدیر',
-  pageTitle:'داشبورد مدیر — پلتفرم اساطیر آینده',
-  user:{name:'کامران دهقان', title:'مدیر آموزشگاه', initials:'ک.د'},
-  start:'dash',
-  nav:[
-    {label:'', items:[
-      {id:'dash', i:'grid', t:'داشبورد'},
-      {id:'users', i:'users', t:'مدیریت کاربران', cnt:'۲٫۵۱۷'},
-      {id:'classes', i:'book-open', t:'کلاس‌ها و دوره‌ها', cnt:'۱۲۴'},
-      {id:'finance', i:'wallet', t:'مالی و شهریه'},
-      {id:'reports', i:'chart', t:'گزارش‌ها'}
-    ]},
-    {label:'سیستم', items:[
-      {id:'settings', i:'settings', t:'تنظیمات پلتفرم'}
-    ]}
-  ],
-  panels:{
-    dash:{title:'داشبورد مدیر', sub:'نمای کلی آموزشگاه — ترم پاییز ۱۴۰۵'},
-    users:{title:'مدیریت کاربران', sub:'زبان‌آموزان، مدرسان و کاربران مدیریتی'},
-    classes:{title:'کلاس‌ها و دوره‌ها', sub:'ترم پاییز ۱۴۰۵ — چهار حوزهٔ آموزشی'},
-    finance:{title:'مالی و شهریه', sub:'درآمد، وصول و مطالبات معوق'},
-    reports:{title:'گزارش‌ها', sub:'عملکرد آموزشی و مدرسان'},
-    settings:{title:'تنظیمات پلتفرم', sub:'پیکربندی عمومی و وضعیت سرویس‌ها'}
-  }
-};
-</script>
-    </main>
+<!-- ================= LEVELS ================= -->
+<section class="page" id="pg-levels">
+  <div class="panel">
+    <div class="p-head"><div><h2>سطوح زبان بر پایهٔ CEFR</h2><div class="ph-sub">هر کلاس یک سطح دارد که سطح محتوا، آزمون و حد نصاب قبولی را تعیین می‌کند</div></div></div>
+    <div class="p-body">
+      <div class="grid c3" style="margin-bottom:0">
+        <div class="lvl-card"><div class="lb"><span class="lv">A1</span><span class="bdg ok">مقدماتی</span></div><p class="en">Beginner — آشنایی با الفبای زبان، سلام و احوال‌پرسی، اعداد و جملات کوتاه روزمره.</p><div class="st"><span data-ico="book-open"><b>۳</b> کلاس</span><span data-ico="file"><b>۱۲</b> وصلهٔ محتوا</span><span data-ico="star"><b>۹</b> آزمون</span></div></div>
+        <div class="lvl-card"><div class="lb"><span class="lv">A2</span><span class="bdg ok">پایه</span></div><p class="en">Elementary — مکالمهٔ ساده در موقعیت‌های خرید، سفر و معرفی خود؛ گذشتهٔ ساده.</p><div class="st"><span data-ico="book-open"><b>۲</b> کلاس</span><span data-ico="file"><b>۱۰</b> وصلهٔ محتوا</span><span data-ico="star"><b>۷</b> آزمون</span></div></div>
+        <div class="lvl-card"><div class="lb"><span class="lv">B1</span><span class="bdg">متوسط</span></div><p class="en">Intermediate — توصیف تجربه‌ها، بیان نظر و استدلال کوتاه؛ زمان‌های کامل.</p><div class="st"><span data-ico="book-open"><b>۴</b> کلاس</span><span data-ico="file"><b>۱۸</b> وصلهٔ محتوا</span><span data-ico="star"><b>۱۱</b> آزمون</span></div></div>
+        <div class="lvl-card"><div class="lb"><span class="lv">B2</span><span class="bdg">متوسط بالا</span></div><p class="en">Upper-Intermediate — بحث آزاد، نوشتار منسجم و درک مطلب متون خبری.</p><div class="st"><span data-ico="book-open"><b>۳</b> کلاس</span><span data-ico="file"><b>۱۴</b> وصلهٔ محتوا</span><span data-ico="star"><b>۸</b> آزمون</span></div></div>
+        <div class="lvl-card"><div class="lb"><span class="lv">C1</span><span class="bdg warn">فوقانی</span></div><p class="en">Advanced — تسلط در گفتار و نوشتار آکادمیک؛ آماده‌سازی آیلتس ۷ به بالا.</p><div class="st"><span data-ico="book-open"><b>۱</b> کلاس</span><span data-ico="file"><b>۰</b> وصلهٔ محتوا</span><span data-ico="star"><b>۳</b> آزمون</span></div></div>
+        <div class="lvl-card"><div class="lb"><span class="lv">C2</span><span class="bdg bad">بدون محتوا</span></div><p class="en">Proficiency — نزدیک به زبان مادری؛ ویرایش متن و ارائهٔ تخصصی.</p><div class="st"><span data-ico="book-open"><b>۰</b> کلاس</span><span data-ico="file"><b>۰</b> وصلهٔ محتوا</span><span data-ico="star"><b>۱</b> آزمون</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DATA ENTITIES ================= -->
+<section class="page" id="pg-ent">
+  <div class="grid c21">
+    <div class="panel mb0">
+      <div class="p-head">
+        <div><h2>موجودیت‌های داده (DataEntries)</h2><div class="ph-sub">هر موجودیت یک جدول با فیلدهای مشخص است؛ مدیر خودش موجودیت و فیلد می‌سازد</div></div>
+        <button class="btn btn-primary btn-sm" data-act="entity-add"><span data-ico="plus"></span> موجودیت تازه</button>
+      </div>
+      <div class="p-body flush"><div class="rows" id="entRows"></div></div>
+    </div>
+    <div class="panel mb0">
+      <div class="p-head"><h2>فیلدهای موجودیت انتخاب‌شده</h2><span class="bdg gold" id="entSelName">Course</span></div>
+      <div class="p-body flush">
+        <div class="tbl-wrap">
+          <table class="tbl dense">
+            <thead><tr><th>عنوان فیلد</th><th>کلید</th><th>نوع</th><th>اجباری</th><th class="end">عملیات</th></tr></thead>
+            <tbody id="fieldBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="p-foot"><span>تغییر ترتیب فیلدها با فلش‌های سمت راست هر ردیف</span><button class="btn btn-ghost btn-sm" data-act="field-add"><span data-ico="plus"></span> فیلد تازه</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ENTRIES ================= -->
+<section class="page" id="pg-entries">
+  <div class="panel">
+    <div class="p-head">
+      <div><h2>ورود داده</h2><div class="ph-sub">ثبت رکورد تازه در هر موجودیت — فرم به‌صورت خودکار از فیلدهای همان موجودیت ساخته می‌شود</div></div>
+      <div class="filters" style="padding:0"><div class="fld" style="min-width:210px"><label>موجودیت</label><select class="inp" id="entPick"></select></div></div>
+    </div>
+    <div class="p-body">
+      <div class="grid c12" style="margin-bottom:0">
+        <div>
+          <form class="frm c1" id="dynForm" onsubmit="return false"></form>
+          <div style="display:flex;gap:9px;margin-top:16px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" id="dynSave"><span data-ico="check"></span> ثبت رکورد</button>
+            <button class="btn btn-ghost btn-sm" id="dynClear">پاک‌کردن فرم</button>
+          </div>
+        </div>
+        <div>
+          <div class="side-note" style="margin-bottom:12px">پیش‌نمایش ساختار پیشنهادی برای پایگاه‌داده — نام جدول و ستون‌ها از فیلدهای همین موجودیت ساخته می‌شوند.</div>
+          <div class="code" id="schemaCode">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PAGES ================= -->
+<section class="page" id="pg-pages">
+  <div class="panel">
+    <div class="p-head">
+      <div><h2>صفحه‌های وب‌سایت (WebPages)</h2><div class="ph-sub">مسیر، وضعیت انتشار و اینکه هر صفحه برای کدام نقش‌ها دیده می‌شود</div></div>
+      <button class="btn btn-primary btn-sm" data-act="page-add"><span data-ico="plus"></span> صفحهٔ تازه</button>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>عنوان صفحه</th><th>مسیر</th><th>منو</th><th>وضعیت</th><th>نمای نقش‌ها</th><th class="end" style="width:150px">عملیات</th></tr></thead>
+        <tbody id="pagesBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MENU LAYOUT ================= -->
+<section class="page" id="pg-menu">
+  <div class="grid c12">
+    <div class="panel mb0">
+      <div class="p-head"><div><h2>چیدمان منوی وب‌سایت</h2><div class="ph-sub">ساختار منوی اصلی و زیرمنوی آکادمی — با فلش‌ها ترتیب را تغییر دهید</div></div></div>
+      <div class="p-body"><div class="tree" id="menuTree"></div></div>
+    </div>
+    <div class="panel mb0">
+      <div class="p-head"><h2>پیش‌نمایش منو</h2><span class="bdg ok">منتشرشده</span></div>
+      <div class="p-body">
+        <div class="grid c1" style="gap:11px;margin:0">
+          <div class="lvl-card"><div class="lb"><b>خانه</b><span class="bdg grey">۵ زیرمنو ندارد</span></div><p class="en">/</p></div>
+          <div class="lvl-card"><div class="lb"><b>آکادمی</b><span class="bdg gold">۴ زیرمنو</span></div><p>انگلیسی · کامپیوتر · موسیقی · نقاشی</p></div>
+          <div class="lvl-card"><div class="lb"><b>درباره ما</b><span class="bdg gold">۳ زیرمنو</span></div><p>معرفی آموزشگاه · استادان · گالری</p></div>
+          <div class="lvl-card"><div class="lb"><b>ورود به پلتفرم</b><span class="bdg">برگهٔ مستقل</span></div><p class="en">/login</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= REPORT 1 — SATISFACTION ================= -->
+<section class="page" id="pg-r1">
+  <div class="panel">
+    <div class="p-head">
+      <div><h2>گزارش دوره‌ها و سطح رضایت دانشجویان</h2><div class="ph-sub">میانگین امتیاز پایان‌ترم هر دوره و درصد رضایت به تفکیک سطح</div></div>
+      <button class="btn btn-ghost btn-sm" data-demo="گزارش رضایت دوره‌ها به PDF تبدیل شد"><span data-ico="download"></span> PDF</button>
+    </div>
+    <div class="p-body">
+      <div class="filters">
+        <div class="fld"><label>دوره</label><select class="inp" data-rf="course"><option value="">همهٔ دوره‌ها</option><option>انگلیسی</option><option>کامپیوتر</option><option>موسیقی</option><option>نقاشی</option></select></div>
+        <div class="fld"><label>سطح</label><select class="inp" data-rf="level"><option value="">همهٔ سطوح</option><option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option></select></div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>دوره</th><th>سطح</th><th>تعداد دانشجو</th><th>میانگین رضایت</th><th class="center">رضایت از محتوا</th><th class="center">رضایت از استاد</th><th class="center">تعداد پاسخ</th><th class="end">وضعیت</th></tr></thead>
+          <tbody id="r1Body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= REPORT 2 — TEACHERS ================= -->
+<section class="page" id="pg-r2">
+  <div class="grid c21">
+    <div class="panel">
+      <div class="p-head"><div><h2>گزارش بررسی عملکرد استادها</h2><div class="ph-sub">نمرهٔ کلاس، حضور دانشجو، محتوای بارگذاری‌شده و برگزاری آزمون</div></div>
+        <div class="fld" style="min-width:170px"><select class="inp" data-rf="course"><option value="">همهٔ دوره‌ها</option><option>انگلیسی</option><option>کامپیوتر</option><option>موسیقی</option><option>نقاشی</option></select></div>
+      </div>
+      <div class="p-body flush">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>استاد</th><th>دوره</th><th>میانگین نمرهٔ کلاس</th><th>حضور دانشجو</th><th class="center">محتوای بارگذاری</th><th class="center">آزمون برگزارشده</th><th class="center">رضایت</th><th class="end">امتیاز کل</th></tr></thead>
+            <tbody id="r2Body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="panel mb0">
+      <div class="p-head"><h2>رتبه‌بندی بر پایهٔ امتیاز کل</h2><div class="ph-sub">وزن‌ها: نمرهٔ کلاس ۳۵٪، حضور ۲۰٪، محتوا ۲۰٪، آزمون ۱۵٪، رضایت ۱۰٪</div></div>
+      <div class="p-body"><div class="legend-list" id="r2Rank"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= REPORT 3 — ALL STUDENTS ================= -->
+<section class="page" id="pg-r3">
+  <div class="panel">
+    <div class="p-head">
+      <div><h2>گزارش بررسی عملکرد تمامی دانشجوها</h2><div class="ph-sub">میانگین نمره، درصد سپری‌شدهٔ محتوا، حضور و قبولی در آزمون‌ها</div></div>
+      <button class="btn btn-ghost btn-sm" data-demo="خروجی اکسل عملکرد دانشجوها ساخته شد"><span data-ico="download"></span> خروجی</button>
+    </div>
+    <div class="p-body">
+      <div class="filters">
+        <div class="fld grow2"><label>جستجو</label><div class="ctrl"><span data-ico="search"></span><input type="search" id="r3q" placeholder="نام دانشجو یا کد…"></div></div>
+        <div class="fld"><label>سطح</label><select class="inp" data-rf="level"><option value="">همهٔ سطوح</option><option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option></select></div>
+        <div class="fld"><label>وضعیت</label><select class="inp" data-rf="status"><option value="">همه</option><option value="good">عملکرد خوب</option><option value="warn">نیازمند پیگیری</option><option value="bad">هشدار</option></select></div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>دانشجو</th><th>سطح</th><th>میانگین نمره</th><th>محتوا سپری‌شده</th><th>حضور</th><th class="center">آزمون شرکت‌کرده</th><th>رضایت</th><th class="end">وضعیت</th></tr></thead>
+          <tbody id="r3Body"></tbody>
+        </table>
+      </div>
+      <div class="p-foot" style="margin:18px -22px -20px;padding:14px 22px"><span id="r3Count">—</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= REPORT 4 — CONTENT ================= -->
+<section class="page" id="pg-r4">
+  <div class="grid c21">
+    <div class="panel">
+      <div class="p-head"><div><h2>گزارش محتواهای آموزشی بارگذاری‌شده</h2><div class="ph-sub">به تفکیک دوره، سطح و استاد بارگذارنده — درس، ویدیو، جزوه و آزمون</div></div>
+        <div class="fld" style="min-width:160px"><select class="inp" data-rf="course"><option value="">همهٔ دوره‌ها</option><option>انگلیسی</option><option>کامپیوتر</option><option>موسیقی</option><option>نقاشی</option></select></div>
+      </div>
+      <div class="p-body flush">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>دوره</th><th>سطح</th><th>استاد</th><th class="center">درس</th><th class="center">ویدیو</th><th class="center">جزوه</th><th class="center">آزمون</th><th>وضعیت پوشش</th></tr></thead>
+            <tbody id="r4Body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="panel mb0">
+      <div class="p-head"><h2>ترکیب نوع محتوا</h2></div>
+      <div class="p-body">
+        <div class="stk" id="r4Stk"></div>
+        <div class="legend-list mt4" id="r4Legend"></div>
+        <div class="hr"></div>
+        <div class="side-note">سطوح <span class="en">C1</span> و <span class="en">C2</span> در درس انگلیسی همچنان بدون محتوا هستند و در گزارش به‌عنوان شکاف محتوایی علامت خورده‌اند.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= REPORT 5 — PER STUDENT ================= -->
+<section class="page" id="pg-r5">
+  <div class="panel">
+    <div class="p-head">
+      <div><h2>گزارش عملکرد دانشجو — به تفکیک</h2><div class="ph-sub">رضایت، درصد سپری‌شدهٔ دوره، حضور در آزمون، نمرهٔ هر آزمون و تعداد درست/غلط</div></div>
+      <div class="fld" style="min-width:230px"><select class="inp" id="r5Pick"></select></div>
+    </div>
+    <div class="p-body">
+      <div class="grid c4" id="r5Kpis" style="margin-bottom:18px"></div>
+      <div class="grid c12">
+        <div class="panel mb0">
+          <div class="p-head"><h3>رضایت از دوره و سپری‌کردن محتوا</h3></div>
+          <div class="p-body">
+            <div class="donut-wrap">
+              <div class="donut" id="r5Donut"><i><b>—</b><span>محتوا سپری‌شده</span></i></div>
+              <div class="legend" id="r5Legend"></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel mb0">
+          <div class="p-head"><h3>جزئیات شرکت در آزمون‌ها</h3></div>
+          <div class="p-body flush">
+            <div class="tbl-wrap">
+              <table class="tbl dense">
+                <thead><tr><th>آزمون</th><th class="center">شرکت</th><th class="center">درست</th><th class="center">غلط</th><th class="center">نمره</th><th class="end">نتیجه</th></tr></thead>
+                <tbody id="r5Exams"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SETTINGS ================= -->
+<section class="page" id="pg-settings">
+  <div class="grid c12">
+    <div class="panel mb0">
+      <div class="p-head"><h2>اطلاعات آموزشگاه</h2></div>
+      <div class="p-body">
+        <form class="frm" onsubmit="return false">
+          <div class="fld full"><label>نام آموزشگاه</label><input class="inp" value="آموزشگاه زبان و مهارت اساطیر آینده"></div>
+          <div class="fld"><label>تلفن</label><input class="inp" value="۰۲۱-۹۱۰۰۲۲۳۳"></div>
+          <div class="fld"><label>پست الکترونیک</label><input class="inp en" value="info@asatir-e-ayande.ir"></div>
+          <div class="fld full"><label>نشانی</label><input class="inp" value="تهران، خیابان ولیعصر، پلاک ۱۲۴، طبقهٔ سوم"></div>
+        </form>
+      </div>
+      <div class="p-foot"><span>برای ذخیره، فرم را تأیید کنید</span><button class="btn btn-primary btn-sm" data-demo="تنظیمات آموزشگاه ذخیره شد"><span data-ico="check"></span> ذخیره</button></div>
+    </div>
+    <div class="panel mb0">
+      <div class="p-head"><h2>تنظیمات آموزشی و پلتفرم</h2></div>
+      <div class="p-body">
+        <form class="frm" onsubmit="return false">
+          <div class="fld"><label>حد نصاب قبولی پیش‌فرض</label><input class="inp num" value="۶۰٪"></div>
+          <div class="fld"><label>ظرفیت پیش‌فرض کلاس</label><input class="inp num" value="۱۲"></div>
+          <div class="fld"><label>دامنهٔ پلتفرم</label><input class="inp en" value="panel.asatir-e-ayande.ir"></div>
+          <div class="fld"><label>مدت اعتبار ورود (روز)</label><input class="inp num" value="۳۰"></div>
+        </form>
+        <div class="hr"></div>
+        <div class="sel-line"><span class="rb"><b>فعال‌بودن ثبت‌نام آنلاین</b><span>زبان‌آموز می‌تواند خودش در دوره ثبت‌نام کند</span></span><label class="switch"><input type="checkbox" checked></label></div>
+        <div class="sel-line"><span class="rb"><b>نمایش کارنامه به زبان‌آموز</b><span>بلافاصله پس از تصحیح آزمون</span></span><label class="switch"><input type="checkbox" checked></label></div>
+        <div class="sel-line"><span class="rb"><b>اجازهٔ حذف نرم رکوردها</b><span>رکوردهای حذف‌شده در سطل بازیافت بمانند</span></span><label class="switch"><input type="checkbox"></label></div>
+        <div class="sel-line"><span class="rb"><b>ورود اجباری با تأیید پیامکی</b><span>برای نقش مدیر و استاد</span></span><label class="switch"><input type="checkbox"></label></div>
+      </div>
+    </div>
+  </div>
+</section>
+  </main>
   </div>
 </div>
 
+<div class="mback" id="mback"><div class="modal" id="modal"></div></div>
 <div class="toast" id="toast"><span data-ico="check"></span><span id="toastMsg"></span></div>
 
 <script>
-/* ---------------- logo (same mark as website / login) ---------------- */
+/* ══════════════════════════════════════════════════════════════
+   پنل مدیریت اساطیر آینده — منطق کامل (حالت داده در localStorage)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ---------- لوگو و آیکون‌ها (هم‌راستا با وب‌سایت و صفحهٔ ورود) ---------- */
 const LOGO_SVG = `
 <svg viewBox="0 0 120 120" width="100%" height="100%" role="img" aria-label="اساطیر آینده">
   <defs><linearGradient id="gA" x1="0" y1="1" x2="1" y2="0">
@@ -804,7 +1080,6 @@ const LOGO_SVG = `
   <path d="M22 74 C 40 44, 66 30, 100 40 C 82 40, 62 50, 48 66 C 38 78, 34 88, 40 96 C 30 90, 24 82, 22 74 Z" fill="url(#gA)"/>
 </svg>`;
 
-/* ---------------- icon set (single stroke style) ---------------- */
 const ICONS = {
   grid:'<rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/>',
   users:'<path d="M16.5 20v-1.6a3.9 3.9 0 0 0-3.9-3.9H6.4a3.9 3.9 0 0 0-3.9 3.9V20"/><circle cx="9.5" cy="7.6" r="3.6"/><path d="M21.5 20v-1.6a3.9 3.9 0 0 0-2.9-3.8M15.8 4.2a3.9 3.9 0 0 1 0 7"/>',
@@ -823,135 +1098,843 @@ const ICONS = {
   download:'<path d="M12 3.5v12"/><path d="M7.5 11.2l4.5 4.6 4.5-4.6"/><path d="M4.5 20.5h15"/>',
   upload:'<path d="M12 20.5v-12"/><path d="M7.5 12.8l4.5-4.6 4.5 4.6"/><path d="M4.5 3.5h15"/>',
   edit:'<path d="M16.4 3.9a2.4 2.4 0 0 1 3.4 3.4L7.6 19.5 3.5 20.5l1-4.1z"/>',
+  trash:'<path d="M4.5 7.2h15"/><path d="M9.4 7.2V5.4a1.6 1.6 0 0 1 1.6-1.6h2a1.6 1.6 0 0 1 1.6 1.6v1.8"/><path d="M6.6 7.2l.9 12a1.8 1.8 0 0 0 1.8 1.7h5.4a1.8 1.8 0 0 0 1.8-1.7l.9-12"/>',
+  gear:'<circle cx="12" cy="12" r="3.1"/><path d="M19.6 14.4a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-2.7 1.1v.3a1.9 1.9 0 1 1-3.8 0v-.2a1.6 1.6 0 0 0-2.8-1.1l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0-1.1-2.7h-.3a1.9 1.9 0 1 1 0-3.8h.2a1.6 1.6 0 0 0 1.1-2.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 2.7-1.1v-.3a1.9 1.9 0 1 1 3.8 0v.2a1.6 1.6 0 0 0 2.7 1.1l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0 1.1 2.7h.3a1.9 1.9 0 1 1 0 3.8h-.2a1.6 1.6 0 0 0-1.5 1z"/>',
+  settings:'<circle cx="12" cy="12" r="3.1"/><path d="M19.6 14.4a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-2.7 1.1v.3a1.9 1.9 0 1 1-3.8 0v-.2a1.6 1.6 0 0 0-2.8-1.1l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0-1.1-2.7h-.3a1.9 1.9 0 1 1 0-3.8h.2a1.6 1.6 0 0 0 1.1-2.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 2.7-1.1v-.3a1.9 1.9 0 1 1 3.8 0v.2a1.6 1.6 0 0 0 2.7 1.1l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0 1.1 2.7h.3a1.9 1.9 0 1 1 0 3.8h-.2a1.6 1.6 0 0 0-1.5 1z"/>',
   alert:'<path d="M12 3.6L21.4 20H2.6z"/><path d="M12 9.6v4.6M12 17.4v.1"/>',
+  info:'<circle cx="12" cy="12" r="8.8"/><path d="M12 11.2v5M12 7.8v.1"/>',
   clock:'<circle cx="12" cy="12" r="8.6"/><path d="M12 7.4V12l3.4 2"/>',
   calendar:'<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 9.6h17M8.4 3.2v3.6M15.6 3.2v3.6"/>',
-  clipboard:'<path d="M9 4.5H7.6a2 2 0 0 0-2 2v11.9a2 2 0 0 0 2 2h8.8a2 2 0 0 0 2-2V6.5a2 2 0 0 0-2-2H15"/><rect x="9" y="2.8" width="6" height="3.6" rx="1.3"/><path d="M9.4 11.6h5.2M9.4 15.2h3.4"/>',
-  video:'<rect x="2.6" y="6" width="13.2" height="12" rx="3"/><path d="M15.8 11l5.6-3.2v8.4L15.8 13z"/>',
-  play:'<path d="M8.4 5.6l9.4 6.4-9.4 6.4z"/>',
-  'play-c':'<circle cx="12" cy="12" r="8.8"/><path d="M10.2 8.6l5.6 3.4-5.6 3.4z"/>',
-  mail:'<rect x="2.8" y="4.8" width="18.4" height="14.4" rx="3"/><path d="M3.6 7.2l8.4 5.6 8.4-5.6"/>',
-  file:'<path d="M13.6 3.2H7.4a2.4 2.4 0 0 0-2.4 2.4v12.8a2.4 2.4 0 0 0 2.4 2.4h9.2a2.4 2.4 0 0 0 2.4-2.4V8.6z"/><path d="M13.4 3.4v5.2h5.4"/>',
+  globe:'<circle cx="12" cy="12" r="8.8"/><path d="M3.2 12h17.6"/><path d="M12 3.2a13.4 13.4 0 0 1 0 17.6 13.4 13.4 0 0 1 0-17.6z"/>',
   list:'<path d="M8.4 6.6h12M8.4 12h12M8.4 17.4h12"/><circle cx="4.3" cy="6.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.3" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.3" cy="17.4" r="1.2" fill="currentColor" stroke="none"/>',
-  music:'<circle cx="6.4" cy="17.4" r="3"/><circle cx="17.4" cy="15.4" r="3"/><path d="M9.4 17.4V6.6l11-2.2v11"/>',
   award:'<circle cx="12" cy="9.4" r="5.6"/><path d="M8.6 14.2L7.4 21.4l4.6-2.4 4.6 2.4-1.2-7.2"/>',
   star:'<path d="M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z"/>',
   'chev-l':'<path d="M14.5 5.8L8.3 12l6.2 6.2"/>',
   'chev-r':'<path d="M9.5 5.8L15.7 12l-6.2 6.2"/>',
-  info:'<circle cx="12" cy="12" r="8.8"/><path d="M12 11.2v5M12 7.8v.1"/>',
-  settings:'<circle cx="12" cy="12" r="3.1"/><path d="M19.6 14.4a1.6 1.6 0 0 0 .3 1.8l.1.1a1.9 1.9 0 1 1-2.7 2.7l-.1-.1a1.6 1.6 0 0 0-2.7 1.1v.3a1.9 1.9 0 1 1-3.8 0v-.2a1.6 1.6 0 0 0-2.8-1.1l-.1.1a1.9 1.9 0 1 1-2.7-2.7l.1-.1a1.6 1.6 0 0 0-1.1-2.7h-.3a1.9 1.9 0 1 1 0-3.8h.2a1.6 1.6 0 0 0 1.1-2.8l-.1-.1a1.9 1.9 0 1 1 2.7-2.7l.1.1a1.6 1.6 0 0 0 2.7-1.1v-.3a1.9 1.9 0 1 1 3.8 0v.2a1.6 1.6 0 0 0 2.7 1.1l.1-.1a1.9 1.9 0 1 1 2.7 2.7l-.1.1a1.6 1.6 0 0 0 1.1 2.7h.3a1.9 1.9 0 1 1 0 3.8h-.2a1.6 1.6 0 0 0-1.5 1z"/>',
-  globe:'<circle cx="12" cy="12" r="8.8"/><path d="M3.2 12h17.6"/><path d="M12 3.2a13.4 13.4 0 0 1 0 17.6 13.4 13.4 0 0 1 0-17.6z"/>',
-  flag:'<path d="M5 21V4.2"/><path d="M5 4.6h11.6l-1.8 3.9 1.8 3.9H5z" fill="currentColor" stroke="none" opacity=".28"/><path d="M5 4.6h11.6l-1.8 3.9 1.8 3.9H5z"/>',
-  lock:'<rect x="4.6" y="10.4" width="14.8" height="9.8" rx="2.6"/><path d="M8.2 10.4V7.6a3.8 3.8 0 0 1 7.6 0v2.8"/>',
+  'chev-up':'<path d="M5.8 14.5L12 8.3l6.2 6.2"/>',
+  'chev-dn':'<path d="M5.8 9.5L12 15.7l6.2-6.2"/>',
+  refresh:'<path d="M20.4 12a8.4 8.4 0 1 1-2.5-6"/><path d="M20.6 4.2v5.2h-5.2"/>',
+  file:'<path d="M13.6 3.2H7.4a2.4 2.4 0 0 0-2.4 2.4v12.8a2.4 2.4 0 0 0 2.4 2.4h9.2a2.4 2.4 0 0 0 2.4-2.4V8.6z"/><path d="M13.4 3.4v5.2h5.4"/>',
+  video:'<rect x="2.6" y="6" width="13.2" height="12" rx="3"/><path d="M15.8 11l5.6-3.2v8.4L15.8 13z"/>',
+  clipboard:'<path d="M9 4.5H7.6a2 2 0 0 0-2 2v11.9a2 2 0 0 0 2 2h8.8a2 2 0 0 0 2-2V6.5a2 2 0 0 0-2-2H15"/><rect x="9" y="2.8" width="6" height="3.6" rx="1.3"/><path d="M9.4 11.6h5.2M9.4 15.2h3.4"/>',
   shield:'<path d="M12 21.4s7.6-3.4 7.6-9.4V5.4L12 2.6 4.4 5.4V12c0 6 7.6 9.4 7.6 9.4z"/><path d="M9.2 11.9l2 2 3.6-4"/>',
-  logout:'<path d="M15 17.4l5-5-5-5"/><path d="M20 12.4H9.4"/><path d="M9.4 3.6H6.2a2.6 2.6 0 0 0-2.6 2.6v11.6a2.6 2.6 0 0 0 2.6 2.6h3.2"/>',
+  lock:'<rect x="4.6" y="10.4" width="14.8" height="9.8" rx="2.6"/><path d="M8.2 10.4V7.6a3.8 3.8 0 0 1 7.6 0v2.8"/>',
+  bell:'<path d="M18 9.4a6 6 0 1 0-12 0c0 5.4-2.2 6.6-2.2 6.6h16.4S18 14.8 18 9.4z"/><path d="M13.7 19.4a2 2 0 0 1-3.4 0"/>',
   menu:'<path d="M4 6.6h16M4 12h16M4 17.4h16"/>',
-  bell:'<path d="M18 9.4a6 6 0 1 0-12 0c0 5.4-2.2 6.6-2.2 6.6h16.4S18 14.8 18 9.4z"/><path d="M13.7 19.4a2 2 0 0 1-3.4 0"/>'
+  eye:'<path d="M2.4 12S6 5.6 12 5.6 21.6 12 21.6 12 18 18.4 12 18.4 2.4 12 2.4 12z"/><circle cx="12" cy="12" r="3.1"/>',
+  save:'<path d="M5.6 3.6h9.9L20.4 8.5v11.9H3.6V3.6z"/><path d="M8.4 3.6v5.8h6.4V3.6"/><rect x="7.4" y="13.2" width="9.2" height="7.2" rx="1.2"/>'
 };
 const svgIcon = n => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[n] || ICONS.info) + '</svg>';
+const ico = n => svgIcon(n);
+function paintIcons(root) { (root || document).querySelectorAll('[data-ico]').forEach(el => { if (!el.dataset.painted) { el.innerHTML = svgIcon(el.dataset.ico); el.dataset.painted = '1'; } }); }
 
-/* ---------------- shell render ---------------- */
+/* ---------- اعداد و کمکی‌ها ---------- */
+const fa = n => String(n).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[+d]);
+const faN = n => fa(Number(n).toLocaleString('en-US'));
+const pct = n => fa(n) + '٪';
+const initials = name => name.replace(/^(استاد|خانم|آقای)\s+/, '').split(' ').slice(0, 2).map(w => w[0]).join('');
+const AV = ['', 'gold', 'ok', 'warn', 'bad'];
+const avClass = i => AV[(i % 4) + 1];
+const uid = () => 'r' + Math.random().toString(36).slice(2, 8);
+const DAYS = ['شنبه', 'یک‌شنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه'];
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const COURSES = ['انگلیسی', 'کامپیوتر', 'موسیقی', 'نقاشی'];
+
+/* ---------- وضعیت (localStorage) ---------- */
+const KEY = 'asatir_admin_v1';
+const seed = {
+  users: [
+    { id:'u1',  name:'کامران دهقان',   role:'admin',   course:'مدیریت آموزشگاه', phone:'۰۹۱۲۱۲۳۴۵۶۷', status:'active',  last:'امروز، ۰۹:۱۲' },
+    { id:'u2',  name:'سارا امینی',     role:'admin',   course:'مدیریت آموزشی',    phone:'۰۹۱۲۹۸۷۶۵۴۳', status:'active',  last:'امروز، ۰۸:۴۰' },
+    { id:'u3',  name:'مهدی رضایی',     role:'admin',   course:'مالی و ثبت‌نام',   phone:'۰۹۱۳۴۵۶۷۸۹۰', status:'active',  last:'دیروز، ۱۷:۰۵' },
+    { id:'u4',  name:'مریم کاظمی',     role:'teacher', course:'انگلیسی',          phone:'۰۹۱۲۴۵۶۷۸۹۱', status:'active',  last:'امروز، ۱۰:۰۲' },
+    { id:'u5',  name:'نیلوفر حسینی',   role:'teacher', course:'انگلیسی',          phone:'۰۹۱۲۵۶۷۸۹۰۲', status:'active',  last:'دیروز، ۱۹:۳۰' },
+    { id:'u6',  name:'امیر کاظمی',     role:'teacher', course:'کامپیوتر',         phone:'۰۹۱۲۶۷۸۹۰۱۳', status:'active',  last:'۲ روز پیش' },
+    { id:'u7',  name:'حسین عباسی',     role:'teacher', course:'موسیقی',           phone:'۰۹۱۲۷۸۹۰۱۲۴', status:'active',  last:'دیروز، ۱۶:۲۰' },
+    { id:'u8',  name:'زهرا صادقی',     role:'teacher', course:'نقاشی',            phone:'۰۹۱۲۸۹۰۱۲۳۵', status:'pending', last:'—' },
+    { id:'u9',  name:'رضا محمدی',      role:'student', course:'انگلیسی — B2',     phone:'۰۹۱۲۹۰۱۲۳۴۶', status:'active',  last:'امروز، ۰۷:۵۵' },
+    { id:'u10', name:'زهرا صادقی',     role:'student', course:'انگلیسی — C1',     phone:'۰۹۱۳۰۱۲۳۴۵۷', status:'active',  last:'امروز، ۱۱:۱۰' },
+    { id:'u11', name:'نیلوفر حسینی',   role:'student', course:'انگلیسی — B1',     phone:'۰۹۱۳۱۲۳۴۵۶۸', status:'active',  last:'دیروز، ۲۰:۱۵' },
+    { id:'u12', name:'حسین عباسی',     role:'student', course:'انگلیسی — A2',     phone:'۰۹۱۳۲۳۴۵۶۷۹', status:'active',  last:'۳ روز پیش' },
+    { id:'u13', name:'مریم کاظمی',     role:'student', course:'کامپیوتر — B1',    phone:'۰۹۱۳۳۴۵۶۷۸۰', status:'active',  last:'امروز، ۰۹:۳۳' },
+    { id:'u14', name:'علی مرادی',      role:'student', course:'کامپیوتر — A1',    phone:'۰۹۱۳۴۵۶۷۸۹۱', status:'blocked', last:'۲ هفته پیش' },
+    { id:'u15', name:'فاطمه نیکو',     role:'student', course:'موسیقی — A1',      phone:'۰۹۱۳۵۶۷۸۹۰۲', status:'active',  last:'دیروز، ۱۳:۴۴' },
+    { id:'u16', name:'سپهر احمدی',     role:'student', course:'انگلیسی — B1',     phone:'۰۹۱۳۶۷۸۹۰۱۳', status:'pending', last:'—' }
+  ],
+  teachers: [
+    { id:'t1', userId:'u4', course:'انگلیسی',  students:34, rating:4.9, status:'active',  univ:'کارشناسی ارشد آموزش زبان — دانشگاه تهران' },
+    { id:'t2', userId:'u5', course:'انگلیسی',  students:26, rating:4.7, status:'active',  univ:'کارشناسی ارشد ادبیات انگلیسی — دانشگاه علامه' },
+    { id:'t3', userId:'u6', course:'کامپیوتر', students:22, rating:4.5, status:'active',  univ:'کارشناسی مهندسی نرم‌افزار — دانشگاه شریف' },
+    { id:'t4', userId:'u7', course:'موسیقی',   students:15, rating:4.8, status:'active',  univ:'کارشناسی موسیقی — دانشگاه هنر' },
+    { id:'t5', userId:'u8', course:'نقاشی',    students:0,  rating:0,   status:'pending', univ:'کارشناسی نقاشی — دانشگاه الزهرا' }
+  ],
+  classes: [
+    { id:'c1', code:'EN-B2-01',  title:'مکالمهٔ پیشرفته',        teacher:'t1', course:'انگلیسی',  level:'B2', days:['شنبه','دوشنبه'],        start:'۱۷:۰۰', end:'۱۹:۳۰', students:10, cap:12, status:'active' },
+    { id:'c2', code:'EN-B1-04',  title:'گرامر و نگارش',          teacher:'t1', course:'انگلیسی',  level:'B1', days:['یک‌شنبه','سه‌شنبه'],   start:'۱۹:۳۰', end:'۲۱:۰۰', students:8,  cap:12, status:'active' },
+    { id:'c3', code:'EN-A1-02',  title:'انگلیسی مقدماتی A',      teacher:'t2', course:'انگلیسی',  level:'A1', days:['شنبه','چهارشنبه'],      start:'۱۰:۰۰', end:'۱۲:۰۰', students:12, cap:12, status:'full' },
+    { id:'c4', code:'EN-B1-07',  title:'انگلیسی مقدماتی B',      teacher:null, course:'انگلیسی',  level:'B1', days:['دوشنبه','پنج‌شنبه'],   start:'۱۶:۰۰', end:'۱۸:۰۰', students:6,  cap:12, status:'no-teacher' },
+    { id:'c5', code:'CO-A1-03',  title:'مبانی کامپیوتر',         teacher:'t3', course:'کامپیوتر', level:'A1', days:['یک‌شنبه','سه‌شنبه'],   start:'۱۷:۰۰', end:'۱۸:۳۰', students:12, cap:14, status:'active' },
+    { id:'c6', code:'CO-B1-01',  title:'طراحی رابط کاربری',      teacher:'t3', course:'کامپیوتر', level:'B1', days:['چهارشنبه'],            start:'۱۹:۰۰', end:'۲۱:۰۰', students:9,  cap:12, status:'active' },
+    { id:'c7', code:'MU-A1-01',  title:'موسیقی مقدماتی',         teacher:null, course:'موسیقی',   level:'A1', days:['پنج‌شنبه'],            start:'۱۵:۰۰', end:'۱۷:۰۰', students:4,  cap:10, status:'no-teacher' },
+    { id:'c8', code:'MU-A2-01',  title:'گیتار — سطح پایه',       teacher:'t4', course:'موسیقی',   level:'A2', days:['شنبه','یک‌شنبه'],      start:'۱۹:۳۰', end:'۲۱:۰۰', students:7,  cap:10, status:'active' }
+  ],
+  students: [
+    { id:'s1',  userId:'u9',  name:'رضا محمدی',   level:'B2', course:'انگلیسی',  avg:88, content:78, attend:94, exams:2, examsTotal:3, satisfy:4.8, status:'good' },
+    { id:'s2',  userId:'u10', name:'زهرا صادقی',  level:'C1', course:'انگلیسی',  avg:96, content:92, attend:98, exams:3, examsTotal:3, satisfy:5.0, status:'good' },
+    { id:'s3',  userId:'u11', name:'نیلوفر حسینی',level:'B1', course:'انگلیسی',  avg:74, content:55, attend:82, exams:1, examsTotal:3, satisfy:4.1, status:'warn' },
+    { id:'s4',  userId:'u12', name:'حسین عباسی',  level:'A2', course:'انگلیسی',  avg:61, content:34, attend:64, exams:0, examsTotal:2, satisfy:3.5, status:'bad' },
+    { id:'s5',  userId:'u13', name:'مریم کاظمی',  level:'B1', course:'کامپیوتر', avg:92, content:88, attend:96, exams:3, examsTotal:3, satisfy:4.9, status:'good' },
+    { id:'s6',  userId:'u14', name:'علی مرادی',   level:'A1', course:'کامپیوتر', avg:52, content:18, attend:41, exams:0, examsTotal:2, satisfy:3.0, status:'bad' },
+    { id:'s7',  userId:'u15', name:'فاطمه نیکو',  level:'A1', course:'موسیقی',   avg:83, content:71, attend:90, exams:1, examsTotal:2, satisfy:4.4, status:'good' },
+    { id:'s8',  userId:'u16', name:'سپهر احمدی',  level:'B1', course:'انگلیسی',  avg:79, content:62, attend:88, exams:2, examsTotal:3, satisfy:4.6, status:'good' },
+    { id:'s9',  userId:null,  name:'آرمان کیانی', level:'A2', course:'انگلیسی',  avg:69, content:48, attend:75, exams:1, examsTotal:2, satisfy:4.0, status:'warn' },
+    { id:'s10', userId:null,  name:'نازنین رحیمی',level:'B2', course:'انگلیسی',  avg:91, content:86, attend:95, exams:3, examsTotal:3, satisfy:4.8, status:'good' },
+    { id:'s11', userId:null,  name:'پویا اسدی',   level:'A1', course:'کامپیوتر', avg:58, content:29, attend:58, exams:0, examsTotal:2, satisfy:3.4, status:'bad' },
+    { id:'s12', userId:null,  name:'مینا شریفی',  level:'B1', course:'نقاشی',    avg:86, content:74, attend:92, exams:2, examsTotal:2, satisfy:4.7, status:'good' }
+  ],
+  ents: [
+    { id:'e1', name:'Course',   table:'course',   fields:[
+      {t:'عنوان دوره', k:'title', ty:'متن', req:true},
+      {t:'حوزه', k:'category', ty:'انتخابی', req:true},
+      {t:'سطح', k:'level', ty:'انتخابی', req:true},
+      {t:'تعداد جلسه', k:'sessions', ty:'عدد', req:true},
+      {t:'شهریه', k:'tuition', ty:'عدد', req:false},
+      {t:'توصیف', k:'description', ty:'متن بلند', req:false}
+    ]},
+    { id:'e2', name:'Level',    table:'level',    fields:[
+      {t:'کد سطح', k:'code', ty:'انتخابی', req:true},
+      {t:'نام سطح', k:'name', ty:'متن', req:true},
+      {t:'توضیح', k:'description', ty:'متن بلند', req:false},
+      {t:'حد نصاب قبولی', k:'pass_mark', ty:'عدد', req:true}
+    ]},
+    { id:'e3', name:'Class',    table:'class',    fields:[
+      {t:'عنوان کلاس', k:'title', ty:'متن', req:true},
+      {t:'استاد', k:'teacher_id', ty:'انتخابی', req:true},
+      {t:'روزهای هفته', k:'weekdays', ty:'چندانتخابی', req:true},
+      {t:'ساعت شروع', k:'start_time', ty:'ساعت', req:true},
+      {t:'ساعت پایان', k:'end_time', ty:'ساعت', req:true},
+      {t:'سطح', k:'level', ty:'انتخابی', req:true},
+      {t:'دانشجویان', k:'student_ids', ty:'چندانتخابی', req:false}
+    ]},
+    { id:'e4', name:'Content',  table:'content',  fields:[
+      {t:'عنوان محتوا', k:'title', ty:'متن', req:true},
+      {t:'دوره', k:'course_id', ty:'انتخابی', req:true},
+      {t:'نوع', k:'kind', ty:'انتخابی', req:true},
+      {t:'فایل', k:'file', ty:'فایل', req:true},
+      {t:'مدت (دقیقه)', k:'minutes', ty:'عدد', req:false}
+    ]},
+    { id:'e5', name:'Exam',     table:'exam',     fields:[
+      {t:'عنوان آزمون', k:'title', ty:'متن', req:true},
+      {t:'کلاس', k:'class_id', ty:'انتخابی', req:true},
+      {t:'نمرهٔ کل', k:'total_score', ty:'عدد', req:true},
+      {t:'حد نصاب', k:'pass_mark', ty:'عدد', req:true},
+      {t:'تاریخ برگزاری', k:'held_at', ty:'تاریخ', req:true}
+    ]}
+  ],
+  pages: [
+    { id:'p1', title:'خانه',              path:'/',                 menu:'خانه',        status:'pub',     roles:['all'] },
+    { id:'p2', title:'آکادمی',            path:'/academy',          menu:'آکادمی',      status:'pub',     roles:['all'] },
+    { id:'p3', title:'دورهٔ انگلیسی',      path:'/academy/english',  menu:'آکادمی',      status:'pub',     roles:['all'] },
+    { id:'p4', title:'دورهٔ کامپیوتر',     path:'/academy/computer', menu:'آکادمی',      status:'pub',     roles:['all'] },
+    { id:'p5', title:'دورهٔ موسیقی',       path:'/academy/music',    menu:'آکادمی',      status:'pub',     roles:['all'] },
+    { id:'p6', title:'دورهٔ نقاشی',        path:'/academy/painting', menu:'آکادمی',      status:'draft',   roles:['admin','teacher'] },
+    { id:'p7', title:'درباره ما',          path:'/about',            menu:'درباره ما',   status:'pub',     roles:['all'] },
+    { id:'p8', title:'استادان',            path:'/about/teachers',   menu:'درباره ما',   status:'pub',     roles:['all'] },
+    { id:'p9', title:'گالری',              path:'/about/gallery',    menu:'درباره ما',   status:'draft',   roles:['admin'] },
+    { id:'p10',title:'آزمون تعیین سطح',    path:'/placement',        menu:'—',           status:'draft',   roles:['admin','student'] },
+    { id:'p11',title:'ورود به پلتفرم',     path:'/login',            menu:'—',           status:'pub',     roles:['all'] },
+    { id:'p12',title:'تماس با ما',         path:'/contact',          menu:'تماس با ما',  status:'pub',     roles:['all'] }
+  ],
+  entsData: [
+    { id:'d1', ent:'Course',  title:'دورهٔ انگلیسی — ترم پاییز', by:'کامران دهقان', t:'۱۲ دقیقه پیش', av:'gold' },
+    { id:'d2', ent:'Class',   title:'مکالمهٔ پیشرفته B2',        by:'سارا امینی',   t:'۴۰ دقیقه پیش', av:'' },
+    { id:'d3', ent:'Exam',    title:'آزمون گرامر — حال کامل',    by:'مریم کاظمی',   t:'۲ ساعت پیش',   av:'ok' },
+    { id:'d4', ent:'Content', title:'ویدیو درس ۵ — Listening',   by:'نیلوفر حسینی', t:'دیروز، ۱۸:۲۰', av:'warn' },
+    { id:'d5', ent:'Level',   title:'سطح C1 — Advanced',         by:'کامران دهقان', t:'دیروز، ۱۱:۰۵', av:'bad' }
+  ],
+  moved: 0
+};
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY)) || JSON.parse(JSON.stringify(seed)); } catch (e) { S = JSON.parse(JSON.stringify(seed)); }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+/* ---------- پوسته ---------- */
 document.getElementById('sbLogo').innerHTML = LOGO_SVG;
-document.getElementById('sbSub').textContent = PF.roleLabel;
-document.getElementById('sbFootIco').innerHTML = svgIcon('shield');
-document.getElementById('sbFootTxt').innerHTML = 'نسخهٔ نمایشی پلتفرم<br>اساطیر آینده ۱۴۰۵';
-document.getElementById('burger').innerHTML = svgIcon('menu');
-document.getElementById('bell').innerHTML = svgIcon('bell');
-document.querySelectorAll('.top-tools [data-ico],.sb-foot [data-ico]').forEach(el => el.innerHTML = svgIcon(el.dataset.ico));
+document.getElementById('sbFootIco').innerHTML = ico('shield');
+document.getElementById('burger').innerHTML = ico('menu');
+document.getElementById('bell').innerHTML = ico('bell');
+paintIcons(document);
+document.getElementById('uchip').innerHTML = '<span class="av gold">کد</span><span class="txt"><b>کامران دهقان</b><span>مدیر آموزشگاه</span></span>';
 
-const navHost = document.getElementById('sbNav');
-let navHTML = '';
-PF.nav.forEach(group => {
-  if (group.label) navHTML += '<div class="nav-label">' + group.label + '</div>';
-  group.items.forEach(it => {
-    const cls = it.cnt ? ('cnt' + (it.cntBad ? ' bad' : '')) : '';
-    navHTML += '<button class="nav" data-go="' + it.id + '" data-title="' + it.t + '">' +
-      svgIcon(it.i) + '<span>' + it.t + '</span>' +
-      (it.cnt ? '<span class="' + cls + '">' + it.cnt + '</span>' : '') + '</button>';
-  });
-});
-navHost.innerHTML = navHTML;
-
-const user = PF.user;
-document.getElementById('uchip').innerHTML =
-  '<span class="av gold">' + user.initials + '</span><span class="txt"><b>' + user.name + '</b><span>' + user.title + '</span></span>';
-
-/* ---------------- page routing ---------------- */
+/* ---------- مسیریابی ---------- */
+const h = new URLSearchParams(location.hash.replace(/^#/, ''));
 function go(id, title) {
+  const pg = document.getElementById('pg-' + id); if (!pg) return;
   document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
-  const pg = document.getElementById('pg-' + id);
-  if (pg) pg.classList.add('on');
-  document.querySelectorAll('.nav').forEach(n => n.classList.toggle('on', n.dataset.go === id && (!title || n.dataset.title === title)));
-  const meta = PF.panels[id] || {title: id, sub: ''};
-  document.getElementById('pageTitle').textContent = title || meta.title;
-  document.getElementById('pageSub').textContent = meta.sub;
-  document.getElementById('sb').classList.remove('open');
-  document.getElementById('ovl').classList.remove('on');
-  window.scrollTo({top: 0, behavior: 'smooth'});
-}
-navHost.addEventListener('click', e => {
-  const b = e.target.closest('[data-go]');
-  if (b) go(b.dataset.go, b.dataset.title);
-});
-const startBtn = document.querySelector('.nav[data-go="' + PF.start + '"]');
-if (startBtn) go(PF.start, startBtn.dataset.title);
-
-/* every remaining data-ico span */
-document.querySelectorAll('[data-ico]').forEach(el => { if (!el.firstChild) el.innerHTML = svgIcon(el.dataset.ico); });
-
-/* burger + overlay */
-document.getElementById('burger').addEventListener('click', () => {
-  document.getElementById('sb').classList.toggle('open');
-  document.getElementById('ovl').classList.toggle('on');
-});
-document.getElementById('ovl').addEventListener('click', () => {
-  document.getElementById('sb').classList.remove('open');
-  document.getElementById('ovl').classList.remove('on');
-});
-
-/* ---------------- toast ---------------- */
-let toastTimer;
-function toast(msg) {
-  document.getElementById('toastMsg').textContent = msg;
-  const t = document.getElementById('toast');
-  t.classList.add('on');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('on'), 2600);
-}
-document.addEventListener('click', e => {
-  const d = e.target.closest('[data-demo]');
-  if (d) { e.preventDefault(); toast(d.dataset.demo); return; }
-  const p = e.target.closest('[data-play]');
-  if (p) { e.preventDefault(); toast('پخش «' + p.dataset.play + '» — در نسخهٔ نهایی پخش‌کنندهٔ ویدیو باز می‌شود'); }
-});
-document.getElementById('bell').addEventListener('click', () => toast('۴ اعلان تازه: ۲ آزمون، ۱ پیام و ۱ یادآوری پرداخت'));
-document.getElementById('gSearch').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && e.target.value.trim()) toast('جستجو برای «' + e.target.value.trim() + '» — در نسخهٔ نهایی');
-});
-
-/* ---------------- table filters (segmented controls) ---------------- */
-document.addEventListener('click', e => {
-  const b = e.target.closest('.seg button[data-filter]');
-  if (!b) return;
-  const seg = b.closest('.seg');
-  seg.querySelectorAll('button').forEach(x => x.classList.remove('on'));
-  b.classList.add('on');
-  const key = b.dataset.filter, val = b.dataset.v;
-  document.querySelectorAll('tr[data-row][data-f="' + key + '"]').forEach(tr => {
-    tr.style.display = (val === 'all' || tr.dataset.v === val) ? '' : 'none';
+  pg.classList.add('on');
+  document.querySelectorAll('.sub-item,.nav[data-pg]').forEach(b => b.classList.toggle('on', b.dataset.pg === id));
+  // بازکردن منوی والد
+  const act = document.querySelector('.sub-item[data-pg="' + id + '"]');
+  document.querySelectorAll('.submenu').forEach(sm => {
+    const own = act && act.closest('.submenu') === sm;
+    sm.classList.toggle('on', !!own);
+    const head = document.querySelector('.menu-head[data-toggle="' + sm.dataset.menu + '"]');
+    if (head) head.classList.toggle('on', !!own);
   });
+  document.getElementById('pageTitle').textContent = title || (pg.querySelector('.p-head h2, .p-head h3')?.textContent || 'داشبورد');
+  const subs = {
+    dash:'نمای کلی آموزشگاه — ۱۴۰۵/۰۷/۱۲', users:'کاربران، نقش‌ها و سطح دسترسی',
+    roles:'نقش پیش‌فرض و ماتریس دسترسی', teachers:'هر استاد، یک دوره',
+    classes:'روزهای هفته، ساعت و سطح CEFR', schedule:'نمای شنبه تا پنج‌شنبه',
+    levels:'A1 · A2 · B1 · B2 · C1 · C2', ent:'موجودیت‌ها، فیلدها و نوع داده',
+    entries:'ثبت رکورد و پیش‌نمایش ساختار', pages:'فهرست وب‌پیج‌ها و انتشار',
+    menu:'منوی اصلی و زیرمنوها', r1:'رضایت دانشجویان از هر دوره', r2:'نمره، حضور، محتوا و آزمون',
+    r3:'همهٔ دانشجوها در یک نگاه', r4:'بارگذاری محتوا به تفکیک دوره و سطح',
+    r5:'رضایت، محتوا، آزمون‌ها و درست/غلط', settings:'اطلاعات آموزشگاه و پلتفرم'
+  };
+  document.getElementById('pageSub').textContent = subs[id] || '';
+  history.replaceState(null, '', '#pg=' + id);
+  document.getElementById('sb').classList.remove('open');
+  document.getElementById('ovl').classList.remove('on');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-toggle]');
+  if (t) {
+    const sm = document.querySelector('.submenu[data-menu="' + t.dataset.toggle + '"]');
+    const open = sm.classList.toggle('on');
+    t.classList.toggle('on', open);
+    return;
+  }
+  const p = e.target.closest('[data-pg],[data-pg-go]');
+  if (p) { go(p.dataset.pg || p.dataset.pgGo); return; }
+});
+document.getElementById('burger').addEventListener('click', () => { document.getElementById('sb').classList.toggle('open'); document.getElementById('ovl').classList.toggle('on'); });
+document.getElementById('ovl').addEventListener('click', () => { document.getElementById('sb').classList.remove('open'); document.getElementById('ovl').classList.remove('on'); });
+
+/* ---------- مودال ---------- */
+const mback = document.getElementById('mback'), mbox = document.getElementById('modal');
+function openModal(html, cls) { mbox.className = 'modal' + (cls ? ' ' + cls : ''); mbox.innerHTML = html; mback.classList.add('on'); paintIcons(mbox); }
+function closeModal() { mback.classList.remove('on'); mbox.innerHTML = ''; }
+mback.addEventListener('click', e => { if (e.target === mback || e.target.closest('[data-close]')) closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+const mHead = (i, title, sub, gold) => '<div class="m-head"><span class="m-ico ' + (gold ? 'gold' : '') + '">' + ico(i) + '</span><div style="min-width:0"><h3>' + title + '</h3>' + (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div><button class="m-x" data-close aria-label="بستن">' + ico('x') + '</button></div>';
+
+/* ---------- توست ---------- */
+let tT;
+function toast(m) { document.getElementById('toastMsg').textContent = m; const t = document.getElementById('toast'); t.classList.add('on'); clearTimeout(tT); tT = setTimeout(() => t.classList.remove('on'), 2800); }
+document.getElementById('bell').addEventListener('click', () => toast('۳ درخواست دسترسی، ۱ تضاد زمانی برنامه و ۱ محتوای ناقص در انتظار بررسی است'));
+
+/* ═══════════ ۱) کاربران سیستم — CRUD کامل ═══════════ */
+const roleLabel = { admin:'مدیر آموزشگاه', teacher:'استاد', student:'زبان‌آموز' };
+const statusBdg = { active:['ok','فعال'], pending:['warn','در انتظار تأیید'], blocked:['bad','مسدود'] };
+
+function renderUsers() {
+  const q = (document.getElementById('uq').value || '').trim();
+  const fr = document.getElementById('fRole').value, fs = document.getElementById('fStatus').value, fc = document.getElementById('fCourse').value;
+  const rows = S.users.filter(u =>
+    (!q || u.name.includes(q) || u.phone.includes(q) || u.id.toUpperCase().includes(q.toUpperCase())) &&
+    (!fr || u.role === fr) && (!fs || u.status === fs) && (!fc || u.course.includes(fc)));
+  document.getElementById('usersBody').innerHTML = rows.map((u, i) => {
+    const st = statusBdg[u.status];
+    return '<tr data-row data-f="role" data-v="' + u.role + '">' +
+      '<td><label class="chk"><input type="checkbox" class="urow" data-id="' + u.id + '"></label></td>' +
+      '<td><div class="who"><span class="av ' + avClass(i) + '">' + initials(u.name) + '</span><div><b>' + u.name + '</b><span class="num">' + u.phone.slice(0, 11) + '</span></div></div></td>' +
+      '<td><span class="bdg ' + (u.role === 'admin' ? 'gold' : u.role === 'teacher' ? '' : 'grey') + '">' + roleLabel[u.role] + '</span></td>' +
+      '<td>' + u.course + '</td>' +
+      '<td><span class="bdg ' + st[0] + '">' + st[1] + '</span></td>' +
+      '<td style="font-size:12px;color:var(--muted)">' + u.last + '</td>' +
+      '<td><div class="acts">' +
+        '<button class="icobtn" data-edit="' + u.id + '" title="ویرایش">' + ico('edit') + '</button>' +
+        '<button class="icobtn danger" data-del="' + u.id + '" title="حذف">' + ico('trash') + '</button>' +
+        '<button class="icobtn gear" data-perm="' + u.id + '" title="دسترسی‌ها">' + ico('gear') + '</button>' +
+      '</div></td></tr>';
+  }).join('') || '<tr><td colspan="7"><div class="empty"><span data-ico="search"></span>کاربری با این فیلترها پیدا نشد</div></td></tr>';
+  document.getElementById('uCount').textContent = 'نمایش ' + fa(rows.length) + ' کاربر از ' + fa(S.users.length) + ' کاربر — ۳ کاربر در انتظار تأیید';
+  paintIcons(document.getElementById('usersBody'));
+}
+['uq', 'fRole', 'fStatus', 'fCourse'].forEach(id => document.getElementById(id).addEventListener('input', renderUsers));
+document.getElementById('uReset').addEventListener('click', () => {
+  document.getElementById('uq').value = ''; document.getElementById('fRole').value = ''; document.getElementById('fStatus').value = ''; document.getElementById('fCourse').value = '';
+  renderUsers(); toast('فیلترها پاک شد؛ همهٔ ۱۶ کاربر نمایش داده می‌شوند');
+});
+document.getElementById('uAll').addEventListener('change', e => {
+  document.querySelectorAll('.urow').forEach(c => c.checked = e.target.checked);
 });
 
-/* ---------------- attendance picker ---------------- */
 document.addEventListener('click', e => {
-  const b = e.target.closest('.att button');
-  if (!b) return;
-  const box = b.closest('.att');
-  box.querySelectorAll('button').forEach(x => x.classList.remove('on'));
-  b.classList.add('on');
-  const labels = {p: 'حاضر', l: 'تأخیر', a: 'غایب'};
-  if (box.dataset.att) toast(box.dataset.att + ' — ' + labels[b.dataset.v] + ' ثبت شد');
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'user-add') userForm(null);
+  if (act === 'user-edit') userForm(b.dataset.id);
+  if (act === 'user-del') {
+    const u = S.users.find(x => x.id === b.dataset.id);
+    openModal(mHead('trash', 'حذف کاربر', 'این عملیات رکورد را از فهرست کاربران برمی‌دارد', true) +
+      '<div class="m-body"><div class="notice bad">' + ico('alert') + '<div>آیا از حذف <b>' + u.name + '</b> (' + roleLabel[u.role] + ') مطمئن هستید؟ کلاس‌ها و نمرات مرتبط بدون استاد خواهند شد.</div></div>' +
+      '<div class="dl mt4"><dt>کد کاربر</dt><dd class="num">' + u.id.toUpperCase() + '</dd><dt>دوره / تخصص</dt><dd>' + u.course + '</dd></div></div>' +
+      '<div class="m-foot"><button class="btn btn-ghost btn-sm" data-close>انصراف</button><button class="btn btn-primary btn-sm" data-delnow="' + u.id + '">' + ico('trash') + 'حذف قطعی</button></div>', 'slim');
+  }
+  if (act === 'teacher-add') toast('در نسخهٔ نهایی، فرم ثبت استاد تازه با انتخاب دوره و بارگذاری مدرک باز می‌شود');
+  if (act === 'class-add') classForm(null, b.dataset.teacher);
+  if (act === 'entity-add') toast('موجودیت تازه: نام و فیلدها را از همین صفحه تعریف کنید (نمایشی)');
+  if (act === 'field-add') toast('فیلد تازه به موجودیت ' + curEnt().name + ' اضافه می‌شود');
+  if (act === 'page-add') toast('صفحهٔ تازه: مسیر و وضعیت انتشار را تعیین کنید (نمایشی)');
 });
+
+function userForm(id) {
+  const u = id ? S.users.find(x => x.id === id) : { name:'', role:'student', course:'', phone:'', status:'active' };
+  openModal(mHead('user', id ? 'ویرایش کاربر' : 'کاربر تازه', id ? 'کد ' + u.id.toUpperCase() : 'افزودن کاربر به سیستم') +
+    '<div class="m-body"><form class="frm" id="uf" onsubmit="return false">' +
+      '<div class="fld full"><label>نام و نام خانوادگی <span style="color:var(--bad)">*</span></label><input class="inp" id="u-name" value="' + u.name + '" placeholder="مثال: رضا محمدی"></div>' +
+      '<div class="fld"><label>نقش <span style="color:var(--bad)">*</span></label><select class="inp" id="u-role">' +
+        ['admin','teacher','student'].map(r => '<option value="' + r + '"' + (u.role === r ? ' selected' : '') + '>' + roleLabel[r] + '</option>').join('') + '</select></div>' +
+      '<div class="fld"><label>دوره / تخصص</label><select class="inp" id="u-course"><option value="">— انتخاب کنید —</option>' +
+        COURSES.concat(['مدیریت آموزشگاه','مدیریت آموزشی','مالی و ثبت‌نام']).map(c => '<option' + (u.course === c ? ' selected' : '') + '>' + c + '</option>').join('') + '</select></div>' +
+      '<div class="fld"><label>شمارهٔ تماس <span style="color:var(--bad)">*</span></label><input class="inp en" id="u-phone" value="' + u.phone + '" placeholder="0912 000 0000"></div>' +
+      '<div class="fld"><label>وضعیت حساب</label><select class="inp" id="u-status">' +
+        '<option value="active"' + (u.status === 'active' ? ' selected' : '') + '>فعال</option>' +
+        '<option value="pending"' + (u.status === 'pending' ? ' selected' : '') + '>در انتظار تأیید</option>' +
+        '<option value="blocked"' + (u.status === 'blocked' ? ' selected' : '') + '>مسدود</option></select></div>' +
+      '<div class="fld full"><label>سطح دسترسی</label><div class="notice info" style="margin:0">' + ico('gear') + '<div>پس از ذخیره، با آیکون چرخ‌دندهٔ همین ردیف ماتریس دسترسی بخش‌ها را برای این کاربر تنظیم کنید.</div></div></div>' +
+    '</form><div class="er mt3" id="u-err" style="display:none"></div></div>' +
+    '<div class="m-foot"><button class="btn btn-ghost btn-sm" data-close>انصراف</button><button class="btn btn-primary btn-sm" id="u-save" data-id="' + (id || '') + '">' + ico('save') + (id ? 'ذخیرهٔ تغییرات' : 'افزودن کاربر') + '</button></div>');
+  document.getElementById('u-save').addEventListener('click', () => {
+    const name = document.getElementById('u-name').value.trim(), phone = document.getElementById('u-phone').value.trim();
+    const err = document.getElementById('u-err');
+    if (name.length < 3 || phone.length < 7) { err.style.display = 'flex'; err.innerHTML = ico('alert') + 'نام (حداقل ۳ نویسه) و شمارهٔ تماس معتبر الزامی است'; document.getElementById('u-name').classList.toggle('err', name.length < 3); return; }
+    const data = { name, phone, role: document.getElementById('u-role').value, course: document.getElementById('u-course').value || '—', status: document.getElementById('u-status').value };
+    if (id) { Object.assign(S.users.find(x => x.id === id), data); toast('کاربر «' + name + '» ویرایش شد'); }
+    else { S.users.unshift(Object.assign({ id: uid(), last:'—' }, data)); toast('کاربر «' + name + '» افزوده شد'); }
+    save(); renderUsers(); renderDonut(); closeModal();
+  });
+}
+
+/* ═══════════ ۲) ماتریس دسترسی (چرخ‌دنده) ═══════════ */
+const SECTIONS = ['کاربران سیستم', 'تعریف استاد و کلاس', 'DataEntries', 'WebPages', 'گزارشات', 'مالی و شهریه'];
+const ACTIONS = [['view','مشاهده'], ['add','افزودن'], ['edit','ویرایش'], ['del','حذف']];
+const PRESET = {
+  admin:   { 'کاربران سیستم':[1,1,1,1], 'تعریف استاد و کلاس':[1,1,1,1], 'DataEntries':[1,1,1,1], 'WebPages':[1,1,1,0], 'گزارشات':[1,0,0,0], 'مالی و شهریه':[1,1,1,0] },
+  teacher: { 'کاربران سیستم':[1,0,0,0], 'تعریف استاد و کلاس':[1,1,1,0], 'DataEntries':[1,0,1,0], 'WebPages':[1,0,0,0], 'گزارشات':[1,0,0,0], 'مالی و شهریه':[0,0,0,0] },
+  student: { 'کاربران سیستم':[0,0,0,0], 'تعریف استاد و کلاس':[0,0,0,0], 'DataEntries':[0,0,0,0], 'WebPages':[1,0,0,0], 'گزارشات':[0,0,0,0], 'مالی و شهریه':[1,0,0,0] }
+};
+function permModal(uid2, teacherFlow) {
+  const u = S.users.find(x => x.id === uid2);
+  const t = S.teachers.find(x => x.userId === uid2);
+  const preset = PRESET[u.role] || PRESET.student;
+  const cur = u.perm || preset;
+  const rows = SECTIONS.map((s, i) => '<tr><td>' + s + '</td>' + ACTIONS.map((a, j) =>
+    '<td><label class="chk"><input type="checkbox" data-perm-sec="' + i + '" data-perm-act="' + j + '"' + (cur[s][j] ? ' checked' : '') + '></label></td>').join('') + '</tr>').join('');
+  const gearBody =
+    '<div class="tabs" id="gearTabs">' +
+      '<button class="on" data-gt="perm">سطح دسترسی بخش‌ها</button>' +
+      (u.role === 'teacher' ? '<button data-gt="cls">کلاس‌های استاد</button>' : '') +
+      (u.role === 'student' ? '<button data-gt="stu">وضعیت آموزشی</button>' : '') +
+    '</div>' +
+    '<div id="gt-perm">' +
+      '<div class="notice sand mb0" style="margin-bottom:14px">' + ico('info') + '<div>نقش پیش‌فرض این کاربر <b>' + roleLabel[u.role] + '</b> است؛ تیک‌ها بر پایهٔ همان نقش پیش‌انتخاب شده‌اند و تغییرشان فقط برای این کاربر ذخیره می‌شود.</div></div>' +
+      '<div class="tbl-wrap"><table class="matrix"><thead><tr><th>بخش پنل / وب‌سایت</th>' + ACTIONS.map(a => '<th>' + a[1] + '</th>').join('') + '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      '<div style="display:flex;gap:9px;margin-top:16px;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" data-preset="' + u.role + '">' + ico('refresh') + 'بازگردانی به پیش‌فرض نقش</button><button class="btn btn-ghost btn-sm" data-all="1">' + ico('check-sq') + 'انتخاب همه</button><button class="btn btn-ghost btn-sm" data-all="0">پاک‌کردن همه</button></div>' +
+    '</div>' +
+    (u.role === 'teacher' ? '<div id="gt-cls" style="display:none">' + teacherClassesHTML(t ? t.id : null) + '</div>' : '') +
+    (u.role === 'student' ? '<div id="gt-stu" style="display:none">' + studentDetailHTML(S.students.find(s => s.userId === uid2)) + '</div>' : '');
+  openModal(mHead('gear', 'دسترسی‌های ' + u.name, roleLabel[u.role] + ' — ' + u.course, true) + '<div class="m-body">' + gearBody + '</div>' +
+    '<div class="m-foot"><button class="btn btn-ghost btn-sm" data-close>انصراف</button><button class="btn btn-primary btn-sm" id="perm-save" data-id="' + uid2 + '">' + ico('save') + 'ذخیرهٔ دسترسی‌ها</button></div>', 'wide');
+}
+function teacherClassesHTML(tid) {
+  const t = S.teachers.find(x => x.id === tid);
+  if (!t) return '<div class="empty">این کاربر پروندهٔ استاد ندارد</div>';
+  const cls = S.classes.filter(c => c.teacher === tid);
+  return '<div class="notice info mb0" style="margin-bottom:14px">' + ico('shield') + '<div><b>قاعدهٔ یک دوره برای هر استاد:</b> این استاد مسئول دورهٔ <b>' + t.course + '</b> است و کلاس‌هایش فقط از همین دوره ساخته می‌شوند.</div></div>' +
+    '<div class="rows">' + (cls.length ? cls.map(c => '<div class="row"><span class="ln">' + ico('calendar') + '</span><span class="rb"><b>' + c.title + ' <span class="path en">' + c.code + '</span></b>' +
+      '<span>' + c.days.join('، ') + ' — <span class="num">' + c.start + ' تا ' + c.end + '</span> — سطح <span class="en">' + c.level + '</span> — ' + fa(c.students) + ' از ' + fa(c.cap) + ' دانشجو</span></span>' +
+      '<span class="re"><span class="bdg ' + (c.status === 'full' ? 'warn' : 'ok') + '">' + (c.status === 'full' ? 'ظرفیت پر' : 'فعال') + '</span>' +
+      '<button class="icobtn" data-editclass="' + c.id + '">' + ico('edit') + '</button></span></div>').join('') : '<div class="empty">هنوز کلاسی برای این استاد تعریف نشده است</div>') + '</div>' +
+    '<button class="btn btn-primary btn-sm mt4" data-act="class-add" data-teacher="' + tid + '">' + ico('plus') + 'تعریف کلاس تازه برای این استاد</button>';
+}
+function studentDetailHTML(s) {
+  if (!s) return '<div class="empty">پروندهٔ آموزشی این کاربر ثبت نشده است</div>';
+  return '<div class="grid c4" style="margin-bottom:0">' +
+    kpiMini('میانگین نمره', fa(s.avg) + '<small>/ ۱۰۰</small>', 'target') +
+    kpiMini('محتوا سپری‌شده', pct(s.content), 'check-sq') +
+    kpiMini('حضور در کلاس', pct(s.attend), 'clock') +
+    kpiMini('رضایت از دوره', fa(s.satisfy) + '<small>/ ۵</small>', 'star') + '</div>';
+}
+const kpiMini = (t, v, i) => '<div class="kpi"><div class="kh"><div class="kt">' + t + '</div><span class="ib">' + ico(i) + '</span></div><div class="kv">' + v + '</div></div>';
+
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-perm]');
+  if (g) { permModal(g.dataset.perm); return; }
+  const gt = e.target.closest('[data-gt]');
+  if (gt) {
+    mbox.querySelectorAll('#gearTabs button').forEach(b => b.classList.toggle('on', b === gt));
+    ['perm','cls','stu'].forEach(k => { const el = mbox.querySelector('#gt-' + k); if (el) el.style.display = (k === gt.dataset.gt) ? '' : 'none'; });
+    return;
+  }
+  const ap = e.target.closest('[data-preset]');
+  if (ap) {
+    const p = PRESET[ap.dataset.preset];
+    SECTIONS.forEach((s, i) => ACTIONS.forEach((a, j) => { const c = mbox.querySelector('[data-perm-sec="' + i + '"][data-perm-act="' + j + '"]'); if (c) c.checked = !!p[s][j]; }));
+    toast('ماتریس به پیش‌فرض نقش بازگشت'); return;
+  }
+  const al = e.target.closest('[data-all]');
+  if (al) { mbox.querySelectorAll('[data-perm-sec]').forEach(c => c.checked = al.dataset.all === '1'); return; }
+  const ps = e.target.closest('#perm-save');
+  if (ps) {
+    const u = S.users.find(x => x.id === ps.dataset.id), m = {};
+    SECTIONS.forEach((s, i) => { m[s] = ACTIONS.map((a, j) => mbox.querySelector('[data-perm-sec="' + i + '"][data-perm-act="' + j + '"]').checked ? 1 : 0); });
+    u.perm = m; save();
+    const on = Object.values(m).reduce((n, v) => n + v.filter(Boolean).length, 0);
+    toast('دسترسی‌های «' + u.name + '» ذخیره شد — ' + fa(on) + ' مجوز فعال');
+    closeModal();
+  }
+});
+
+/* ═══════════ ۳) استادان، کلاس‌ها، اعتبارسنجی ═══════════ */
+function renderTeachers() {
+  document.getElementById('teachersBody').innerHTML = S.teachers.map((t, i) => {
+    const u = S.users.find(x => x.id === t.userId) || { name:'—', phone:'—' };
+    const cls = S.classes.filter(c => c.teacher === t.id).length;
+    return '<tr><td><div class="who"><span class="av ' + avClass(i) + '">' + initials(u.name) + '</span><div><b>' + u.name + '</b><span class="num">' + u.phone + '</span></div></div></td>' +
+      '<td><span class="bdg gold">' + t.course + '</span></td>' +
+      '<td>' + fa(cls) + ' کلاس</td><td>' + fa(t.students) + ' نفر</td>' +
+      '<td><span class="rate">' + ico('star') + (t.rating ? fa(t.rating.toFixed(1)) : '—') + '</span></td>' +
+      '<td><span class="bdg ' + (t.status === 'active' ? 'ok' : 'warn') + '">' + (t.status === 'active' ? 'فعال' : 'در انتظار') + '</span></td>' +
+      '<td><div class="acts"><button class="icobtn" data-edituser="' + t.userId + '">' + ico('edit') + '</button>' +
+      '<button class="icobtn gear" data-perm="' + t.userId + '" title="کلاس‌ها و دسترسی">' + ico('gear') + '</button></div></td></tr>';
+  }).join('');
+  paintIcons(document.getElementById('teachersBody'));
+}
+function renderClasses() {
+  document.getElementById('classesBody').innerHTML = S.classes.map(c => {
+    const u = S.users.find(x => x.id === (S.teachers.find(t => t.id === c.teacher) || {}).userId);
+    const st = { active:['ok','فعال'], full:['warn','ظرفیت پر'], 'no-teacher':['bad','بدون استاد'] }[c.status];
+    return '<tr><td class="num">' + c.code + '</td><td><b style="font-weight:800">' + c.title + '</b></td>' +
+      '<td>' + (u ? u.name : '<span class="bdg bad">تعیین نشده</span>') + '</td>' +
+      '<td><span class="bdg grey en">' + c.level + '</span></td>' +
+      '<td style="font-size:12px">' + c.days.join('، ') + '</td>' +
+      '<td class="num nowrap">' + c.start + ' – ' + c.end + '</td>' +
+      '<td><div class="mini-bar"><span class="pv">' + fa(c.students) + '/' + fa(c.cap) + '</span><span class="prog" style="max-width:80px"><i style="width:' + (c.students / c.cap * 100) + '%"></i></span></div></td>' +
+      '<td><span class="bdg ' + st[0] + '">' + st[1] + '</span></td>' +
+      '<td><div class="acts"><button class="icobtn" data-editclass="' + c.id + '">' + ico('edit') + '</button>' +
+      '<button class="icobtn danger" data-delclass="' + c.id + '">' + ico('trash') + '</button></div></td></tr>';
+  }).join('');
+  paintIcons(document.getElementById('classesBody'));
+  document.getElementById('kpiClasses').textContent = fa(S.classes.filter(c => c.status === 'active').length);
+}
+
+/* فرم تعریف کلاس — با اعتبارسنجی کامل */
+function classForm(id, tid) {
+  const c = id ? S.classes.find(x => x.id === id) : { title:'', teacher: tid || '', course:'', level:'B1', days:[], start:'', end:'', students:0, cap:12, status:'active' };
+  const t = S.teachers.find(x => x.id === c.teacher);
+  const teacher = t || S.teachers.find(x => x.id === tid);
+  openModal(mHead('calendar', id ? 'ویرایش کلاس' : 'تعریف کلاس تازه',
+    teacher ? 'استاد: ' + ((S.users.find(u => u.id === teacher.userId) || {}).name || '—') : 'ابتدا استاد را انتخاب کنید') +
+    '<div class="m-body"><form class="frm" id="cf" onsubmit="return false">' +
+      '<div class="fld full"><label>استاد <span style="color:var(--bad)">*</span></label><select class="inp" id="c-teacher">' +
+        '<option value="">— انتخاب استاد —</option>' + S.teachers.map(x => {
+          const u = S.users.find(y => y.id === x.userId) || { name:'—' };
+          return '<option value="' + x.id + '"' + (c.teacher === x.id ? ' selected' : '') + '>' + u.name + ' — ' + x.course + '</option>';
+        }).join('') + '</select><span class="hint">هر استاد فقط یک دوره دارد؛ کلاس در همان دوره ساخته می‌شود.</span></div>' +
+      '<div class="fld"><label>دوره (از پروندهٔ استاد)</label><input class="inp" id="c-course" value="' + (teacher ? teacher.course : '') + '" readonly style="background:#f1f3f6"></div>' +
+      '<div class="fld"><label>عنوان کلاس <span style="color:var(--bad)">*</span></label><input class="inp" id="c-title" value="' + c.title + '" placeholder="مثال: مکالمهٔ پیشرفته"></div>' +
+      '<div class="fld"><label>سطح کلاس (CEFR) <span style="color:var(--bad)">*</span></label><select class="inp en" id="c-level">' +
+        LEVELS.map(l => '<option' + (c.level === l ? ' selected' : '') + '>' + l + '</option>').join('') + '</select></div>' +
+      '<div class="fld"><label>ظرفیت کلاس</label><input class="inp num" id="c-cap" value="' + fa(c.cap) + '"></div>' +
+      '<div class="fld full"><label>روزهای هفته <span style="color:var(--bad)">*</span></label><div class="chips" id="c-days">' +
+        DAYS.map(d => '<button type="button" class="chip' + (c.days.includes(d) ? ' on' : '') + '" data-day="' + d + '">' + d + '</button>').join('') + '</div></div>' +
+      '<div class="fld"><label>ساعت شروع <span style="color:var(--bad)">*</span></label><input class="inp num" id="c-start" value="' + c.start + '" placeholder="۱۷:۰۰"></div>' +
+      '<div class="fld"><label>ساعت پایان <span style="color:var(--bad)">*</span></label><input class="inp num" id="c-end" value="' + c.end + '" placeholder="۱۹:۳۰"></div>' +
+      '<div class="fld full"><label>دانشجویان این کلاس</label>' +
+        '<div class="chips" id="c-stu">' + S.students.slice(0, 9).map((s, i) => '<button type="button" class="chip' + (i < c.students ? ' on' : '') + '" data-stu="' + s.name + '">' + s.name + ' — ' + s.level + '</button>').join('') + '</div>' +
+        '<span class="hint">با کلیک، دانشجو به فهرست کلاس افزوده/حذف می‌شود؛ تعداد انتخاب‌شده در پایین نمایش داده می‌شود.</span></div>' +
+    '</form><div class="er mt3" id="c-err" style="display:none"></div>' +
+    '<div class="side-note mt4" id="c-sum">—</div></div>' +
+    '<div class="m-foot"><button class="btn btn-ghost btn-sm" data-close>انصراف</button><button class="btn btn-primary btn-sm" id="c-save" data-id="' + (id || '') + '">' + ico('save') + 'ثبت کلاس</button></div>', 'wide');
+  const refresh = () => {
+    const tch = S.teachers.find(x => x.id === document.getElementById('c-teacher').value);
+    document.getElementById('c-course').value = tch ? tch.course : '';
+    const days = [...mbox.querySelectorAll('#c-days .chip.on')].map(b => b.dataset.day);
+    const stu = mbox.querySelectorAll('#c-stu .chip.on').length;
+    document.getElementById('c-sum').innerHTML = '<b>خلاصه:</b> دورهٔ ' + (tch ? tch.course : '—') + ' · سطح <span class="en">' + document.getElementById('c-level').value + '</span> · روزها: ' + (days.length ? days.join('، ') : 'انتخاب نشده') +
+      ' · ساعت <span class="num">' + (document.getElementById('c-start').value || '—') + ' تا ' + (document.getElementById('c-end').value || '—') + '</span> · ' + fa(stu) + ' دانشجو';
+  };
+  mbox.querySelector('#c-teacher').addEventListener('change', refresh);
+  mbox.querySelector('#c-level').addEventListener('change', refresh);
+  ['#c-start', '#c-end'].forEach(s => mbox.querySelector(s).addEventListener('input', refresh));
+  mbox.querySelectorAll('#c-days .chip,#c-stu .chip').forEach(b => b.addEventListener('click', () => { b.classList.toggle('on'); refresh(); }));
+  refresh();
+  document.getElementById('c-save').addEventListener('click', () => {
+    const err = document.getElementById('c-err');
+    const tid2 = document.getElementById('c-teacher').value;
+    const title = document.getElementById('c-title').value.trim();
+    const days = [...mbox.querySelectorAll('#c-days .chip.on')].map(b => b.dataset.day);
+    const st = document.getElementById('c-start').value.trim(), en = document.getElementById('c-end').value.trim();
+    const stu = mbox.querySelectorAll('#c-stu .chip.on').length;
+    const toMin = s => { const p = s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).split(/[:.]/); return p.length === 2 ? (+p[0]) * 60 + (+p[1]) : NaN; };
+    const errs = [];
+    if (!tid2) errs.push('انتخاب استاد الزامی است.');
+    if (title.length < 3) errs.push('عنوان کلاس را کامل وارد کنید.');
+    if (!days.length) errs.push('حداقل یک روز هفته را انتخاب کنید.');
+    if (isNaN(toMin(st)) || isNaN(toMin(en))) errs.push('قالب ساعت باید مانند «۱۷:۰۰» باشد.');
+    else if (toMin(en) <= toMin(st)) errs.push('ساعت پایان باید بعد از ساعت شروع باشد (الان پایان ≤ شروع است).');
+    // قاعدهٔ یک دوره برای هر استاد
+    if (tid2) {
+      const tch = S.teachers.find(x => x.id === tid2);
+      const others = S.classes.filter(x => x.teacher === tid2 && x.id !== id);
+      const otherCourse = others.find(x => x.course !== tch.course);
+      if (otherCourse) errs.push('قاعدهٔ «هر استاد یک دوره» نقض می‌شود: این استاد در دورهٔ ' + otherCourse.course + ' هم کلاس دارد.');
+      if (tch.status === 'pending') errs.push('پروندهٔ این استاد در انتظار تأیید است و تا تأیید، تعریف کلاس ممکن نیست.');
+      if (id) {
+        const orig = S.classes.find(x => x.id === id);
+        if (orig && orig.course !== tch.course) errs.push('نقض قاعدهٔ یک دوره برای هر استاد: این کلاس در دورهٔ «' + orig.course + '» است، اما استاد انتخاب‌شده فقط مسئول دورهٔ «' + tch.course + '» است.');
+      }
+    }
+    if (errs.length) {
+      err.style.display = 'flex';
+      err.innerHTML = ico('alert') + '<div>' + errs.join('<br>') + '</div>';
+      toast('خطای اعتبارسنجی: ' + errs[0]);
+      return;
+    }
+    const tch = S.teachers.find(x => x.id === tid2);
+    const data = { title, teacher: tid2, course: tch.course, level: document.getElementById('c-level').value, days, start: st, end: en, students: stu, cap: parseInt(document.getElementById('c-cap').value.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))) || 12, status: 'active' };
+    if (id) { Object.assign(S.classes.find(x => x.id === id), data); toast('کلاس «' + title + '» ویرایش شد'); }
+    else { S.classes.push(Object.assign({ id: uid(), code: 'NEW-' + Math.floor(Math.random() * 90 + 10) }, data)); toast('کلاس «' + title + '» برای دورهٔ ' + tch.course + ' ثبت شد'); }
+    save(); renderClasses(); renderTeachers(); renderSchedule(); renderDash(); closeModal();
+  });
+}
+document.addEventListener('click', e => {
+  const ec = e.target.closest('[data-editclass]'); if (ec) { classForm(ec.dataset.editclass); return; }
+  const dc = e.target.closest('[data-delclass]');
+  if (dc) {
+    const c = S.classes.find(x => x.id === dc.dataset.delclass);
+    S.classes = S.classes.filter(x => x.id !== c.id); save(); renderClasses(); renderDash();
+    toast('کلاس «' + c.title + '» حذف شد'); return;
+  }
+  const eu = e.target.closest('[data-edituser]'); if (eu) { userForm(eu.dataset.edituser); return; }
+  const dn = e.target.closest('[data-delnow]');
+  if (dn) { const u = S.users.find(x => x.id === dn.dataset.delnow); S.users = S.users.filter(x => x.id !== u.id); save(); renderUsers(); renderDonut(); closeModal(); toast('کاربر «' + u.name + '» حذف شد'); return; }
+  const ed = e.target.closest('[data-edit]'); if (ed) { userForm(ed.dataset.edit); return; }
+  const dl = e.target.closest('[data-del]'); if (dl) { const u = S.users.find(x => x.id === dl.dataset.del); openModal(mHead('trash', 'حذف کاربر', 'این عملیات رکورد را از فهرست برمی‌دارد', true) + '<div class="m-body"><div class="notice bad">' + ico('alert') + '<div>آیا از حذف <b>' + u.name + '</b> مطمئن هستید؟</div></div></div><div class="m-foot"><button class="btn btn-ghost btn-sm" data-close>انصراف</button><button class="btn btn-primary btn-sm" data-delnow="' + u.id + '">حذف قطعی</button></div>', 'slim'); return; }
+});
+
+/* ═══════════ ۴) برنامهٔ هفتگی ═══════════ */
+const SLOTS = [['۱۰:۰۰','۱۲:۰۰'], ['۱۳:۰۰','۱۵:۰۰'], ['۱۶:۰۰','۱۸:۰۰'], ['۱۷:۰۰','۱۹:۳۰'], ['۱۹:۰۰','۲۱:۰۰']];
+function renderSchedule() {
+  const sel = document.getElementById('schTeacher');
+  if (!sel.options.length) sel.innerHTML = S.teachers.map(t => { const u = S.users.find(x => x.id === t.userId) || { name:'—' }; return '<option value="' + t.id + '">' + u.name + ' — ' + t.course + '</option>'; }).join('');
+  const tid = sel.value || S.teachers[0].id;
+  let html = '<div></div>' + DAYS.map(d => '<div class="tt-h">' + d + '</div>').join('');
+  const cls = S.classes.filter(c => c.teacher === tid);
+  const conflict = {};
+  cls.forEach(c => c.days.forEach(d => { const k = d + '|' + c.start; conflict[k] = (conflict[k] || 0) + 1; }));
+  SLOTS.forEach(sl => {
+    html += '<div class="tt-h row-h num">' + sl[0] + ' – ' + sl[1] + '</div>';
+    DAYS.forEach(d => {
+      const hit = cls.find(c => c.days.includes(d) && c.start === sl[0]);
+      if (hit) {
+        const bad = conflict[d + '|' + hit.start] > 1;
+        html += '<div class="tt-c ' + (bad ? 'gold' : 'busy') + '"><b>' + hit.title + '</b><span>' + hit.start + '–' + hit.end + '</span>' +
+          '<span style="color:inherit">' + hit.code + ' · ' + hit.level + '</span>' + (bad ? '<span style="color:var(--sand-700)">تضاد زمانی</span>' : '') + '</div>';
+      } else if (DAY_OFF(d)) { html += '<div class="tt-c" style="opacity:.55">تعطیل</div>'; }
+      else { html += '<div class="tt-c">—</div>'; }
+    });
+  });
+  document.getElementById('ttGrid').innerHTML = html;
+}
+const DAY_OFF = d => d === 'پنج‌شنبه';
+document.getElementById('schTeacher').addEventListener('change', renderSchedule);
+
+/* ═══════════ ۵) DataEntries ═══════════ */
+let selEnt = 'e1';
+const curEnt = () => S.ents.find(e => e.id === selEnt) || S.ents[0];
+function renderEnts() {
+  document.getElementById('entRows').innerHTML = S.ents.map(e => '<div class="row" data-selent="' + e.id + '" style="cursor:pointer;' + (e.id === selEnt ? 'background:var(--navy-50)' : '') + '">' +
+    '<span class="ln">' + ico('list') + '</span><span class="rb"><b>' + e.name + ' <span class="path en">' + e.table + '</span></b><span>' + fa(e.fields.length) + ' فیلد — ' + fa(rndRecords(e)) + ' رکورد ثبت‌شده</span></span>' +
+    '<span class="re"><span class="bdg ' + (e.id === selEnt ? 'gold' : 'grey') + '">' + (e.id === selEnt ? 'انتخاب‌شده' : 'انتخاب') + '</span></span></div>').join('');
+  document.getElementById('entSelName').textContent = curEnt().name;
+  document.getElementById('fieldBody').innerHTML = curEnt().fields.map((f, i) => '<tr><td><b style="font-weight:800">' + f.t + '</b></td><td class="num">' + f.k + '</td>' +
+    '<td><span class="bdg ' + (f.ty === 'عدد' ? '' : f.ty.includes('انتخاب') || f.ty.includes('چند') ? 'gold' : 'grey') + '">' + f.ty + '</span></td>' +
+    '<td>' + (f.req ? '<span class="bdg bad">اجباری</span>' : '<span class="bdg grey">اختیاری</span>') + '</td>' +
+    '<td><div class="acts"><span class="ord"><button data-mv="' + i + ':' + (-1) + '"' + (i === 0 ? ' disabled' : '') + '>' + ico('chev-up') + '</button>' +
+    '<button data-mv="' + i + ':' + (1) + '"' + (i === curEnt().fields.length - 1 ? ' disabled' : '') + '>' + ico('chev-dn') + '</button></span>' +
+    '<button class="icobtn danger" data-delf="' + i + '" style="width:26px;height:26px">' + ico('x') + '</button></div></td></tr>').join('');
+  document.getElementById('entPick').innerHTML = S.ents.map(e => '<option value="' + e.id + '"' + (e.id === selEnt ? ' selected' : '') + '>' + e.name + ' (' + e.table + ')</option>').join('');
+  paintIcons(document.getElementById('entRows')); paintIcons(document.getElementById('fieldBody'));
+  renderDynForm();
+}
+const rndRecords = e => (e.name.length * 37) % 400 + 18;
+document.addEventListener('click', e => {
+  const se = e.target.closest('[data-selent]'); if (se) { selEnt = se.dataset.selent; renderEnts(); return; }
+  const mv = e.target.closest('[data-mv]'); if (mv) { const [i, d] = mv.dataset.mv.split(':').map(Number); const f = curEnt().fields; const j = i + d; if (j >= 0 && j < f.length) { [f[i], f[j]] = [f[j], f[i]]; save(); renderEnts(); } return; }
+  const df = e.target.closest('[data-delf]'); if (df) { curEnt().fields.splice(+df.dataset.delf, 1); save(); renderEnts(); toast('فیلد حذف شد'); return; }
+});
+document.getElementById('entPick').addEventListener('change', e => { selEnt = e.target.value; renderEnts(); });
+
+function renderDynForm() {
+  const e = curEnt();
+  document.getElementById('dynForm').innerHTML = e.fields.map(f => {
+    const req = f.req ? ' <span style="color:var(--bad)">*</span>' : ' <span class="hint" style="display:inline">(اختیاری)</span>';
+    let ctrl;
+    if (f.ty === 'عدد') ctrl = '<input class="inp num" placeholder="عدد وارد کنید">';
+    else if (f.ty === 'تاریخ') ctrl = '<input class="inp num" placeholder="۱۴۰۵/۰۷/۱۲">';
+    else if (f.ty === 'ساعت') ctrl = '<input class="inp num" placeholder="۱۷:۰۰">';
+    else if (f.ty === 'انتخابی') ctrl = '<select class="inp"><option value="">— انتخاب —</option>' + (f.k === 'level' ? LEVELS : f.k === 'category' ? COURSES : ['گزینهٔ یک','گزینهٔ دو','گزینهٔ سه']).map(o => '<option>' + o + '</option>').join('') + '</select>';
+    else if (f.ty === 'چندانتخابی') ctrl = '<div class="chips">' + (f.k === 'weekdays' ? DAYS : ['رضا محمدی','زهرا صادقی','نیلوفر حسینی','حسین عباسی']).map(o => '<button type="button" class="chip">' + o + '</button>').join('') + '</div>';
+    else if (f.ty === 'فایل') ctrl = '<button type="button" class="btn btn-ghost btn-sm btn-block">' + ico('upload') + 'انتخاب فایل…</button>';
+    else if (f.ty === 'متن بلند') ctrl = '<textarea class="inp" placeholder="توضیحات…"></textarea>';
+    else ctrl = '<input class="inp" placeholder="' + f.t + '">';
+    return '<div class="fld' + (f.ty === 'متن بلند' || f.ty === 'چندانتخابی' ? ' full' : '') + '"><label>' + f.t + req + '</label>' + ctrl + '</div>';
+  }).join('');
+  document.getElementById('schemaCode').textContent =
+    'CREATE TABLE ' + e.table + ' (\n  id   INTEGER PRIMARY KEY,\n' +
+    e.fields.map(f => '  ' + (f.k + '                    ').slice(0, 20) + tySql(f) + (f.req ? ' NOT NULL' : '')).join(',\n') +
+    '\n);';
+}
+const tySql = f => ({ 'متن':'TEXT', 'متن بلند':'TEXT', 'عدد':'INTEGER', 'انتخابی':'TEXT', 'چندانتخابی':'TEXT', 'تاریخ':'DATE', 'ساعت':'TIME', 'فایل':'VARCHAR(255)' })[f.ty] || 'TEXT';
+document.getElementById('dynClear').addEventListener('click', () => { renderDynForm(); toast('فرم ورود داده پاک شد'); });
+document.getElementById('dynSave').addEventListener('click', () => {
+  const e = curEnt();
+  S.entsData.unshift({ id: uid(), ent: e.name, title: 'رکورد تازه — ' + e.name, by: 'کامران دهقان', t: 'همین حالا', av: 'gold' });
+  save(); renderRecent(); toast('رکورد تازه در موجودیت ' + e.name + ' ثبت شد (نمایشی)');
+});
+
+/* ═══════════ ۶) WebPages و چیدمان منو ═══════════ */
+const pgStatus = { pub:['ok','منتشرشده'], draft:['warn','پیش‌نویس'] };
+function renderPages() {
+  document.getElementById('pagesBody').innerHTML = S.pages.map(p => {
+    const st = pgStatus[p.status];
+    const roleTxt = p.roles.includes('all') ? '<span class="bdg grey">همهٔ نقش‌ها</span>' : p.roles.map(r => '<span class="bdg">' + roleLabel[r] + '</span>').join(' ');
+    return '<tr><td><b style="font-weight:800">' + p.title + '</b></td><td class="num">' + p.path + '</td><td>' + p.menu + '</td>' +
+      '<td><span class="bdg ' + st[0] + '">' + st[1] + '</span></td><td style="display:flex;gap:5px;flex-wrap:wrap">' + roleTxt + '</td>' +
+      '<td><div class="acts"><button class="icobtn" data-pgview="' + p.id + '">' + ico('eye') + '</button>' +
+      '<button class="icobtn" data-pgedit="' + p.id + '">' + ico('edit') + '</button>' +
+      '<button class="icobtn gold" data-pgtoggle="' + p.id + '">' + ico('globe') + '</button></div></td></tr>';
+  }).join('');
+  paintIcons(document.getElementById('pagesBody'));
+}
+document.addEventListener('click', e => {
+  const pv = e.target.closest('[data-pgview]'); if (pv) { const p = S.pages.find(x => x.id === pv.dataset.pgview); toast('پیش‌نمایش صفحهٔ «' + p.title + '» — مسیر ' + p.path); return; }
+  const pe = e.target.closest('[data-pgedit]'); if (pe) {
+    const p = S.pages.find(x => x.id === pe.dataset.pgedit);
+    openModal(mHead('globe', 'ویرایش صفحه', 'مسیر ' + p.path) + '<div class="m-body"><form class="frm" onsubmit="return false">' +
+      '<div class="fld full"><label>عنوان صفحه</label><input class="inp" value="' + p.title + '"></div>' +
+      '<div class="fld"><label>مسیر</label><input class="inp en" value="' + p.path + '"></div>' +
+      '<div class="fld"><label>جایگاه در منو</label><input class="inp" value="' + p.menu + '"></div>' +
+      '<div class="fld"><label>وضعیت</label><select class="inp"><option' + (p.status === 'pub' ? ' selected' : '') + '>منتشرشده</option><option' + (p.status === 'draft' ? ' selected' : '') + '>پیش‌نویس</option></select></div>' +
+      '<div class="fld"><label>نمای نقش‌ها</label><div class="chips">' + ['admin','teacher','student'].map(r => '<button type="button" class="chip' + (p.roles.includes(r) || p.roles.includes('all') ? ' on' : '') + '">' + roleLabel[r] + '</button>').join('') + '</div></div>' +
+      '</form><div class="side-note mt4">صفحه‌ای که برای نقش زبان‌آموز پنهان است، در منوی پنل او نمایش داده نمی‌شود؛ اما آدرس آن همچنان باز است، پس برای محتوای حساس از سطح دسترسی DataEntries استفاده کنید.</div></div>' +
+      '<div class="m-foot"><button class="btn btn-ghost btn-sm" data-close>انصراف</button><button class="btn btn-primary btn-sm" id="pg-save" data-id="' + p.id + '">ذخیره</button></div>'); 
+    document.getElementById('pg-save').addEventListener('click', () => { toast('صفحهٔ «' + p.title + '» ذخیره شد'); closeModal(); });
+    return;
+  }
+  const pt = e.target.closest('[data-pgtoggle]'); if (pt) {
+    const p = S.pages.find(x => x.id === pt.dataset.pgtoggle);
+    p.status = p.status === 'pub' ? 'draft' : 'pub'; save(); renderPages();
+    toast('«' + p.title + '» ' + (p.status === 'pub' ? 'منتشر شد' : 'به پیش‌نویس رفت')); return;
+  }
+  const mvu = e.target.closest('[data-mvmenu]');
+  if (mvu) { S.moved++; toast('ترتیب منو تغییر کرد (نمایشی)'); }
+});
+function renderMenuTree() {
+  document.getElementById('menuTree').innerHTML = S.pages.filter(p => p.menu !== '—').map(p =>
+    '<div class="tk' + (p.path.includes('/') && p.path !== '/' && p.path.split('/').length > 2 ? ' child' : '') + '">' +
+    '<span class="ln">' + ico(p.path.split('/').length > 2 ? 'file' : 'grid') + '</span>' +
+    '<b>' + p.title + '</b><span class="path">' + p.path + '</span>' +
+    '<span class="sp"><span class="bdg ' + (p.status === 'pub' ? 'ok' : 'warn') + '">' + pgStatus[p.status][1] + '</span>' +
+    '<span class="ord"><button data-mvmenu="up">' + ico('chev-up') + '</button><button data-mvmenu="dn">' + ico('chev-dn') + '</button></span></div>').join('');
+  paintIcons(document.getElementById('menuTree'));
+}
+
+/* ═══════════ ۷) گزارشات ═══════════ */
+const R1 = [
+  { c:'انگلیسی', l:'B2', n:10, sat:4.8, cont:4.7, tch:4.9, ans:9,  st:['good','رضایت بالا'] },
+  { c:'انگلیسی', l:'B1', n:18, sat:4.5, cont:4.3, tch:4.6, ans:16, st:['good','رضایت بالا'] },
+  { c:'انگلیسی', l:'A1', n:12, sat:4.3, cont:4.1, tch:4.5, ans:11, st:['ok','قابل قبول'] },
+  { c:'کامپیوتر', l:'A1', n:12, sat:4.6, cont:4.5, tch:4.7, ans:10, st:['good','رضایت بالا'] },
+  { c:'کامپیوتر', l:'B1', n:9,  sat:4.7, cont:4.8, tch:4.6, ans:9,  st:['good','رضایت بالا'] },
+  { c:'موسیقی',  l:'A2', n:7,  sat:4.9, cont:4.8, tch:5.0, ans:7,  st:['good','رضایت بالا'] },
+  { c:'موسیقی',  l:'A1', n:4,  sat:3.6, cont:3.2, tch:4.2, ans:0,  st:['bad','بدون بازخورد'] },
+  { c:'نقاشی',   l:'B1', n:6,  sat:4.4, cont:4.2, tch:4.6, ans:5,  st:['ok','قابل قبول'] }
+];
+const R2 = [
+  { n:'مریم کاظمی',   c:'انگلیسی',  avg:88.4, att:94, cont:24, ex:9,  sat:4.9, sc:96 },
+  { n:'نیلوفر حسینی', c:'انگلیسی',  avg:81.2, att:88, cont:18, ex:7,  sat:4.7, sc:89 },
+  { n:'حسین عباسی',   c:'موسیقی',   avg:84.6, att:92, cont:12, ex:4,  sat:4.8, sc:88 },
+  { n:'امیر کاظمی',   c:'کامپیوتر', avg:79.5, att:90, cont:15, ex:6,  sat:4.5, sc:84 },
+  { n:'زهرا صادقی',   c:'نقاشی',    avg:0,    att:0,  cont:0,  ex:0,  sat:0,   sc:41 }
+];
+const R4 = [
+  { c:'انگلیسی', l:'A1', t:'نیلوفر حسینی', les:12, vid:8,  pdf:6, ex:3, cover:88 },
+  { c:'انگلیسی', l:'A2', t:'نیلوفر حسینی', les:10, vid:6,  pdf:5, ex:2, cover:74 },
+  { c:'انگلیسی', l:'B1', t:'مریم کاظمی',   les:18, vid:14, pdf:9, ex:5, cover:96 },
+  { c:'انگلیسی', l:'B2', t:'مریم کاظمی',   les:16, vid:12, pdf:8, ex:4, cover:92 },
+  { c:'انگلیسی', l:'C1', t:'مریم کاظمی',   les:0,  vid:0,  pdf:0, ex:1, cover:8  },
+  { c:'کامپیوتر', l:'A1', t:'امیر کاظمی',  les:12, vid:9,  pdf:7, ex:3, cover:85 },
+  { c:'کامپیوتر', l:'B1', t:'امیر کاظمی',  les:14, vid:10, pdf:6, ex:4, cover:90 },
+  { c:'موسیقی',  l:'A2', t:'حسین عباسی',   les:9,  vid:7,  pdf:4, ex:2, cover:78 },
+  { c:'نقاشی',   l:'B1', t:'زهرا صادقی',   les:0,  vid:0,  pdf:0, ex:0, cover:0  }
+];
+const EXAMS = {
+  s1:[ {t:'آزمون گرامر — حال کامل',   attended:true,  r:9,  w:1, sc:9,  pass:true},
+       {t:'آزمون واژگان — درس ۱ تا ۵', attended:true,  r:18, w:2, sc:18, pass:true},
+       {t:'آزمون شنیداری میان‌ترم',     attended:false, r:0,  w:0, sc:0,  pass:false} ],
+  s2:[ {t:'آزمون گرامر — حال کامل',   attended:true,  r:10, w:0, sc:10, pass:true},
+       {t:'آزمون واژگان — درس ۱ تا ۵', attended:true,  r:20, w:0, sc:20, pass:true},
+       {t:'آزمون نوشتاری پیشرفته',      attended:true,  r:19, w:1, sc:19, pass:true} ],
+  s3:[ {t:'آزمون گرامر — حال کامل',   attended:true,  r:6,  w:4, sc:6,  pass:false},
+       {t:'آزمون واژگان — درس ۱ تا ۵', attended:false, r:0,  w:0, sc:0,  pass:false},
+       {t:'آزمون شنیداری میان‌ترم',     attended:false, r:0,  w:0, sc:0,  pass:false} ],
+  s4:[ {t:'آزمون واژگان — درس ۱ تا ۵', attended:false, r:0,  w:0, sc:0,  pass:false},
+       {t:'آزمون شنیداری میان‌ترم',     attended:false, r:0,  w:0, sc:0,  pass:false} ]
+};
+const FILTERS = {};
+document.querySelectorAll('[data-rf]').forEach(sel => {
+  sel.addEventListener('change', () => { FILTERS[sel.dataset.rf + ':' + [...document.querySelectorAll('[data-rf]')].indexOf(sel)] = sel.value; renderReports(); });
+});
+document.getElementById('r3q')?.addEventListener('input', renderReports);
+
+function renderReports() {
+  const pick = k => { const s = document.querySelector('select[data-rf="' + k + '"]'); return s ? s.value : ''; };
+  const r1 = R1.filter(r => (!pick('course') || r.c === pick('course')) && (!pick('level') || r.l === pick('level')));
+  document.getElementById('r1Body').innerHTML = r1.map(r => {
+    const st = { good:['ok','رخداد مثبت'], ok:['warn','قابل قبول'], bad:['bad','نیازمند اقدام'] }[r.st[0]];
+    return '<tr><td><b style="font-weight:800">' + r.c + '</b></td><td><span class="bdg grey en">' + r.l + '</span></td><td>' + fa(r.n) + ' نفر</td>' +
+      '<td><div class="mini-bar"><span class="pv">' + fa(r.sat.toFixed(1)) + '</span><span class="prog gold" style="max-width:88px"><i style="width:' + (r.sat / 5 * 100) + '%"></i></span></div></td>' +
+      '<td class="center">' + fa(r.cont.toFixed(1)) + '</td><td class="center">' + fa(r.tch.toFixed(1)) + '</td><td class="center">' + fa(r.ans) + '</td>' +
+      '<td class="end"><span class="bdg ' + st[0] + '">' + st[1] + '</span></td></tr>';
+  }).join('') || '<tr><td colspan="8"><div class="empty">گزارشی با این فیلترها نیست</div></td></tr>';
+
+  document.getElementById('r2Body').innerHTML = R2.map(t => '<tr><td><b style="font-weight:800">' + t.n + '</b></td><td>' + t.c + '</td>' +
+    '<td>' + (t.avg ? fa(t.avg) : '—') + '</td><td>' + fa(t.att) + '٪</td><td class="center">' + fa(t.cont) + ' وصله</td>' +
+    '<td class="center">' + fa(t.ex) + ' آزمون</td><td class="center">' + (t.sat ? fa(t.sat) + ' / ۵' : '—') + '</td>' +
+    '<td class="end"><span class="bdg ' + (t.sc >= 85 ? 'ok' : t.sc >= 60 ? 'warn' : 'bad') + '">' + fa(t.sc) + ' از ۱۰۰</span></td></tr>').join('');
+  document.getElementById('r2Rank').innerHTML = R2.slice().sort((a, b) => b.sc - a.sc).map((t, i) => '<div><span class="pv">' + fa(i + 1) + '</span><span style="flex:1">' + t.n + ' <span style="color:var(--muted);font-size:11px">— ' + t.c + '</span></span><b>' + fa(t.sc) + '</b></div>').join('') +
+    '<div class="hr" style="margin:4px 0"></div><div><span style="flex:1;color:var(--muted);font-size:11.5px">استادان برتر ترم: ۲ نفر با امتیاز بالای ۸۵</span></div>';
+
+  const lv = pick('level'), stf = pick('status'), q = (document.getElementById('r3q').value || '').trim();
+  const r3 = S.students.filter(s => (!lv || s.level === lv) && (!stf || s.status === stf) && (!q || s.name.includes(q)));
+  document.getElementById('r3Body').innerHTML = r3.map(s => {
+    const st = { good:['ok','عملکرد خوب'], warn:['warn','نیازمند پیگیری'], bad:['bad','هشدار'] }[s.status];
+    return '<tr><td><div class="who"><span class="av ' + avClass(s.avg) + '">' + initials(s.name) + '</span><div><b>' + s.name + '</b><span>' + s.course + '</span></div></div></td>' +
+      '<td><span class="bdg grey en">' + s.level + '</span></td>' +
+      '<td><div class="mini-bar"><span class="pv">' + fa(s.avg) + '</span><span class="prog ' + (s.avg >= 80 ? 'ok' : s.avg >= 60 ? 'warn' : 'bad') + '"><i style="width:' + s.avg + '%"></i></span></div></td>' +
+      '<td><div class="mini-bar"><span class="pv">' + pct(s.content) + '</span><span class="prog gold"><i style="width:' + s.content + '%"></i></span></div></td>' +
+      '<td><div class="mini-bar"><span class="pv">' + pct(s.attend) + '</span><span class="prog"><i style="width:' + s.attend + '%"></i></span></div></td>' +
+      '<td class="center"><span class="bdg ' + (s.exams === s.examsTotal ? 'ok' : s.exams ? 'warn' : 'bad') + '">' + fa(s.exams) + ' از ' + fa(s.examsTotal) + '</span></td>' +
+      '<td><span class="rate">' + ico('star') + fa(s.satisfy.toFixed(1)) + '</span></td>' +
+      '<td class="end"><span class="bdg ' + st[0] + '">' + st[1] + '</span></td></tr>';
+  }).join('') || '<tr><td colspan="8"><div class="empty">دانشجویی با این فیلترها نیست</div></td></tr>';
+  document.getElementById('r3Count').textContent = 'نمایش ' + fa(r3.length) + ' دانشجو از ' + fa(S.students.length) + ' — میانگین کل نمره ' + fa((r3.reduce((a, s) => a + s.avg, 0) / (r3.length || 1)).toFixed(1));
+  paintIcons(document.getElementById('r3Body'));
+
+  const r4 = R4.filter(r => !pick('course') || r.c === pick('course'));
+  document.getElementById('r4Body').innerHTML = r4.map(r => '<tr><td><b style="font-weight:800">' + r.c + '</b></td><td><span class="bdg grey en">' + r.l + '</span></td><td>' + r.t + '</td>' +
+    '<td class="center">' + fa(r.les) + '</td><td class="center">' + fa(r.vid) + '</td><td class="center">' + fa(r.pdf) + '</td><td class="center">' + fa(r.ex) + '</td>' +
+    '<td><div class="mini-bar"><span class="prog ' + (r.cover >= 80 ? 'ok' : r.cover >= 50 ? 'warn' : 'bad') + '"><i style="width:' + r.cover + '%"></i></span><span class="pv">' + pct(r.cover) + '</span></div></td></tr>').join('');
+  const tot = r4.reduce((a, r) => ({ les:a.les + r.les, vid:a.vid + r.vid, pdf:a.pdf + r.pdf, ex:a.ex + r.ex }), { les:0, vid:0, pdf:0, ex:0 });
+  const sum = tot.les + tot.vid + tot.pdf + tot.ex || 1;
+  const cols = [['درس متنی', tot.les, 'var(--navy)'], ['ویدیو', tot.vid, 'var(--navy-500)'], ['جزوهٔ PDF', tot.pdf, 'var(--sand)'], ['آزمون', tot.ex, 'var(--ok)']];
+  document.getElementById('r4Stk').innerHTML = cols.map(c => '<i style="width:' + (c[1] / sum * 100) + '%;background:' + c[2] + '"></i>').join('');
+  document.getElementById('r4Legend').innerHTML = cols.map(c => '<div><i style="background:' + c[2] + '"></i>' + c[0] + '<b>' + fa(c[1]) + '</b></div>').join('') +
+    '<div style="border-top:1px solid var(--line-cool);padding-top:9px"><i style="background:var(--navy-200)"></i>جمع کل وصله‌های محتوا<b>' + fa(sum) + '</b></div>';
+
+  renderR5();
+}
+
+/* گزارش ۵ — به تفکیک دانشجو */
+function renderR5() {
+  const sel = document.getElementById('r5Pick');
+  if (!sel.options.length) sel.innerHTML = S.students.map(s => '<option value="' + s.id + '">' + s.name + ' — ' + s.course + ' · سطح ' + s.level + '</option>').join('');
+  const s = S.students.find(x => x.id === sel.value) || S.students[0];
+  const ex = EXAMS[s.id] || EXAMS.s1;
+  document.getElementById('r5Kpis').innerHTML =
+    kpiMini('رضایت از دوره', fa(s.satisfy.toFixed(1)) + '<small>/ ۵</small>', 'star') +
+    kpiMini('محتوا سپری‌شده', pct(s.content), 'check-sq') +
+    kpiMini('میانگین نمره', fa(s.avg) + '<small>/ ۱۰۰</small>', 'target') +
+    kpiMini('شرکت در آزمون', fa(s.exams) + '<small> از ' + fa(s.examsTotal) + '</small>', 'clipboard');
+  const p = Math.round(s.content);
+  document.getElementById('r5Donut').style.background = 'conic-gradient(var(--ok) 0 ' + p + '%, #eef1f5 ' + p + '% 100%)';
+  document.getElementById('r5Donut').innerHTML = '<i><b>' + pct(p) + '</b><span>محتوا سپری‌شده</span></i>';
+  document.getElementById('r5Legend').innerHTML =
+    '<div><i style="background:var(--ok)"></i>محتوای سپری‌شده<b>' + pct(s.content) + '</b></div>' +
+    '<div><i style="background:#eef1f5"></i>محتوای باقی‌مانده<b>' + pct(100 - s.content) + '</b></div>' +
+    '<div><i style="background:var(--sand)"></i>حضور در کلاس<b>' + pct(s.attend) + '</b></div>' +
+    '<div><i style="background:var(--navy)"></i>رضایت اعلام‌شده<b>' + fa(s.satisfy.toFixed(1)) + ' / ۵</b></div>';
+  document.getElementById('r5Exams').innerHTML = ex.map(e => '<tr><td>' + e.t + '</td>' +
+    '<td class="center"><span class="bdg ' + (e.attended ? 'ok' : 'bad') + '">' + (e.attended ? 'شرکت کرده' : 'شرکت نکرده') + '</span></td>' +
+    '<td class="center">' + (e.attended ? fa(e.r) : '—') + '</td><td class="center">' + (e.attended ? fa(e.w) : '—') + '</td>' +
+    '<td class="center"><b style="font-weight:900;color:var(--navy)">' + (e.attended ? fa(e.sc) : '—') + '</b></td>' +
+    '<td class="end">' + (e.attended ? '<span class="bdg ' + (e.pass ? 'ok' : 'bad') + '">' + (e.pass ? 'قبول' : 'رد') + '</span>' : '<span class="bdg grey">غایب</span>') + '</td></tr>').join('');
+}
+document.getElementById('r5Pick').addEventListener('change', renderR5);
+
+/* ═══════════ ۸) داشبورد ═══════════ */
+const SAT = [
+  { m:'مهر', v:4.4 }, { m:'آبان', v:4.5 }, { m:'آذر', v:4.6 },
+  { m:'دی', v:4.5 }, { m:'بهمن', v:4.7 }, { m:'اسفند', v:4.7 }
+];
+document.getElementById('segSatisfy').addEventListener('click', e => {
+  const b = e.target.closest('button[data-sat]'); if (!b) return;
+  document.querySelectorAll('#segSatisfy button').forEach(x => x.classList.toggle('on', x === b));
+  renderBars(b.dataset.sat); toast('نمای رضایت: ' + b.textContent);
+});
+function renderBars(key) {
+  const shift = { all: 0, en: -0.1, comp: 0.05, music: 0.2 }[key] || 0;
+  document.getElementById('barsSatisfy').innerHTML = SAT.map(x => {
+    const v = Math.min(5, x.v + shift);
+    return '<div class="barw"><div class="bar" style="height:' + (v / 5 * 100) + '%"></div><span>' + x.m + ' · ' + fa(v.toFixed(1)) + '</span></div>';
+  }).join('');
+}
+function renderDonut() {
+  const n = S.users.length;
+  document.getElementById('donutUsersN').textContent = fa(n);
+  document.getElementById('kpiUsers').textContent = fa(n);
+  const roles = [['زبان‌آموز', S.users.filter(u => u.role === 'student').length, 'var(--navy)'],
+                 ['استاد', S.users.filter(u => u.role === 'teacher').length, 'var(--sand)'],
+                 ['مدیر آموزشگاه', S.users.filter(u => u.role === 'admin').length, 'var(--navy-500)']];
+  let acc = 0;
+  const g = roles.map(r => { const from = acc; acc += r[1] / n * 100; return r[2] + ' ' + from + '% ' + acc + '%'; }).join(', ');
+  const d = document.getElementById('donutUsers');
+  d.style.background = 'conic-gradient(' + g + ')';
+  document.getElementById('legendUsers').innerHTML = roles.map(r => '<div><i style="background:' + r[2] + '"></i>' + r[0] + '<b>' + fa(r[1]) + '</b></div>').join('');
+}
+function renderRecent() {
+  document.getElementById('recentRows').innerHTML = S.entsData.slice(0, 5).map(d => '<div class="row"><span class="av ' + d.av + '">' + initials(d.ent) + '</span>' +
+    '<span class="rb"><b>' + d.title + '</b><span class="tl-meta">' + ico('list') + 'موجودیت ' + d.ent + ' · ثبت‌کننده: ' + d.by + '</span></span>' +
+    '<span class="re"><span class="bdg grey">' + d.t + '</span></span></div>').join('');
+  paintIcons(document.getElementById('recentRows'));
+}
+function renderDash() {
+  document.getElementById('kpiClasses').textContent = fa(S.classes.filter(c => c.status === 'active').length);
+  document.getElementById('kpiTeachers').textContent = fa(S.teachers.filter(t => t.status === 'active').length);
+  renderDonut(); renderBars('all'); renderRecent();
+}
+
+/* ═══════════ ۹) تنظیمات و ابزارها ═══════════ */
+document.getElementById('btnSeed').addEventListener('click', () => {
+  S = JSON.parse(JSON.stringify(seed)); save(); renderAll(); toast('داده‌های نمونه بازنشانی شد');
+});
+document.getElementById('gSearch').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.value.trim()) {
+    const q = e.target.value.trim();
+    const uHit = S.users.find(u => u.name.includes(q));
+    if (uHit) { go('users'); document.getElementById('uq').value = q; renderUsers(); toast('کاربر «' + uHit.name + '» یافت شد'); }
+    else { toast('نتیجه‌ای برای «' + q + '» در کاربران نبود؛ در موجودیت‌ها جستجو شد'); }
+  }
+});
+
+/* ═══════════ اجرا ═══════════ */
+function renderAll() { renderUsers(); renderTeachers(); renderClasses(); renderSchedule(); renderEnts(); renderPages(); renderMenuTree(); renderReports(); renderDash(); paintIcons(document); }
+renderAll();
+go(h.get('pg') || 'dash');
+const m = h.get('modal');
+if (m) { const [k, v] = m.split(':'); if (k === 'perm') permModal(v); else if (k === 'class') classForm(null, v); else if (k === 'user') userForm(v); else if (k === 'del') { const u = S.users.find(x => x.id === v); if (u) document.querySelector('[data-del="' + v + '"]')?.click(); } }
+
+/* ---------- نمایش خطاهای اعتبارسنجی با پارامتر demo (برای بازبینی) ---------- */
+const dm = h.get('demo');
+if (dm === 'pending') { classForm(null, 't5'); setTimeout(() => document.getElementById('c-save').click(), 300); }
+if (dm === 'timeerr') { classForm('c1'); setTimeout(() => { document.getElementById('c-start').value = '۱۹:۳۰'; document.getElementById('c-end').value = '۱۷:۰۰'; document.getElementById('c-save').click(); }, 300); }
+if (dm === 'coursec') { classForm('c5'); setTimeout(() => { document.getElementById('c-teacher').value = 't1'; document.getElementById('c-save').click(); }, 300); }
 </script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
 </body>

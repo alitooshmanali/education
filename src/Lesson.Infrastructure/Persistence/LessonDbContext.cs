@@ -29,6 +29,9 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
     public DbSet<QuizRetakeGrant> QuizRetakeGrants => Set<QuizRetakeGrant>();
     public DbSet<ContentFeedback> ContentFeedbacks => Set<ContentFeedback>();
     public DbSet<TeacherLevel> TeacherLevels => Set<TeacherLevel>();
+    public DbSet<ClassRoom> ClassRooms => Set<ClassRoom>();
+    public DbSet<ClassScheduleDay> ClassScheduleDays => Set<ClassScheduleDay>();
+    public DbSet<ContentStudentAccess> ContentStudentAccesses => Set<ContentStudentAccess>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -54,7 +57,45 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
             b.HasIndex(x => x.Level);
         });
 
-        // ---- LessonContent ----
+        
+        // ---- ClassRoom ----
+        modelBuilder.Entity<ClassRoom>(b =>
+        {
+            b.ToTable("ClassRooms");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Code).HasMaxLength(64).IsRequired();
+            b.Property(x => x.Title).HasMaxLength(300).IsRequired();
+            b.Property(x => x.Subject).HasConversion<int>();
+            b.Property(x => x.Level).HasConversion<int>();
+            b.Property(x => x.Status).HasConversion<int>();
+            b.HasIndex(x => x.Code);
+            b.HasIndex(x => x.TeacherId);
+            b.HasOne(x => x.Teacher)
+                .WithMany()
+                .HasForeignKey(x => x.TeacherId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        modelBuilder.Entity<ClassScheduleDay>(b =>
+        {
+            b.ToTable("ClassScheduleDays");
+            b.HasKey(x => new { x.ClassId, x.DayOfWeek });
+
+        modelBuilder.Entity<ContentStudentAccess>(b =>
+        {
+            b.ToTable("ContentStudentAccesses");
+            b.HasKey(x => new { x.ContentId, x.UserId });
+            b.HasOne(x => x.Content).WithMany(c => c.StudentAccesses).HasForeignKey(x => x.ContentId).OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(x => x.User).WithMany().HasForeignKey(x => x.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+            b.HasOne(x => x.Class)
+                .WithMany(c => c.ScheduleDays)
+                .HasForeignKey(x => x.ClassId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+// ---- LessonContent ----
         modelBuilder.Entity<LessonContent>(b =>
         {
             b.ToTable("Contents");

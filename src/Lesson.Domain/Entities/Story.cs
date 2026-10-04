@@ -21,6 +21,11 @@ public sealed class Story : BaseEntity
     public long FolderId { get; set; }
     public Folder? Folder { get; set; }
 
+    public long? ClassId { get; set; }
+    public ClassRoom? Class { get; set; }
+    public long? CreatedByUserId { get; set; }
+    public User? CreatedByUser { get; set; }
+
     public LanguageLevel Level { get; set; }
 
     public ICollection<ContentProgress> ProgressRecords { get; set; } = new List<ContentProgress>();

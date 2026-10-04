@@ -95,7 +95,8 @@ public sealed class QuizService : IQuizService
             IsLevelWide = request.Type == QuizType.General || request.IsLevelWide,
             TimeLimitMinutes = request.TimeLimitMinutes,
             TotalScore = request.TotalScore,
-            FolderId = request.FolderId
+            FolderId = request.FolderId,
+            ClassId = request.ClassId
         };
 
         foreach (var qr in request.Questions.OrderBy(x => x.SortOrder))
@@ -419,12 +420,16 @@ public sealed class QuizService : IQuizService
         {
             if (q.Options is null || q.Options.Count < 2)
                 throw new InvalidOperationException("هر سؤال باید حداقل ۲ گزینه داشته باشد.");
+            if (q.Options.Count > 4)
+                throw new InvalidOperationException("هر سؤال حداکثر ۴ گزینه می‌تواند داشته باشد.");
             if (q.Options.Count(o => o.IsCorrect) != 1)
                 throw new InvalidOperationException("هر سؤال باید دقیقاً یک پاسخ صحیح داشته باشد.");
         }
 
         var sumScores = request.Questions.Sum(q => q.Score);
-        if (sumScores != request.TotalScore)
-            throw new InvalidOperationException($"مجموع نمره سؤالات ({sumScores}) باید برابر نمره کل آزمون ({request.TotalScore}) باشد.");
+        if (sumScores > request.TotalScore)
+            throw new InvalidOperationException($"مجموع نمره سؤالات ({sumScores}) نمی‌تواند از نمره کل آزمون ({request.TotalScore}) بیشتر باشد.");
+        if (sumScores <= 0)
+            throw new InvalidOperationException("مجموع نمره سؤالات باید بیشتر از صفر باشد.");
     }
 }

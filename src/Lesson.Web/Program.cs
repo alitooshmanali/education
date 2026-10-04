@@ -1,3 +1,4 @@
+using Lesson.Web.Services;
 using Lesson.Domain.Enums;
 using Lesson.Infrastructure.Abstractions;
 using Lesson.Infrastructure.Options;
@@ -48,6 +49,9 @@ builder.Services.AddScoped<IContentStreamingService, ContentStreamingService>();
 builder.Services.AddScoped<IStoryService, StoryService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+builder.Services.AddScoped<IClassService, ClassService>();
+builder.Services.AddScoped<ITeacherWorkspaceService, TeacherWorkspaceService>();
+builder.Services.AddScoped<TeacherSessionState>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
