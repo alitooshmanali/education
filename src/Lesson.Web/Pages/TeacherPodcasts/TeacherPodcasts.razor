@@ -7,11 +7,10 @@
 
 <section class="page">
     <PageHeader Title="پادکست‌ها" Subtitle="مشابه ویدیو: پوشه + دسترسی پیش‌فرض همه؛ امکان محدودسازی برای هر دانش‌آموز." />
-    <TeacherClassSelector />
-
+    
     @if (Session.SelectedClassId is null)
     {
-        <div class="card pad"><p class="muted">کلاس را انتخاب کنید.</p></div>
+        <div class="card pad"><p class="muted">از هدر بالا سطح و کلاس را انتخاب کنید.</p></div>
     }
     else
     {

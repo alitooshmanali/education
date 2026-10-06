@@ -7,11 +7,10 @@
 
 <section class="page">
     <PageHeader Title="پوشه‌بندی محتوا" Subtitle="می‌توانید چند پوشه بسازید تا بخشی از دانش‌آموزان فقط پوشهٔ خاص را ببینند (با دسترسی پوشه)." />
-    <TeacherClassSelector />
-
+    
     @if (Session.SelectedClassId is null)
     {
-        <div class="card pad"><p class="muted">کلاس را انتخاب کنید.</p></div>
+        <div class="card pad"><p class="muted">از هدر بالا سطح و کلاس را انتخاب کنید.</p></div>
     }
     else
     {

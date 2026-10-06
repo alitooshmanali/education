@@ -3,124 +3,357 @@
 @inject IUserService Users
 @inject IContentService Contents
 @inject IFolderService Folders
-@inject IPermissionService Permissions
 @inject IFeedbackService Feedbacks
 @inject IQuizService Quizzes
 @inject IClassService Classes
 
-<PageHeader Eyebrow="Admin" Title="داشبورد مدیریت" Subtitle="کلاس‌ها و مدرسان را ادمین تعریف می‌کند؛ محتوا و آزمون را مدرس هر کلاس." />
+<style>
+    .admin-dash { max-width: 1400px; width: 100%; box-sizing: border-box; }
+    .admin-dash__head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+    .admin-dash__eyebrow { margin: 0; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; color: #6B7787; text-transform: uppercase; }
+    .admin-dash__title { margin: 4px 0 6px; font-size: 28px; font-weight: 900; color: #132133; }
+    .admin-dash__sub { margin: 0; color: #6B7787; font-size: 13.5px; max-width: 520px; }
+    .admin-dash__actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
-<div class="toolbar" style="margin-bottom:20px;display:flex;flex-wrap:wrap;gap:10px">
-    <a class="btn btn-primary" href="/admin/classes">کلاس‌ها</a>
-    <a class="btn btn-secondary" href="/admin/teachers">مدرسان</a>
-    <a class="btn btn-secondary" href="/admin/schedule">برنامهٔ هفتگی</a>
-    <a class="btn btn-ghost" href="/admin/users">کاربران</a>
-    <a class="btn btn-ghost" href="/site/platform-admin.html">UI کامل ادمین</a>
-</div>
+    .admin-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 18px; width: 100%; }
+    .admin-kpi { background: #fff; border: 1px solid #E6E1D6; border-radius: 16px; padding: 18px 20px; box-shadow: 0 2px 8px rgba(10,43,81,.05); position: relative; overflow: hidden; min-width: 0; }
+    .admin-kpi::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, #0A2B51, #D1AB7B); }
+    .admin-kpi__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .admin-kpi__label { font-size: 12.5px; font-weight: 700; color: #6B7787; }
+    .admin-kpi__icon { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: #eef3fa; font-size: 16px; flex-shrink: 0; }
+    .admin-kpi__value { font-size: 28px; font-weight: 900; color: #0A2B51; line-height: 1.25; }
+    .admin-kpi__value small { font-size: 13px; font-weight: 600; color: #6B7787; margin-inline-start: 4px; }
+    .admin-kpi__meta { font-size: 11.5px; color: #6B7787; margin-top: 6px; }
 
-<section class="grid stats">
-    <div class="stat-card">
-        <div class="stat-label">کاربران</div>
-        <div class="stat-value">@_users</div>
-        <div class="stat-hint">کل حساب‌های فعال</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-label">محتوا</div>
-        <div class="stat-value">@_contents</div>
-        <div class="stat-hint">فایل‌های بارگذاری‌شده</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-label">گروه‌ها</div>
-        <div class="stat-value">@_folders</div>
-        <div class="stat-hint">گروه‌های منطقی</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-label">آزمون‌ها</div>
-        <div class="stat-value">@_quizzes</div>
-        <div class="stat-hint">آزمون‌های تعریف‌شده</div>
-    </div>
-</section>
+    .admin-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; width: 100%; }
+    .admin-card { background: #fff; border: 1px solid #E6E1D6; border-radius: 16px; box-shadow: 0 2px 8px rgba(10,43,81,.05); overflow: hidden; min-width: 0; }
+    .admin-card__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #E6E1D6; }
+    .admin-card__head h2 { margin: 0; font-size: 15px; font-weight: 800; }
+    .admin-card__badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #eef3fa; color: #0A2B51; }
+    .admin-card__badge.warn { background: #fdf3e3; color: #a16207; }
+    .admin-card__body { padding: 18px 20px; }
 
-@if (_satisfaction is not null)
-{
-    <section class="grid two-col panel-spaced">
-        <div class="panel pad gauge-card">
-            <h3>رضایت دانشجویان</h3>
-            <div class="gauge" style="--pct: @(_satisfaction.SatisfactionPercent)">
-                <span>@_satisfaction.SatisfactionPercent%</span>
-            </div>
-            <p class="gauge-meta">
-                میانگین امتیاز: @_satisfaction.AverageRating از ۵
-                · @_satisfaction.TotalCount نظر
-            </p>
-            <p class="hint">
-                راضی: @_satisfaction.SatisfiedCount ·
-                خنثی: @_satisfaction.NeutralCount ·
-                ناراضی: @_satisfaction.DissatisfiedCount
-            </p>
+    .admin-roles { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+    .admin-donut { width: 140px; height: 140px; min-width: 140px; min-height: 140px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
+    .admin-donut__hole { width: 88px; height: 88px; border-radius: 50%; background: #fff; display: grid; place-items: center; text-align: center; }
+    .admin-donut__hole b { font-size: 22px; font-weight: 900; color: #0A2B51; line-height: 1.2; }
+    .admin-donut__hole span { font-size: 11px; color: #6B7787; }
+    .admin-legend { display: flex; flex-direction: column; gap: 10px; font-size: 13px; flex: 1; min-width: 140px; }
+    .admin-legend div { display: flex; align-items: center; gap: 8px; }
+    .admin-legend i { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; display: inline-block; }
+    .admin-legend b { margin-inline-start: auto; font-weight: 800; color: #0A2B51; }
+
+    .admin-sat { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+    .admin-sat__gauge { width: 120px; height: 120px; min-width: 120px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; background: conic-gradient(#0f7a57 0 calc(var(--pct, 0) * 1%), #eef1f5 0); }
+    .admin-sat__gauge span { width: 78px; height: 78px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-weight: 900; font-size: 18px; color: #0A2B51; }
+    .admin-sat__detail { flex: 1; min-width: 180px; font-size: 13px; color: #6B7787; }
+    .admin-sat__detail p { margin: 0 0 6px; }
+    .admin-sat__bars { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .admin-sat__row { display: grid; grid-template-columns: 48px 1fr 28px; gap: 8px; align-items: center; font-size: 12px; }
+    .admin-sat__row .bar { height: 7px; border-radius: 99px; background: #eef1f5; overflow: hidden; }
+    .admin-sat__row .bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #1a9c72, #0f7a57); }
+    .admin-sat__row .bar.warn i { background: linear-gradient(90deg, #c58a1f, #a16207); }
+    .admin-sat__row .bar.bad i { background: linear-gradient(90deg, #d4614f, #c0392b); }
+    .admin-sat__row b { text-align: end; font-weight: 800; color: #0A2B51; }
+
+    .admin-tasks { display: flex; flex-direction: column; gap: 10px; }
+    .admin-task { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid #E6E1D6; background: #fcfbf8; }
+    .admin-task.warn { background: #fdf3e3; border-color: #f0e0c0; }
+    .admin-task.info { background: #eef3fa; border-color: #d5e0ef; }
+    .admin-task b { display: block; font-size: 13px; font-weight: 800; margin-bottom: 2px; }
+    .admin-task span { font-size: 12px; color: #6B7787; }
+
+    .admin-mini-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .admin-mini-stats div { background: #f8f6f1; border-radius: 12px; padding: 12px; text-align: center; }
+    .admin-mini-stats span { display: block; font-size: 11px; color: #6B7787; margin-bottom: 4px; }
+    .admin-mini-stats b { font-size: 20px; font-weight: 900; color: #0A2B51; }
+
+    .admin-quick-links { display: flex; flex-wrap: wrap; gap: 8px; }
+    .admin-quick-links a { font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 999px; background: #eef3fa; color: #0A2B51; text-decoration: none; }
+
+    .admin-feedback-list { display: flex; flex-direction: column; }
+    .admin-feedback-row { padding: 12px 0; border-bottom: 1px solid #E6E1D6; }
+    .admin-feedback-row:last-child { border-bottom: 0; }
+    .admin-feedback-row > div { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+    .admin-feedback-row b { font-size: 13px; }
+    .admin-feedback-row span { font-size: 12px; color: #6B7787; }
+    .admin-feedback-row p { margin: 0; font-size: 13px; color: #6B7787; }
+    .admin-empty { margin: 0; color: #6B7787; font-size: 13.5px; }
+
+    @@media (max-width: 1100px) {
+        .admin-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .admin-grid-2 { grid-template-columns: 1fr; }
+    }
+    @@media (max-width: 560px) {
+        .admin-kpis { grid-template-columns: 1fr; }
+        .admin-mini-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+</style>
+
+
+<section class="admin-dash">
+    <div class="admin-dash__head">
+        <div>
+            <p class="admin-dash__eyebrow">ADMIN</p>
+            <h1 class="admin-dash__title">داشبورد مدیریت</h1>
+            <p class="admin-dash__sub">کلاس‌ها و مدرسان را ادمین تعریف می‌کند؛ محتوا و آزمون را مدرس هر کلاس.</p>
         </div>
-        <div class="panel pad">
-            <h3>آخرین نظرات</h3>
-            @if (_recentFeedback.Any())
+        <div class="admin-dash__actions">
+            <a class="btn btn-primary" href="/admin/classes">کلاس‌ها</a>
+            <a class="btn btn-secondary" href="/admin/teachers">مدرسان</a>
+            <a class="btn btn-secondary" href="/admin/schedule">برنامهٔ هفتگی</a>
+            <a class="btn btn-ghost" href="/admin/users">کاربران</a>
+        </div>
+    </div>
+
+    <div class="admin-kpis">
+        <article class="admin-kpi">
+            <div class="admin-kpi__top">
+                <span class="admin-kpi__label">کاربران سیستم</span>
+                <span class="admin-kpi__icon">👤</span>
+            </div>
+            <div class="admin-kpi__value">@_usersTotal</div>
+            <div class="admin-kpi__meta">فعال: @_usersActive · غیرفعال: @_usersInactive</div>
+        </article>
+        <article class="admin-kpi">
+            <div class="admin-kpi__top">
+                <span class="admin-kpi__label">کلاس‌های فعال</span>
+                <span class="admin-kpi__icon">📚</span>
+            </div>
+            <div class="admin-kpi__value">@_classesActive</div>
+            <div class="admin-kpi__meta">بدون مدرس: @_classesNoTeacher · تکمیل ظرفیت: @_classesFull</div>
+        </article>
+        <article class="admin-kpi">
+            <div class="admin-kpi__top">
+                <span class="admin-kpi__label">استادان</span>
+                <span class="admin-kpi__icon">🎓</span>
+            </div>
+            <div class="admin-kpi__value">@_teachersActive</div>
+            <div class="admin-kpi__meta">کل نقش مدرس: @_teachersTotal</div>
+        </article>
+        <article class="admin-kpi">
+            <div class="admin-kpi__top">
+                <span class="admin-kpi__label">رضایت از دوره‌ها</span>
+                <span class="admin-kpi__icon">⭐</span>
+            </div>
+            <div class="admin-kpi__value">@(_satisfaction?.AverageRating.ToString("0.0") ?? "—")<small>/ ۵</small></div>
+            <div class="admin-kpi__meta">@_satCount نظر · رضایت @_satPercent٪</div>
+        </article>
+    </div>
+
+    <div class="admin-grid-2">
+        <article class="admin-card">
+            <header class="admin-card__head">
+                <h2>ترکیب نقش کاربران</h2>
+                <span class="admin-card__badge">@_usersTotal کاربر</span>
+            </header>
+            <div class="admin-card__body admin-roles">
+                <div class="admin-donut" style="background: @_donutGradient">
+                    <div class="admin-donut__hole">
+                        <b>@_usersActive</b>
+                        <span>فعال</span>
+                    </div>
+                </div>
+                <div class="admin-legend">
+                    <div><i style="background:#0A2B51"></i>زبان‌آموز <b>@_students</b></div>
+                    <div><i style="background:#D1AB7B"></i>استاد <b>@_teachersTotal</b></div>
+                    <div><i style="background:#1c4d85"></i>مدیر <b>@_admins</b></div>
+                </div>
+            </div>
+        </article>
+
+        <article class="admin-card">
+            <header class="admin-card__head">
+                <h2>رضایت دانشجویان</h2>
+            </header>
+            <div class="admin-card__body admin-sat">
+                <div class="admin-sat__gauge" style="--pct:@_satPercent">
+                    <span>@_satPercent٪</span>
+                </div>
+                <div class="admin-sat__detail">
+                    <p>میانگین امتیاز: <b>@(_satisfaction?.AverageRating.ToString("0.0") ?? "0")</b> از ۵</p>
+                    <p>@_satCount نظر ثبت‌شده</p>
+                    <div class="admin-sat__bars">
+                        <div class="admin-sat__row"><span>راضی</span><div class="bar"><i style="width:@_pctSatisfied%"></i></div><b>@_satisfied</b></div>
+                        <div class="admin-sat__row"><span>خنثی</span><div class="bar warn"><i style="width:@_pctNeutral%"></i></div><b>@_neutral</b></div>
+                        <div class="admin-sat__row"><span>ناراضی</span><div class="bar bad"><i style="width:@_pctDissatisfied%"></i></div><b>@_dissatisfied</b></div>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <div class="admin-grid-2">
+        <article class="admin-card">
+            <header class="admin-card__head">
+                <h2>کارهای در انتظار مدیر</h2>
+                <span class="admin-card__badge warn">@_pendingCount مورد</span>
+            </header>
+            <div class="admin-card__body admin-tasks">
+                @if (_pending.Count == 0)
+                {
+                    <p class="admin-empty">مورد معلقی نیست.</p>
+                }
+                else
+                {
+                    @foreach (var t in _pending)
+                    {
+                        <div class="admin-task @t.Tone">
+                            <div>
+                                <b>@t.Title</b>
+                                <span>@t.Detail</span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(t.Href))
+                            {
+                                <a class="btn btn-sm btn-ghost" href="@t.Href">مشاهده</a>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        </article>
+
+        <article class="admin-card">
+            <header class="admin-card__head">
+                <h2>وضعیت محتوا و آزمون</h2>
+            </header>
+            <div class="admin-card__body">
+                <div class="admin-mini-stats">
+                    <div><span>محتوا</span><b>@_contents</b></div>
+                    <div><span>پوشه</span><b>@_folders</b></div>
+                    <div><span>آزمون</span><b>@_quizzes</b></div>
+                    <div><span>کلاس کل</span><b>@_classesTotal</b></div>
+                </div>
+                <div class="admin-quick-links">
+                    <a href="/admin/classes">مدیریت کلاس‌ها</a>
+                    <a href="/admin/teachers">مدرسان و سطوح</a>
+                    <a href="/admin/schedule">برنامهٔ هفتگی</a>
+                    <a href="/admin/users">کاربران و نقش‌ها</a>
+                    <a href="/admin/permissions">دسترسی‌ها</a>
+                    <a href="/admin/audit">لاگ‌ها</a>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <article class="admin-card">
+        <header class="admin-card__head">
+            <h2>آخرین نظرات</h2>
+        </header>
+        <div class="admin-card__body">
+            @if (_recentFeedback.Count == 0)
             {
-                <div class="panel-stack">
+                <p class="admin-empty">هنوز نظری ثبت نشده است.</p>
+            }
+            else
+            {
+                <div class="admin-feedback-list">
                     @foreach (var f in _recentFeedback.Take(8))
                     {
-                        <div class="toolbar" style="justify-content:space-between;border-bottom:1px solid var(--color-border);padding-bottom:8px">
+                        <div class="admin-feedback-row">
                             <div>
-                                <strong>@f.Username</strong>
-                                <span class="hint"> · @f.TargetType #@f.TargetId</span>
-                                @if (!string.IsNullOrWhiteSpace(f.Comment))
-                                {
-                                    <p style="margin:4px 0 0;font-size:13px">@f.Comment</p>
-                                }
+                                <b>@(f.Username ?? "کاربر")</b>
+                                <span>امتیاز @f.Rating از ۵</span>
                             </div>
-                            <StatusBadge Text="@($"{f.Rating}/5")" Tone="@(f.Rating >= 4 ? "success" : f.Rating <= 2 ? "error" : "warning")" />
+                            <p>@(string.IsNullOrWhiteSpace(f.Comment) ? "—" : f.Comment)</p>
                         </div>
                     }
                 </div>
             }
-            else
-            {
-                <p class="hint">هنوز نظری ثبت نشده است.</p>
-            }
         </div>
-    </section>
-}
-
-<section class="panel pad panel-spaced">
-    <h3>راهنمای سریع</h3>
-    <ul class="admin-guide">
-        <li>هر دانشجو دقیقاً یک سطح (A1–C2) دارد</li>
-        <li>هر پوشه متعلق به یک سطح است</li>
-        <li>هنگام آپلود ویدیو، Folder و Level(ها) را مشخص کنید</li>
-        <li>آزمون‌ها: مقدمه + آماده هستم + شمارنده + بازخورد فوری</li>
-        <li>هر دانشجو یک‌بار در آزمون شرکت می‌کند مگر مجوز مجدد ادمین</li>
-    </ul>
+    </article>
 </section>
 
 @code {
-    private int _users;
-    private int _contents;
-    private int _folders;
-    private int _quizzes;
+    private sealed record PendingItem(string Title, string Detail, string Tone, string? Href);
+
+    private int _usersTotal, _usersActive, _usersInactive;
+    private int _students, _teachersTotal, _teachersActive, _admins;
+    private int _classesTotal, _classesActive, _classesNoTeacher, _classesFull;
+    private int _contents, _folders, _quizzes;
     private SatisfactionSummaryDto? _satisfaction;
     private IReadOnlyList<FeedbackDto> _recentFeedback = [];
+    private List<PendingItem> _pending = new();
+
+    private int _satPercent, _satCount, _satisfied, _neutral, _dissatisfied;
+    private int _pctSatisfied, _pctNeutral, _pctDissatisfied;
+    private int _pendingCount;
+    private string _donutGradient = "conic-gradient(#eef1f5 0 100%)";
 
     protected override async Task OnInitializedAsync()
     {
         var allUsers = await Users.GetAllAsync();
-        _users = allUsers.Count(u => u.IsActive);
+        _usersTotal = allUsers.Count;
+        _usersActive = allUsers.Count(u => u.IsActive);
+        _usersInactive = _usersTotal - _usersActive;
+        _students = allUsers.Count(u => u.Role == UserRole.Student);
+        _teachersTotal = allUsers.Count(u => u.Role == UserRole.Teacher);
+        _teachersActive = allUsers.Count(u => u.Role == UserRole.Teacher && u.IsActive);
+        _admins = allUsers.Count(u => u.Role == UserRole.Admin);
 
-        var allContents = await Contents.GetAllAsync();
-        _contents = allContents.Count;
+        var classes = await Classes.GetAllAsync();
+        _classesTotal = classes.Count;
+        _classesActive = classes.Count(c => c.Status == ClassStatus.Active);
+        _classesNoTeacher = classes.Count(c => c.Status == ClassStatus.NoTeacher || c.TeacherId is null);
+        _classesFull = classes.Count(c => c.Status == ClassStatus.Full);
 
+        _contents = (await Contents.GetAllAsync()).Count;
         var tree = await Folders.GetTreeAsync();
         _folders = CountFolders(tree);
-
         _quizzes = (await Quizzes.GetAllAsync()).Count;
+
         _satisfaction = await Feedbacks.GetSatisfactionSummaryAsync();
         _recentFeedback = await Feedbacks.GetAllAsync();
+
+        if (_satisfaction is not null)
+        {
+            _satPercent = (int)Math.Round(_satisfaction.SatisfactionPercent);
+            _satCount = _satisfaction.TotalCount;
+            _satisfied = _satisfaction.SatisfiedCount;
+            _neutral = _satisfaction.NeutralCount;
+            _dissatisfied = _satisfaction.DissatisfiedCount;
+            var t = Math.Max(1, _satCount);
+            _pctSatisfied = (int)Math.Round(100.0 * _satisfied / t);
+            _pctNeutral = (int)Math.Round(100.0 * _neutral / t);
+            _pctDissatisfied = (int)Math.Round(100.0 * _dissatisfied / t);
+        }
+
+        BuildDonut();
+        BuildPending(classes);
+    }
+
+    private void BuildDonut()
+    {
+        var n = Math.Max(1, _usersTotal);
+        var pStudent = 100.0 * _students / n;
+        var pTeacher = 100.0 * _teachersTotal / n;
+        var a = 0.0;
+        var b = a + pStudent;
+        var c = b + pTeacher;
+        _donutGradient =
+            $"conic-gradient(#0A2B51 0 {b:0.##}%, #D1AB7B {b:0.##}% {c:0.##}%, #1c4d85 {c:0.##}% 100%)";
+    }
+
+    private void BuildPending(IReadOnlyList<ClassRoomDto> classes)
+    {
+        _pending = new List<PendingItem>();
+        foreach (var c in classes.Where(x => x.TeacherId is null && x.Status != ClassStatus.Inactive).Take(5))
+        {
+            _pending.Add(new PendingItem(
+                $"کلاس بدون مدرس: {c.Code}",
+                $"{c.Title} · سطح {c.Level}",
+                "warn",
+                "/admin/classes"));
+        }
+        foreach (var c in classes.Where(x => x.Status == ClassStatus.Full).Take(3))
+        {
+            _pending.Add(new PendingItem(
+                $"ظرفیت تکمیل: {c.Code}",
+                $"{c.EnrolledCount}/{c.Capacity} · {c.Title}",
+                "info",
+                "/admin/classes"));
+        }
+        _pendingCount = _pending.Count;
     }
 
     private static int CountFolders(IReadOnlyList<FolderNodeDto> nodes)

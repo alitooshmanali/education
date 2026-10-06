@@ -3,19 +3,61 @@
 @inject IUserService Users
 @inject IClassService Classes
 
-<section class="page">
-    <PageHeader Title="مدرسان" Subtitle="هر مدرس می‌تواند چند کلاس در سطوح مختلف داشته باشد؛ تداخل زمانی مجاز نیست." />
+<style>
+    .tch { max-width: 1400px; width: 100%; }
+    .tch__head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px; margin-bottom: 20px; align-items: flex-start; }
+    .tch__eyebrow { margin: 0; font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: #6B7787; text-transform: uppercase; }
+    .tch__title { margin: 4px 0 6px; font-size: 26px; font-weight: 900; color: #132133; }
+    .tch__sub { margin: 0; color: #6B7787; font-size: 13.5px; max-width: 480px; }
+    .tch-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .tch-kpi { background: #fff; border: 1px solid #E6E1D6; border-radius: 16px; padding: 16px 18px; box-shadow: 0 2px 8px rgba(10,43,81,.05); position: relative; overflow: hidden; }
+    .tch-kpi::after { content: ""; position: absolute; inset-inline: 0; top: 0; height: 3px; background: linear-gradient(90deg, #0A2B51, #D1AB7B); }
+    .tch-kpi span { display: block; font-size: 12px; font-weight: 700; color: #6B7787; margin-bottom: 6px; }
+    .tch-kpi b { font-size: 26px; font-weight: 900; color: #0A2B51; }
+    .tch-card { background: #fff; border: 1px solid #E6E1D6; border-radius: 16px; box-shadow: 0 2px 8px rgba(10,43,81,.05); overflow: hidden; }
+    .tch-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .tch-table th { text-align: start; font-size: 11px; font-weight: 800; color: #6B7787; padding: 13px 18px; background: #fbfaf7; border-bottom: 1px solid #E6E1D6; white-space: nowrap; }
+    .tch-table td { padding: 14px 18px; border-bottom: 1px solid #eef1f5; vertical-align: top; }
+    .tch-table tr:last-child td { border-bottom: 0; }
+    .tch-table tr:hover td { background: #fcfbf8; }
+    .tch-who { display: flex; align-items: center; gap: 12px; }
+    .tch-av { width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: grid; place-items: center; background: #eef3fa; color: #0A2B51; font-weight: 800; font-size: 13px; }
+    .tch-who b { display: block; font-size: 13.5px; font-weight: 800; color: #132133; }
+    .tch-who span { font-size: 11.5px; color: #6B7787; }
+    .tch-levels { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tch-pill { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #eef3fa; color: #0A2B51; }
+    .tch-pill.gold { background: #F3E7D6; color: #a9803f; }
+    .tch-pill.ok { background: #e6f6f0; color: #0f7a57; }
+    .tch-pill.bad { background: #fdecec; color: #c0392b; }
+    .tch-class { font-size: 12.5px; margin-bottom: 6px; padding: 8px 10px; border-radius: 10px; background: #f8f6f1; }
+    .tch-class b { color: #0A2B51; }
+    .tch-class span { display: block; font-size: 11px; color: #6B7787; margin-top: 2px; }
+    .tch-empty { padding: 28px 18px; text-align: center; color: #6B7787; font-size: 13.5px; }
+    @@media (max-width: 900px) { .tch-kpis { grid-template-columns: 1fr; } .tch-table { display: block; overflow-x: auto; } }
+</style>
 
-    @if (_rows.Count == 0)
-    {
-        <div class="card pad"><p class="muted">مدرسی ثبت نشده. از بخش کاربران یک کاربر با نقش Teacher بسازید.</p>
-            <a class="btn btn-primary" href="/admin/users">مدیریت کاربران</a>
+<section class="tch">
+    <div class="tch__head">
+        <div>
+            <p class="tch__eyebrow">ADMIN</p>
+            <h1 class="tch__title">مدرسان</h1>
+            <p class="tch__sub">هر مدرس می‌تواند چند کلاس در سطوح مختلف داشته باشد؛ تداخل زمانی مجاز نیست.</p>
         </div>
-    }
-    else
-    {
-        <div class="tbl-wrap card">
-            <table class="tbl">
+        <a class="btn btn-primary" href="/admin/users">مدیریت کاربران</a>
+    </div>
+    <div class="tch-kpis">
+        <div class="tch-kpi"><span>کل مدرسان</span><b>@_rows.Count</b></div>
+        <div class="tch-kpi"><span>فعال</span><b>@_rows.Count(r => r.IsActive)</b></div>
+        <div class="tch-kpi"><span>کلاس‌های تحت تدریس</span><b>@_rows.Sum(r => r.Classes.Count)</b></div>
+    </div>
+    <div class="tch-card">
+        @if (_rows.Count == 0)
+        {
+            <div class="tch-empty">مدرسی ثبت نشده. از بخش کاربران یک کاربر با نقش Teacher بسازید.</div>
+        }
+        else
+        {
+            <table class="tch-table">
                 <thead>
                     <tr>
                         <th>مدرس</th>
@@ -28,31 +70,41 @@
                     @foreach (var r in _rows)
                     {
                         <tr>
-                            <td><b>@r.Username</b></td>
-                            <td>@(r.Levels.Count == 0 ? "—" : string.Join("، ", r.Levels))</td>
                             <td>
-                                @if (r.Classes.Count == 0)
-                                {
-                                    <span class="muted">بدون کلاس</span>
-                                }
+                                <div class="tch-who">
+                                    <span class="tch-av">@Initials(r.Username)</span>
+                                    <div>
+                                        <b>@r.Username</b>
+                                        <span>نقش Teacher</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="tch-levels">
+                                    @if (r.Levels.Count == 0) { <span class="tch-pill">—</span> }
+                                    else { @foreach (var lv in r.Levels) { <span class="tch-pill gold">@lv</span> } }
+                                </div>
+                            </td>
+                            <td>
+                                @if (r.Classes.Count == 0) { <span style="color:#6B7787;font-size:12.5px">بدون کلاس</span> }
                                 else
                                 {
                                     @foreach (var c in r.Classes)
                                     {
-                                        <div style="font-size:12.5px;margin-bottom:4px">
+                                        <div class="tch-class">
                                             <b>@c.Code</b> — @c.Title (@c.Level)
-                                            <span class="muted">@string.Join("، ", c.Days.Select(d => d.DayNameFa)) @c.StartTime.ToString(@"hh\:mm")-@c.EndTime.ToString(@"hh\:mm")</span>
+                                            <span>@string.Join("، ", c.Days.Select(d => d.DayNameFa)) · @Fmt(c.StartTime)–@Fmt(c.EndTime)</span>
                                         </div>
                                     }
                                 }
                             </td>
-                            <td>@(r.IsActive ? "فعال" : "غیرفعال")</td>
+                            <td><span class="tch-pill @(r.IsActive ? "ok" : "bad")">@(r.IsActive ? "فعال" : "غیرفعال")</span></td>
                         </tr>
                     }
                 </tbody>
             </table>
-        </div>
-    }
+        }
+    </div>
 </section>
 
 @code {
@@ -70,5 +122,13 @@
             var cls = allClasses.Where(c => c.TeacherId == t.Id && c.Status != ClassStatus.Inactive).ToList();
             _rows.Add(new TeacherRow(t.Username, t.IsActive, levels, cls));
         }
+    }
+
+    private static string Fmt(TimeSpan t) => $"{t.Hours:00}:{t.Minutes:00}";
+    private static string Initials(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "?";
+        var parts = name.Split('.', ' ', '@');
+        return parts[0].Length >= 1 ? parts[0][..1].ToUpperInvariant() : "?";
     }
 }

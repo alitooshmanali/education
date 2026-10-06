@@ -3,37 +3,108 @@
 @inject IClassService Classes
 @inject IUserService Users
 
-<section class="page">
-    <PageHeader Title="کلاس‌ها و دوره‌ها" Subtitle="تعریف کلاس، سطح، مدرس و برنامهٔ زمانی — محتوا توسط مدرس هر کلاس بارگذاری می‌شود." />
+<style>
+    .cls { max-width: 1400px; width: 100%; }
+    .cls__head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 14px; margin-bottom: 18px; align-items: flex-start; }
+    .cls__eyebrow { margin: 0; font-size: 11px; font-weight: 800; letter-spacing: 1.2px; color: #6B7787; text-transform: uppercase; }
+    .cls__title { margin: 4px 0 6px; font-size: 26px; font-weight: 900; color: #132133; }
+    .cls__sub { margin: 0; color: #6B7787; font-size: 13.5px; max-width: 520px; }
+    .cls__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .cls-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .cls-kpi { background: #fff; border: 1px solid #E6E1D6; border-radius: 14px; padding: 14px 16px; box-shadow: 0 2px 8px rgba(10,43,81,.05); }
+    .cls-kpi span { display: block; font-size: 11.5px; font-weight: 700; color: #6B7787; margin-bottom: 4px; }
+    .cls-kpi b { font-size: 22px; font-weight: 900; color: #0A2B51; }
+
+    .cls-alert { border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; font-size: 13px; }
+    .cls-alert.err { background: #fdecec; color: #8f2b21; border: 1px solid #f5c6c2; }
+    .cls-alert.ok { background: #e6f6f0; color: #0c5c41; border: 1px solid #b8e6d4; }
+
+    .cls-form {
+        background: #fff; border: 1px solid #E6E1D6; border-radius: 16px; padding: 20px;
+        box-shadow: 0 2px 8px rgba(10,43,81,.05); margin-bottom: 16px;
+    }
+    .cls-form h3 { margin: 0 0 14px; font-size: 16px; font-weight: 800; color: #0A2B51; }
+    .cls-form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .cls-field label { display: block; font-size: 12px; font-weight: 700; color: #6B7787; margin-bottom: 6px; }
+    .cls-field input, .cls-field select {
+        width: 100%; box-sizing: border-box; border: 1px solid #E6E1D6; border-radius: 10px;
+        padding: 10px 12px; font: inherit; background: #fff; color: #132133;
+    }
+    .cls-field.full { grid-column: 1 / -1; }
+    .cls-days { display: flex; flex-wrap: wrap; gap: 10px; }
+    .cls-days label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #3b4a5d; cursor: pointer; }
+    .cls-form-actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+    .cls-hint { margin: 10px 0 0; font-size: 12px; color: #6B7787; }
+
+    .cls-card { background: #fff; border: 1px solid #E6E1D6; border-radius: 16px; box-shadow: 0 2px 8px rgba(10,43,81,.05); overflow: hidden; }
+    .cls-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
+    .cls-table th { text-align: start; font-size: 11px; font-weight: 800; color: #6B7787; padding: 12px 16px; background: #fbfaf7; border-bottom: 1px solid #E6E1D6; white-space: nowrap; }
+    .cls-table td { padding: 12px 16px; border-bottom: 1px solid #eef1f5; vertical-align: middle; }
+    .cls-table tr:last-child td { border-bottom: 0; }
+    .cls-table tr:hover td { background: #fcfbf8; }
+    .cls-wrap { overflow-x: auto; }
+    .cls-code { font-weight: 900; color: #0A2B51; }
+    .cls-pill { display: inline-flex; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #eef3fa; color: #0A2B51; }
+    .cls-pill.ok { background: #e6f6f0; color: #0f7a57; }
+    .cls-pill.warn { background: #fdf3e3; color: #a16207; }
+    .cls-pill.bad { background: #fdecec; color: #c0392b; }
+    .cls-pill.grey { background: #f1f3f6; color: #6B7787; }
+    .cls-acts { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+    .cls-empty { padding: 28px; text-align: center; color: #6B7787; }
+
+    @@media (max-width: 1000px) {
+        .cls-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .cls-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @@media (max-width: 560px) {
+        .cls-kpis { grid-template-columns: 1fr; }
+        .cls-form-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<section class="cls">
+    <div class="cls__head">
+        <div>
+            <p class="cls__eyebrow">ADMIN</p>
+            <h1 class="cls__title">کلاس‌ها و دوره‌ها</h1>
+            <p class="cls__sub">تعریف کلاس، سطح، مدرس و برنامهٔ زمانی — محتوا توسط مدرس هر کلاس بارگذاری می‌شود.</p>
+        </div>
+        <div class="cls__actions">
+            <button class="btn btn-primary" type="button" @onclick="StartCreate">کلاس جدید</button>
+        </div>
+    </div>
+
+    <div class="cls-kpis">
+        <div class="cls-kpi"><span>کل کلاس‌ها</span><b>@_items.Count</b></div>
+        <div class="cls-kpi"><span>فعال</span><b>@_items.Count(c => c.Status == ClassStatus.Active)</b></div>
+        <div class="cls-kpi"><span>بدون مدرس</span><b>@_items.Count(c => c.TeacherId is null)</b></div>
+        <div class="cls-kpi"><span>تکمیل ظرفیت</span><b>@_items.Count(c => c.Status == ClassStatus.Full)</b></div>
+    </div>
 
     @if (!string.IsNullOrWhiteSpace(_error))
     {
-        <div class="alert alert-error">@_error</div>
+        <div class="cls-alert err">@_error</div>
     }
     @if (!string.IsNullOrWhiteSpace(_status))
     {
-        <div class="alert alert-success">@_status</div>
+        <div class="cls-alert ok">@_status</div>
     }
-
-    <div class="toolbar" style="margin-bottom:16px">
-        <button class="btn btn-primary" type="button" @onclick="StartCreate">کلاس جدید</button>
-        <a class="btn btn-ghost" href="/site/platform-admin.html">پیش‌نمایش UI کامل ادمین</a>
-    </div>
 
     @if (_showForm)
     {
-        <section class="panel pad panel-narrow" style="margin-bottom:20px">
+        <div class="cls-form">
             <h3>@(_editId is null ? "ایجاد کلاس" : "ویرایش کلاس")</h3>
-            <div class="form-grid">
-                <div class="field">
+            <div class="cls-form-grid">
+                <div class="cls-field">
                     <label>کد کلاس</label>
-                    <input @bind="_code" placeholder="مثلاً EN-A1-01 یا ۱۰۱" />
+                    <input @bind="_code" placeholder="مثلاً EN-A1-01" />
                 </div>
-                <div class="field">
+                <div class="cls-field">
                     <label>عنوان</label>
                     <input @bind="_title" placeholder="مکالمه پیشرفته" />
                 </div>
-                <div class="field">
+                <div class="cls-field">
                     <label>حوزه</label>
                     <select @bind="_subject">
                         @foreach (var s in Enum.GetValues<SubjectArea>())
@@ -42,7 +113,7 @@
                         }
                     </select>
                 </div>
-                <div class="field">
+                <div class="cls-field">
                     <label>سطح</label>
                     <select @bind="_level">
                         @foreach (var l in Enum.GetValues<LanguageLevel>())
@@ -51,7 +122,7 @@
                         }
                     </select>
                 </div>
-                <div class="field">
+                <div class="cls-field">
                     <label>مدرس</label>
                     <select @bind="_teacherIdStr">
                         <option value="">— بدون مدرس —</option>
@@ -61,25 +132,25 @@
                         }
                     </select>
                 </div>
-                <div class="field">
+                <div class="cls-field">
                     <label>ظرفیت</label>
                     <input type="number" min="1" @bind="_capacity" />
                 </div>
-                <div class="field">
+                <div class="cls-field">
                     <label>ساعت شروع</label>
                     <input type="time" @bind="_startTime" />
                 </div>
-                <div class="field">
+                <div class="cls-field">
                     <label>ساعت پایان</label>
                     <input type="time" @bind="_endTime" />
                 </div>
-                <div class="field" style="grid-column:1/-1">
+                <div class="cls-field full">
                     <label>روزهای هفته</label>
-                    <div style="display:flex;flex-wrap:wrap;gap:10px">
+                    <div class="cls-days">
                         @for (var i = 0; i < 7; i++)
                         {
                             var day = i;
-                            <label style="display:inline-flex;align-items:center;gap:6px;font-size:13px">
+                            <label>
                                 <input type="checkbox" checked="@_days.Contains(day)"
                                        @onchange="e => ToggleDay(day, (bool)(e.Value ?? false))" />
                                 @_dayNames[day]
@@ -88,62 +159,65 @@
                     </div>
                 </div>
             </div>
-            <div class="toolbar toolbar--spaced">
+            <div class="cls-form-actions">
                 <button class="btn btn-primary" type="button" disabled="@_busy" @onclick="SaveAsync">ذخیره</button>
                 <button class="btn btn-ghost" type="button" @onclick="CancelForm">لغو</button>
             </div>
-            <p class="muted" style="font-size:12.5px;margin-top:12px">
-                اگر مدرس در همان روز و بازهٔ زمانی کلاس دیگری داشته باشد، ذخیره رد می‌شود.
-            </p>
-        </section>
+            <p class="cls-hint">اگر مدرس در همان روز و بازهٔ زمانی کلاس دیگری داشته باشد، ذخیره رد می‌شود.</p>
+        </div>
     }
 
-    <div class="tbl-wrap card">
-        <table class="tbl">
-            <thead>
-                <tr>
-                    <th>کد</th>
-                    <th>عنوان</th>
-                    <th>حوزه</th>
-                    <th>سطح</th>
-                    <th>مدرس</th>
-                    <th>روزها</th>
-                    <th>ساعت</th>
-                    <th>ظرفیت</th>
-                    <th>وضعیت</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (_items.Count == 0)
-                {
-                    <tr><td colspan="10"><div class="empty">کلاسی ثبت نشده است.</div></td></tr>
-                }
-                else
-                {
-                    @foreach (var c in _items)
+    <div class="cls-card">
+        <div class="cls-wrap">
+            <table class="cls-table">
+                <thead>
+                    <tr>
+                        <th>کد</th>
+                        <th>عنوان</th>
+                        <th>حوزه</th>
+                        <th>سطح</th>
+                        <th>مدرس</th>
+                        <th>روزها</th>
+                        <th>ساعت</th>
+                        <th>ظرفیت</th>
+                        <th>وضعیت</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (_items.Count == 0)
                     {
-                        <tr>
-                            <td><b>@c.Code</b></td>
-                            <td>@c.Title</td>
-                            <td>@SubjectLabel(c.Subject)</td>
-                            <td><span class="pill">@c.Level</span></td>
-                            <td>@(c.TeacherUsername ?? "—")</td>
-                            <td>@string.Join("، ", c.Days.Select(d => d.DayNameFa))</td>
-                            <td class="num">@c.StartTime.ToString(@"hh\:mm") – @c.EndTime.ToString(@"hh\:mm")</td>
-                            <td class="num">@c.EnrolledCount / @c.Capacity</td>
-                            <td><span class="pill">@StatusLabel(c.Status)</span></td>
-                            <td class="end">
-                                <button class="btn btn-sm btn-ghost" type="button" @onclick="() => StartEdit(c)">ویرایش</button>
-                                <button class="btn btn-sm btn-outline" type="button" @onclick="() => DeactivateAsync(c.Id)">حذف</button>
-                            </td>
-                        </tr>
+                        <tr><td colspan="10"><div class="cls-empty">کلاسی ثبت نشده است.</div></td></tr>
                     }
-                }
-            </tbody>
-        </table>
+                    else
+                    {
+                        @foreach (var c in _items)
+                        {
+                            <tr>
+                                <td><span class="cls-code">@c.Code</span></td>
+                                <td>@c.Title</td>
+                                <td>@SubjectLabel(c.Subject)</td>
+                                <td><span class="cls-pill">@c.Level</span></td>
+                                <td>@(c.TeacherUsername ?? "—")</td>
+                                <td>@string.Join("، ", c.Days.Select(d => d.DayNameFa))</td>
+                                <td>@Fmt(c.StartTime) – @Fmt(c.EndTime)</td>
+                                <td>@c.EnrolledCount / @c.Capacity</td>
+                                <td><span class="cls-pill @StatusClass(c.Status)">@StatusLabel(c.Status)</span></td>
+                                <td>
+                                    <div class="cls-acts">
+                                        <button class="btn btn-sm btn-ghost" type="button" @onclick="() => StartEdit(c)">ویرایش</button>
+                                        <button class="btn btn-sm btn-outline" type="button" @onclick="() => DeactivateAsync(c.Id)">حذف</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 </section>
+
 
 @code {
     private static readonly string[] _dayNames = ["یک‌شنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه", "شنبه"];
@@ -277,5 +351,15 @@
         ClassStatus.NoTeacher => "بدون مدرس",
         ClassStatus.Inactive => "غیرفعال",
         _ => s.ToString()
+    };
+
+    private static string Fmt(TimeSpan t) => $"{t.Hours:00}:{t.Minutes:00}";
+
+    private static string StatusClass(ClassStatus s) => s switch
+    {
+        ClassStatus.Active => "ok",
+        ClassStatus.Full => "warn",
+        ClassStatus.NoTeacher => "bad",
+        _ => "grey"
     };
 }

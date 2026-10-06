@@ -6,12 +6,11 @@
 @implements IDisposable
 
 <section class="page">
-    <PageHeader Title="داشبورد مدرس" Subtitle="ابتدا سطح و کلاس را انتخاب کنید؛ فقط دادهٔ همان کلاس بارگذاری می‌شود." />
-    <TeacherClassSelector />
-
+    <PageHeader Title="داشبورد مدرس" Subtitle="سطح و کلاس از هدر انتخاب می‌شود؛ فقط دادهٔ همان کلاس بارگذاری می‌شود." />
+    
     @if (Session.SelectedClassId is null)
     {
-        <div class="card pad"><p class="muted">برای مشاهدهٔ داشبورد، یک کلاس انتخاب کنید.</p></div>
+        <div class="card pad"><p class="muted">از هدر بالا سطح و کلاس را انتخاب کنید.</p></div>
     }
     else if (_dash is null)
     {

@@ -7,11 +7,10 @@
 
 <section class="page">
     <PageHeader Title="دانش‌آموزان کلاس" Subtitle="دانش‌آموزان هم‌سطح با کلاس انتخاب‌شده." />
-    <TeacherClassSelector />
-
+    
     @if (Session.SelectedClassId is null)
     {
-        <div class="card pad"><p class="muted">کلاس را انتخاب کنید.</p></div>
+        <div class="card pad"><p class="muted">از هدر بالا سطح و کلاس را انتخاب کنید.</p></div>
     }
     else
     {
