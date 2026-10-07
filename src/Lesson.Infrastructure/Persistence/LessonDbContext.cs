@@ -32,9 +32,32 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
     public DbSet<ClassRoom> ClassRooms => Set<ClassRoom>();
     public DbSet<ClassScheduleDay> ClassScheduleDays => Set<ClassScheduleDay>();
     public DbSet<ContentStudentAccess> ContentStudentAccesses => Set<ContentStudentAccess>();
+    public DbSet<SiteLibraryItem> SiteLibraryItems => Set<SiteLibraryItem>();
+    public DbSet<SitePageSlot> SitePageSlots => Set<SitePageSlot>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        
+        modelBuilder.Entity<SiteLibraryItem>(entity =>
+        {
+            entity.Property(x => x.Title).HasMaxLength(300).IsRequired();
+            entity.Property(x => x.Summary).HasMaxLength(1000);
+            entity.Property(x => x.ImagePath).HasMaxLength(1000);
+            entity.HasOne(x => x.ImageContent).WithMany().HasForeignKey(x => x.ImageContentId).OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne(x => x.AudioContent).WithMany().HasForeignKey(x => x.AudioContentId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        
+        modelBuilder.Entity<SitePageSlot>(entity =>
+        {
+            entity.Property(x => x.PageKey).HasMaxLength(80).IsRequired();
+            entity.Property(x => x.Title).HasMaxLength(200);
+            entity.Property(x => x.Subtitle).HasMaxLength(500);
+            entity.Property(x => x.LinkHref).HasMaxLength(300);
+            entity.HasIndex(x => new { x.PageKey, x.SlotType, x.SortOrder });
+            entity.HasOne(x => x.ImageContent).WithMany().HasForeignKey(x => x.ImageContentId).OnDelete(DeleteBehavior.NoAction);
+        });
+
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LessonDbContext).Assembly);
 
@@ -164,11 +187,11 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
             b.HasOne(x => x.ImageContent)
                 .WithMany()
                 .HasForeignKey(x => x.ImageContentId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
             b.HasOne(x => x.VoiceContent)
                 .WithMany()
                 .HasForeignKey(x => x.VoiceContentId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
             b.HasIndex(x => x.Level);
             b.HasIndex(x => x.FolderId);
         });
@@ -190,7 +213,7 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
             b.HasOne(x => x.IntroImageContent)
                 .WithMany()
                 .HasForeignKey(x => x.IntroImageContentId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
             b.HasIndex(x => x.Level);
             b.HasIndex(x => x.Type);
         });
@@ -208,7 +231,7 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
             b.HasOne(x => x.ImageContent)
                 .WithMany()
                 .HasForeignKey(x => x.ImageContentId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.NoAction);
             b.HasIndex(x => new { x.QuizId, x.SortOrder });
         });
 

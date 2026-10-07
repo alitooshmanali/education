@@ -19,4 +19,11 @@ public interface IFolderService
     Task DeleteAsync(long folderId, CancellationToken cancellationToken = default);
     Task<Folder?> FindAsync(long folderId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Folder>> GetFlatAsync(LanguageLevel? levelFilter = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Creates protected site folders if missing. Safe to call on every startup.</summary>
+    Task EnsureSystemFoldersAsync(CancellationToken cancellationToken = default);
+
+    Task<Folder> GetSystemFolderAsync(string systemFolderName, CancellationToken cancellationToken = default);
+
+    bool IsSystemFolder(string? name);
 }

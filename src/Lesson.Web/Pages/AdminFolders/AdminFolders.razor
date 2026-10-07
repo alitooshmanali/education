@@ -35,8 +35,15 @@
             </div>
 
             <div class="toolbar toolbar--spaced">
-                <button class="btn btn-secondary" type="button" @onclick="RenameSelected">تغییر نام</button>
-                <button class="btn btn-danger" type="button" @onclick="() => ConfirmDelete(_selectedId.Value)">حذف</button>
+                @if (_selectedIsSystem)
+                {
+                    <span class="hint" style="font-size:12.5px;color:#6B7787">پوشهٔ سیستمی — نام و حذف قفل است.</span>
+                }
+                else
+                {
+                    <button class="btn btn-secondary" type="button" @onclick="RenameSelected">تغییر نام</button>
+                    <button class="btn btn-danger" type="button" @onclick="() => ConfirmDelete(_selectedId.Value)">حذف</button>
+                }
             </div>
         }
 
@@ -109,6 +116,7 @@
     private string _errorMessage = string.Empty;
     private long? _deleteFolderId;
     private bool _showDeleteConfirm;
+    private bool _selectedIsSystem;
 
     protected override async Task OnInitializedAsync()
     {
@@ -138,7 +146,8 @@
     {
         _selectedId = id;
         _selectedName = _flatFolders.FirstOrDefault(x => x.Id == id)?.Name ?? string.Empty;
-        _renameValue = _selectedName;
+        _selectedIsSystem = Folders.IsSystemFolder(_selectedName);
+        _renameValue = _selectedIsSystem ? _selectedName : _selectedName;
         _errorMessage = string.Empty;
         _statusMessage = string.Empty;
     }
@@ -179,7 +188,7 @@
 
     private async Task RenameSelected()
     {
-        if (_selectedId is null)
+        if (_selectedId is null || _selectedIsSystem)
         {
             return;
         }
@@ -211,6 +220,7 @@
 
     private void ConfirmDelete(long folderId)
     {
+        if (_selectedIsSystem) return;
         _deleteFolderId = folderId;
         _showDeleteConfirm = true;
     }
