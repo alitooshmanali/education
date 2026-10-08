@@ -32,7 +32,7 @@
     <div class="sl__head">
         <div>
             <h1 class="sl__title">کتابخانه سایت</h1>
-            <p class="sl__sub">پادکست، داستان، موسیقی و کتاب برای وب‌سایت عمومی — فقط ادمین.</p>
+            <p class="sl__sub">پادکست‌ها در پوشهٔ _PagePodcast ذخیره می‌شوند. «فقط صوت» = پخش درجا؛ در غیر این صورت صفحه جزئیات با متن.</p>
         </div>
         <button class="btn btn-primary" type="button" @onclick="StartCreate">مورد جدید</button>
     </div>
@@ -73,19 +73,23 @@
                     <label>یا مسیر/URL تصویر (اختیاری)</label>
                     <input @bind="_imagePath" placeholder="/site/img/podcast1.jpg" />
                 </div>
+                <div class="sl-field full">
+                    <label>آپلود فایل صوت (پادکست) — در پوشه سیستمی ذخیره می‌شود</label>
+                    <InputFile OnChange="OnAudioFile" accept="audio/*,.mp3,.m4a,.wav,.ogg" />
+                    @if (_audioId is long aid)
+                    {
+                        <p style="margin-top:6px;font-size:12px;color:#6B7787">Audio Content Id: @aid · <a href="/api/site/media/@aid" target="_blank">پخش آزمایشی</a></p>
+                    }
+                </div>
                 <div class="sl-field">
-                    <label>شناسه محتوای صوت (Content Id)</label>
+                    <label>یا شناسه Content صوت (دستی)</label>
                     <input type="number" @bind="_audioId" />
                 </div>
                 <div class="sl-field">
-                    <label>شناسه تصویر محتوا (اختیاری)</label>
-                    <input type="number" @bind="_imageContentId" />
-                </div>
-                <div class="sl-field">
-                    <label>فقط صوت (پخش درجا)</label>
+                    <label>نوع پادکست</label>
                     <select @bind="_voiceOnlyStr">
-                        <option value="false">خیر — صفحه جزئیات</option>
-                        <option value="true">بله — پخش مستقیم</option>
+                        <option value="true">فقط صوت + عکس (پخش در همان صفحه)</option>
+                        <option value="false">صوت + متن (صفحه جزئیات جدا)</option>
                     </select>
                 </div>
                 <div class="sl-field full">
@@ -168,9 +172,10 @@
     private void StartEdit(SiteLibraryItemDto it)
     {
         _editId = it.Id; _title = it.Title; _summary = it.Summary ?? ""; _body = it.BodyText ?? "";
-        _imagePath = it.ImageUrl ?? ""; _category = it.Category; _sort = it.SortOrder;
+        _imagePath = (it.ImageUrl is not null && !it.ImageUrl.StartsWith("/api/")) ? it.ImageUrl : "";
+        _category = it.Category; _sort = it.SortOrder;
         _voiceOnlyStr = it.IsVoiceOnly ? "true" : "false";
-        _audioId = null; _imageContentId = null;
+        _audioId = it.AudioContentId; _imageContentId = it.ImageContentId;
         _showForm = true; _error = _ok = null;
     }
 
@@ -200,6 +205,35 @@
         await Reload();
     }
 
+
+
+    private async Task OnAudioFile(InputFileChangeEventArgs e)
+    {
+        _error = _ok = null;
+        var file = e.File;
+        if (file is null) return;
+        if (file.Size > 50 * 1024 * 1024) { _error = "حداکثر حجم صوت ۵۰ مگابایت."; return; }
+        try
+        {
+            _busy = true;
+            var folderName = _category == SiteLibraryCategory.Podcast
+                ? Lesson.Domain.SystemFolders.PagePodcast
+                : Lesson.Domain.SystemFolders.PageSiteImages;
+            var folder = await Folders.GetSystemFolderAsync(folderName);
+            await using var stream = file.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024);
+            await using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            ms.Position = 0;
+            var req = new UploadContentRequest(
+                folder.Id, file.Name, file.Name, ms, ms.Length,
+                new[] { LanguageLevel.A1 }, ContentType.Audio);
+            var entity = await Contents.UploadAsync(req, Current.UserId, isAdmin: true);
+            _audioId = entity.Id;
+            _ok = "فایل صوت در پوشهٔ سیستمی ذخیره شد.";
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
 
     private async Task OnImageFile(InputFileChangeEventArgs e)
     {

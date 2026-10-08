@@ -100,14 +100,78 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 .lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:22px;margin:28px 0;justify-items:center}
 .lib-empty{text-align:center;color:var(--muted);padding:40px 12px;font-size:14px}
 
-/* —— detail —— */
-.detail{max-width:640px;margin:32px auto;text-align:center}
-.detail__cover{width:min(220px,60vw);aspect-ratio:1;border-radius:50%;overflow:hidden;margin:0 auto 20px;
-  border:3px solid #fff;box-shadow:0 12px 36px rgba(10,43,81,.14)}
-.detail__cover img{width:100%;height:100%;object-fit:cover}
-.detail h1{font-size:24px;font-weight:900;color:var(--navy);margin-bottom:12px}
-.detail audio{width:100%;margin:12px 0 20px}
-.detail__body{text-align:justify;line-height:1.9;font-size:15px;color:var(--ink);white-space:pre-wrap}
+/* —— podcast / library circles playing state —— */
+.circle.is-playing{box-shadow:0 0 0 4px var(--sand),0 14px 40px rgba(10,43,81,.2)}
+.circle.is-playing .circle__label{background:var(--sand);color:var(--navy)}
+
+/* —— circular progress around podcast —— */
+.circle-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  text-decoration:none;color:inherit;cursor:pointer
+}
+.circle-stage{
+  position:relative;display:grid;place-items:center;
+  width:min(180px,22vw);aspect-ratio:1
+}
+.circle-stage .circle{
+  width:100% !important;position:relative;z-index:1
+}
+.circle-ring{
+  position:absolute;inset:-10px;width:calc(100% + 20px);height:calc(100% + 20px);
+  transform:rotate(-90deg);pointer-events:none;z-index:2
+}
+.circle-ring circle{
+  fill:none;stroke-width:3.5;cx:50;cy:50;r:46
+}
+.circle-ring .ring-bg{stroke:rgba(10,43,81,.12)}
+.circle-ring .ring-fg{
+  stroke:var(--sand);stroke-linecap:round;
+  stroke-dasharray:289.027;stroke-dashoffset:289.027;
+  transition:stroke-dashoffset .15s linear
+}
+.circle-wrap.is-playing .ring-fg{stroke:#0A2B51}
+.circle-wrap.is-playing .circle{box-shadow:0 8px 28px rgba(10,43,81,.18)}
+.circle-time{
+  font-size:11.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums;
+  min-height:1.2em;opacity:0;transition:opacity .2s
+}
+.circle-wrap.is-playing .circle-time,
+.circle-wrap.has-progress .circle-time{opacity:1;color:var(--navy)}
+
+
+/* —— detail page (podcast with text) —— */
+.detail{max-width:720px;margin:0 auto 40px;padding:0 16px}
+.detail__hero{width:100vw;margin-right:calc(50% - 50vw);margin-left:calc(50% - 50vw);
+  height:min(42vw,340px);min-height:200px;overflow:hidden;background:var(--navy);position:relative}
+.detail__hero img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.78)}
+.detail__hero-cap{position:absolute;inset:auto 0 0 0;padding:28px 20px;text-align:center;
+  background:linear-gradient(transparent,rgba(6,29,56,.9));color:#fff}
+.detail__hero-cap h1{font-size:clamp(22px,4vw,34px);font-weight:900;margin:0}
+.detail__hero-cap p{margin:8px 0 0;opacity:.9;font-size:13.5px}
+.detail__player{
+  margin:20px auto;padding:16px 18px;border-radius:16px;background:#fff;
+  border:1px solid var(--line);box-shadow:0 8px 28px rgba(10,43,81,.06)
+}
+.detail__player audio{width:100%;display:block}
+.detail__player audio::-webkit-media-controls-download-button{display:none}
+.detail__body-card{
+  margin-top:16px;padding:22px 20px;border-radius:16px;background:#fff;
+  border:1px solid var(--line);box-shadow:0 8px 28px rgba(10,43,81,.05)
+}
+.detail__body{text-align:justify;line-height:2;font-size:15.5px;color:var(--ink);white-space:pre-wrap;margin:0}
+
+/* floating mini player */
+.site-player{
+  position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:60;
+  width:min(420px,92vw);background:#0A2B51;color:#fff;border-radius:16px;
+  box-shadow:0 16px 48px rgba(6,29,56,.35);padding:12px 14px;display:none;align-items:center;gap:12px
+}
+.site-player.is-on{display:flex}
+.site-player__meta{flex:1;min-width:0}
+.site-player__title{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.site-player__sub{font-size:11px;opacity:.75;margin-top:2px}
+.site-player audio{flex:1.2;min-width:0;height:36px;filter:invert(1) hue-rotate(180deg);opacity:.95}
+.site-player__close{background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer;padding:4px 8px;opacity:.8}
 .back{
   display:inline-flex;align-items:center;gap:6px;margin:18px 0 0;padding:8px 16px;border-radius:999px;
   border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--navy);background:#fff
@@ -126,20 +190,26 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 .footer strong{display:block;color:#fff;font-size:14px;margin-bottom:6px}
 .footer a{color:var(--sand);font-weight:700}
 
-/* audio hidden player */
-#audio-el{position:fixed;bottom:16px;left:16px;z-index:50;max-width:min(360px,90vw);display:none}
-#audio-el.is-on{display:block}
+
 
 @media (max-width:720px){
   .circles{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
   .circle{width:min(150px,40vw)}
+  .circle-stage{width:min(150px,40vw)}
 }
 </style>
 </head>
 <body>
 <div class="shell">
   <div id="app"></div>
-  <audio id="audio-el" controls></audio>
+  <div class="site-player" id="site-player">
+    <div class="site-player__meta">
+      <div class="site-player__title" id="sp-title">در حال پخش</div>
+      <div class="site-player__sub">پادکست · فقط پخش</div>
+    </div>
+    <audio id="audio-el" controls controlsList="nodownload noplaybackrate" oncontextmenu="return false"></audio>
+    <button type="button" class="site-player__close" id="sp-close" aria-label="بستن">×</button>
+  </div>
   <footer class="footer">
     <img src="/site/img/logo.png" alt="" style="width:48px;height:48px;object-fit:contain;margin:0 auto 10px;display:block;border-radius:50%;background:#fff;padding:4px">
     <strong>اساطیر آینده</strong>
@@ -289,43 +359,155 @@ async function fetchLibrary(category){
   }catch{ return []; }
 }
 
-function playAudio(url){
+const sitePlayer = document.getElementById('site-player');
+const spTitle = document.getElementById('sp-title');
+const CIRC = 2 * Math.PI * 46; // r=46
+
+function fmtTime(sec){
+  if(!isFinite(sec) || sec < 0) return '۰:۰۰';
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  const raw = m + ':' + String(s).padStart(2,'0');
+  return raw.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+}
+
+function setRingProgress(wrap, ratio){
+  if(!wrap) return;
+  const fg = wrap.querySelector('.ring-fg');
+  if(!fg) return;
+  const r = Math.max(0, Math.min(1, ratio || 0));
+  fg.style.strokeDasharray = String(CIRC);
+  fg.style.strokeDashoffset = String(CIRC * (1 - r));
+}
+
+function clearAllPlaying(){
+  document.querySelectorAll('.circle-wrap.is-playing, .circle.is-playing').forEach(el=>{
+    el.classList.remove('is-playing');
+  });
+}
+
+document.getElementById('sp-close')?.addEventListener('click', ()=>{
+  stopInlinePlayer();
+});
+
+let _activeWrap = null;
+
+function playAudio(url, title, wrapEl){
   if(!url) return;
-  audioEl.src = url;
-  audioEl.classList.add('is-on');
+  audioEl.setAttribute('controlsList','nodownload noplaybackrate');
+  // same track resume vs new
+  if(audioEl.src && !audioEl.src.endsWith(url) && audioEl.getAttribute('src') !== url){
+    audioEl.src = url;
+  } else if(!audioEl.getAttribute('src') || audioEl.getAttribute('src') !== url){
+    audioEl.src = url;
+  }
+  if(spTitle) spTitle.textContent = title || 'در حال پخش';
+  sitePlayer.classList.add('is-on');
+  clearAllPlaying();
+  _activeWrap = wrapEl || null;
+  if(_activeWrap){
+    _activeWrap.classList.add('is-playing');
+    _activeWrap.classList.add('has-progress');
+  }
   audioEl.play().catch(()=>{});
 }
+
+function stopInlinePlayer(){
+  audioEl.pause();
+  sitePlayer.classList.remove('is-on');
+  clearAllPlaying();
+  _activeWrap = null;
+}
+
+audioEl.addEventListener('timeupdate', ()=>{
+  if(!_activeWrap) return;
+  const d = audioEl.duration;
+  const c = audioEl.currentTime;
+  if(d > 0) setRingProgress(_activeWrap, c / d);
+  const timeEl = _activeWrap.querySelector('[data-time]');
+  if(timeEl){
+    timeEl.textContent = fmtTime(c) + ' / ' + fmtTime(d);
+  }
+  const sub = document.querySelector('.site-player__sub');
+  if(sub) sub.textContent = fmtTime(c) + ' از ' + fmtTime(d);
+});
+
+audioEl.addEventListener('ended', ()=>{
+  if(_activeWrap){
+    setRingProgress(_activeWrap, 1);
+    const timeEl = _activeWrap.querySelector('[data-time]');
+    if(timeEl && audioEl.duration) timeEl.textContent = fmtTime(audioEl.duration) + ' / ' + fmtTime(audioEl.duration);
+  }
+  clearAllPlaying();
+  sitePlayer.classList.remove('is-on');
+  _activeWrap = null;
+});
+
+audioEl.addEventListener('loadedmetadata', ()=>{
+  if(!_activeWrap) return;
+  const timeEl = _activeWrap.querySelector('[data-time]');
+  if(timeEl) timeEl.textContent = fmtTime(0) + ' / ' + fmtTime(audioEl.duration);
+});
+
 
 async function renderLibraryList(key){
   const category = CAT[key];
   const items = await fetchLibrary(category);
   if(!items.length){
-    return `<div class="lib-empty">هنوز موردی ثبت نشده است. از پنل ادمین اضافه کنید.</div>`;
+    return `<div class="lib-empty">هنوز موردی ثبت نشده است.<br>از پنل ادمین → کتابخانه سایت اضافه کنید.</div>`;
   }
-  return `<div class="lib-grid">${items.map(it=>{
+  return `<div class="circles">${items.map(it=>{
     const img = it.imageUrl || CAT_HERO[key];
-    const href = it.isVoiceOnly && it.audioUrl ? '#' : `#/english/${key}/${it.id}`;
-    return `<a class="circle circle--sm" href="${href}" data-id="${it.id}" data-voice="${it.isVoiceOnly&&it.audioUrl?it.audioUrl:''}" data-route="${href}">
-      <img src="${img}" alt="${it.title}" loading="lazy">
-      <span class="circle__label">${it.title}</span>
+    const voiceOnly = !!it.isVoiceOnly;
+    const href = (!voiceOnly) ? `#/english/${key}/${it.id}` : 'javascript:void(0)';
+    const voice = (voiceOnly && it.audioUrl) ? it.audioUrl : '';
+    const isVoice = voiceOnly && voice;
+    return `<a class="circle-wrap" href="${href}" data-id="${it.id}"
+      data-audio="${voice}" data-title="${escapeHtml(it.title)}"
+      data-voice-only="${isVoice ? '1' : '0'}"
+      title="${escapeHtml(it.title)}">
+      <span class="circle-stage">
+        <svg class="circle-ring" viewBox="0 0 100 100" aria-hidden="true">
+          <circle class="ring-bg" cx="50" cy="50" r="46"></circle>
+          <circle class="ring-fg" cx="50" cy="50" r="46"></circle>
+        </svg>
+        <span class="circle circle--sm">
+          <img src="${img}" alt="${escapeHtml(it.title)}" loading="lazy">
+          <span class="circle__label">${escapeHtml(it.title)}</span>
+        </span>
+      </span>
+      <span class="circle-time" data-time>۰:۰۰</span>
     </a>`;
   }).join('')}</div>`;
 }
 
 async function renderDetail(key, id){
   try{
-    const r = await fetch(`/api/site/library/${id}`);
+    const r = await fetch('/api/site/library/' + id);
     if(!r.ok) return `<div class="lib-empty">یافت نشد.</div>`;
     const it = await r.json();
     const img = it.imageUrl || CAT_HERO[key];
-    return `<div class="detail">
-      <div class="detail__cover"><img src="${img}" alt="${it.title}"></div>
-      <h1>${it.title}</h1>
-      ${it.audioUrl?`<audio controls src="${it.audioUrl}"></audio>`:''}
-      ${it.bodyText?`<div class="detail__body">${escapeHtml(it.bodyText)}</div>`:''}
-      ${it.summary&&!it.bodyText?`<p class="detail__body">${escapeHtml(it.summary)}</p>`:''}
-      <a class="back" href="#/english/${key}">← بازگشت</a>
-    </div>`;
+    const audio = it.audioUrl
+      ? `<div class="detail__player">
+           <audio controls controlsList="nodownload noplaybackrate" oncontextmenu="return false" src="${it.audioUrl}"></audio>
+         </div>`
+      : '';
+    const body = it.bodyText
+      ? `<div class="detail__body-card"><div class="detail__body">${escapeHtml(it.bodyText)}</div></div>`
+      : (it.summary ? `<div class="detail__body-card"><div class="detail__body">${escapeHtml(it.summary)}</div></div>` : '');
+    return `
+      <div class="detail">
+        <div class="detail__hero">
+          <img src="${img}" alt="${escapeHtml(it.title)}">
+          <div class="detail__hero-cap">
+            <h1>${escapeHtml(it.title)}</h1>
+            ${it.summary?`<p>${escapeHtml(it.summary)}</p>`:''}
+          </div>
+        </div>
+        ${audio}
+        ${body}
+        <div style="text-align:center"><a class="back" href="#/english/${key}">← بازگشت به ${CAT_NAME[key]||'لیست'}</a></div>
+      </div>`;
   }catch{
     return `<div class="lib-empty">خطا در بارگذاری.</div>`;
   }
@@ -335,7 +517,7 @@ function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<
 
 async function route(){
   stopCarousel();
-  audioEl.classList.remove('is-on');
+  stopInlinePlayer();
   const hash = location.hash || '#/';
   const parts = hash.replace(/^#\/?/,'').split('/').filter(Boolean);
 
@@ -386,15 +568,15 @@ async function route(){
         ${await renderLibraryList(key)}
         <div style="text-align:center"><a class="back" href="#/english">← زبان انگلیسی</a></div>
       </div>`;
-    /* voice-only click */
-    app.querySelectorAll('[data-voice]').forEach(el=>{
-      const v = el.getAttribute('data-voice');
-      if(v){
-        el.addEventListener('click', e=>{
-          e.preventDefault();
-          playAudio(v);
-        });
-      }
+    /* voice-only podcast: play inline — stay on page, show ring progress */
+    app.querySelectorAll('a.circle-wrap[data-voice-only="1"]').forEach(el=>{
+      const url = el.getAttribute('data-audio');
+      if(!url) return;
+      el.addEventListener('click', e=>{
+        e.preventDefault();
+        e.stopPropagation();
+        playAudio(url, el.getAttribute('data-title') || '', el);
+      });
     });
     return;
   }

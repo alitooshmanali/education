@@ -10,6 +10,8 @@ public sealed record SiteLibraryItemDto(
     SiteLibraryCategory Category,
     string? ImageUrl,
     string? AudioUrl,
+    long? ImageContentId,
+    long? AudioContentId,
     bool IsVoiceOnly,
     int SortOrder,
     bool IsActive);

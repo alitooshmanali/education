@@ -76,12 +76,13 @@ public sealed class SiteLibraryService(IApplicationDbContext db) : ISiteLibraryS
         if (!string.IsNullOrWhiteSpace(x.ImagePath))
             imageUrl = x.ImagePath.StartsWith("/") ? x.ImagePath : "/" + x.ImagePath;
         else if (x.ImageContentId is { } img)
-            imageUrl = $"/api/contents/{img}/stream";
+            imageUrl = $"/api/site/media/{img}";
 
-        string? audioUrl = x.AudioContentId is { } aud ? $"/api/contents/{aud}/stream" : null;
+        // Public site media endpoint (no login) — contents/stream requires auth
+        string? audioUrl = x.AudioContentId is { } aud ? $"/api/site/media/{aud}" : null;
 
         return new SiteLibraryItemDto(
             x.Id, x.Title, x.Summary, x.BodyText, x.Category,
-            imageUrl, audioUrl, x.IsVoiceOnly, x.SortOrder, x.IsActive);
+            imageUrl, audioUrl, x.ImageContentId, x.AudioContentId, x.IsVoiceOnly, x.SortOrder, x.IsActive);
     }
 }
