@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>اساطیر آینده</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,23 +24,24 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 
 /* —— brand ribbon (logo) —— */
 .brand-ribbon{
-  position:absolute;top:0;inset-inline-start:20px;z-index:30;
+  position:fixed;top:0;inset-inline-start:16px;z-index:100;
   display:flex;flex-direction:column;align-items:center;
   text-decoration:none;pointer-events:auto
 }
 .brand-ribbon__flag{
-  background:#fff;border-radius:0 0 14px 14px;
-  box-shadow:0 10px 28px rgba(6,29,56,.28);
-  padding:12px 14px 14px;border:1px solid rgba(255,255,255,.5);
-  border-top:0
+  background:#F9F6ED;border-radius:0 0 18px 18px;
+  box-shadow:0 12px 32px rgba(6,29,56,.32);
+  padding:14px 16px 12px;border:1px solid rgba(255,255,255,.65);
+  border-top:0;min-width:110px;text-align:center
 }
 .brand-ribbon__flag img{
-  width:64px;height:64px;object-fit:contain;display:block
+  width:88px;height:88px;object-fit:contain;display:block;margin:0 auto
 }
 .brand-ribbon__name{
-  margin-top:6px;font-size:10px;font-weight:800;letter-spacing:.4px;
-  color:#D1AB7B;text-shadow:0 1px 4px rgba(0,0,0,.35)
+  margin-top:6px;font-size:11px;font-weight:800;letter-spacing:.2px;
+  color:#0A2B51;line-height:1.25
 }
+.brand-ribbon__name span{display:block;font-size:9.5px;font-weight:600;color:#6B7787;margin-top:2px}
 
 /* —— carousel —— */
 .carousel{
@@ -140,25 +141,31 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 
 
 /* —— detail page (podcast with text) —— */
-.detail{max-width:720px;margin:0 auto 40px;padding:0 16px}
-.detail__hero{width:100vw;margin-right:calc(50% - 50vw);margin-left:calc(50% - 50vw);
-  height:min(42vw,340px);min-height:200px;overflow:hidden;background:var(--navy);position:relative}
-.detail__hero img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.78)}
-.detail__hero-cap{position:absolute;inset:auto 0 0 0;padding:28px 20px;text-align:center;
-  background:linear-gradient(transparent,rgba(6,29,56,.9));color:#fff}
-.detail__hero-cap h1{font-size:clamp(22px,4vw,34px);font-weight:900;margin:0}
-.detail__hero-cap p{margin:8px 0 0;opacity:.9;font-size:13.5px}
+.detail{max-width:720px;margin:0 auto 48px;padding:0 16px}
+.detail__hero{
+  width:100vw;margin-right:calc(50% - 50vw);margin-left:calc(50% - 50vw);
+  height:min(42vw,360px);min-height:220px;overflow:hidden;background:var(--navy)
+}
+.detail__hero img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+.detail__title{
+  text-align:center;margin:22px 0 6px;font-size:clamp(22px,3.5vw,32px);
+  font-weight:900;color:var(--navy);line-height:1.35
+}
+.detail__summary{text-align:center;color:var(--muted);font-size:13.5px;margin:0 0 16px}
 .detail__player{
-  margin:20px auto;padding:16px 18px;border-radius:16px;background:#fff;
+  margin:0 auto 18px;padding:14px 16px;border-radius:16px;background:#fff;
   border:1px solid var(--line);box-shadow:0 8px 28px rgba(10,43,81,.06)
 }
 .detail__player audio{width:100%;display:block}
 .detail__player audio::-webkit-media-controls-download-button{display:none}
 .detail__body-card{
-  margin-top:16px;padding:22px 20px;border-radius:16px;background:#fff;
+  margin-top:4px;padding:24px 22px;border-radius:16px;background:#fff;
   border:1px solid var(--line);box-shadow:0 8px 28px rgba(10,43,81,.05)
 }
-.detail__body{text-align:justify;line-height:2;font-size:15.5px;color:var(--ink);white-space:pre-wrap;margin:0}
+.detail__body{
+  text-align:justify;text-justify:inter-word;line-height:2.05;
+  font-size:15.5px;color:var(--ink);white-space:pre-wrap;margin:0
+}
 
 /* floating mini player */
 .site-player{
@@ -192,15 +199,98 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 
 
 
+/* —— tablet —— */
+@media (max-width:900px){
+  .carousel{height:min(56vw,360px);min-height:220px}
+  .brand-ribbon{inset-inline-start:10px}
+  .brand-ribbon__flag{min-width:88px;padding:10px 12px 10px}
+  .brand-ribbon__flag img{width:72px;height:72px}
+  .brand-ribbon__name{font-size:10px}
+  .brand-ribbon__name span{font-size:8.5px}
+  .main{padding:0 14px 40px}
+  .detail{padding:0 12px}
+  .detail__hero{height:min(48vw,280px);min-height:180px}
+}
+
+/* —— mobile —— */
 @media (max-width:720px){
-  .circles{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-  .circle{width:min(150px,40vw)}
-  .circle-stage{width:min(150px,40vw)}
+  .brand-ribbon{inset-inline-start:8px}
+  .brand-ribbon__flag{
+    min-width:72px;padding:8px 10px 8px;border-radius:0 0 14px 14px;
+    box-shadow:0 8px 22px rgba(6,29,56,.28)
+  }
+  .brand-ribbon__flag img{width:56px;height:56px}
+  .brand-ribbon__name{font-size:9px;margin-top:4px}
+  .brand-ribbon__name span{font-size:7.5px;letter-spacing:0}
+
+  .carousel{height:min(62vw,300px);min-height:200px}
+  .carousel__caption{padding:28px 14px 36px}
+  .carousel__caption h2{font-size:clamp(18px,5.5vw,26px)}
+  .carousel__caption p{font-size:12px}
+  .carousel__dots{bottom:10px;gap:6px}
+
+  .hero-still{height:min(48vw,240px);min-height:160px}
+
+  .main{padding:0 12px 36px}
+  .sec-title{margin:20px 0 6px}
+  .sec-title h1{font-size:clamp(18px,5vw,26px)}
+  .sec-title p{font-size:12.5px}
+
+  .circles{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:16px 12px;margin:20px 0;justify-items:center
+  }
+  .circle{width:min(148px,42vw)}
+  .circle-stage{width:min(148px,42vw)}
+  .circle__label{font-size:12px;padding:8px 6px}
+  .circle-time{font-size:10.5px}
+
+  .detail{padding:0 10px 32px;margin-bottom:32px}
+  .detail__hero{height:min(52vw,260px);min-height:160px}
+  .detail__title{font-size:clamp(18px,5vw,26px);margin:16px 0 4px}
+  .detail__summary{font-size:12.5px;margin-bottom:12px}
+  .detail__player{padding:10px 12px;border-radius:12px;margin-bottom:14px}
+  .detail__body-card{padding:16px 14px;border-radius:12px}
+  .detail__body{font-size:14.5px;line-height:1.95}
+
+  .site-player{
+    bottom:10px;width:calc(100% - 20px);max-width:none;
+    border-radius:14px;padding:10px 12px;gap:8px;flex-wrap:wrap
+  }
+  .site-player audio{width:100%;flex:1 1 100%;order:3}
+  .site-player__meta{flex:1;min-width:0}
+  .site-player__title{font-size:12px}
+  .site-player__sub{font-size:10px}
+
+  .footer{padding:22px 14px 28px;font-size:11.5px}
+  .footer img{width:40px!important;height:40px!important}
+  .back{font-size:12.5px;padding:7px 14px}
+}
+
+@media (max-width:380px){
+  .brand-ribbon__flag{min-width:64px;padding:6px 8px}
+  .brand-ribbon__flag img{width:48px;height:48px}
+  .brand-ribbon__name{display:none} /* logo only on very small; image still has text */
+  .circle{width:min(130px,44vw)}
+  .circle-stage{width:min(130px,44vw)}
+}
+
+/* safe area (notch phones) */
+@supports (padding:max(0px)){
+  .brand-ribbon{top:max(0px, env(safe-area-inset-top))}
+  .site-player{bottom:max(10px, env(safe-area-inset-bottom))}
+  .footer{padding-bottom:max(28px, env(safe-area-inset-bottom))}
 }
 </style>
 </head>
 <body>
 <div class="shell">
+  <a class="brand-ribbon" href="#/" title="اساطیر آینده" id="site-brand-ribbon">
+    <span class="brand-ribbon__flag">
+      <img src="/site/img/logo.png" alt="اساطیر آینده" width="88" height="88">
+      <div class="brand-ribbon__name">اساطیر آینده<span>asatir-e ayande</span></div>
+    </span>
+  </a>
   <div id="app"></div>
   <div class="site-player" id="site-player">
     <div class="site-player__meta">
@@ -276,14 +366,40 @@ function slotsToCarousel(page){
   }));
 }
 
+function inferCircleRoute(title, fallback, index){
+  const t = (title || '').trim();
+  const rules = [
+    [/پادکست|podcast/i, '#/english/podcast'],
+    [/داستان|stor/i, '#/english/stories'],
+    [/کتاب|book/i, '#/english/books'],
+    [/انگلیس|english/i, '#/english'],
+    [/نقاش|paint|art/i, '#/painting'],
+    [/کامپیوتر|computer|code/i, '#/computer'],
+    [/موسیقی.*انگلیس|musics/i, '#/english/musics'],
+    [/موسیقی|music/i, '#/music-skill'],
+  ];
+  for(const [re, route] of rules){
+    if(re.test(t)) return route;
+  }
+  if(fallback && fallback[index] && fallback[index].route) return fallback[index].route;
+  return null;
+}
+
 function slotsToCircles(page, fallback){
   if(!page || !page.circles || !page.circles.length) return fallback;
-  return page.circles.map(s => ({
-    id: String(s.id),
-    label: s.title || '',
-    img: s.imageUrl || IMG.book,
-    route: s.linkHref || '#/'
-  }));
+  return page.circles.map((s, i) => {
+    let route = (s.linkHref || '').trim();
+    if(!route || route === '#' || route === '#/'){
+      route = inferCircleRoute(s.title, fallback, i) || (fallback[i] && fallback[i].route) || '#/';
+    }
+    const fb = fallback && fallback[i];
+    return {
+      id: String(s.id),
+      label: s.title || (fb && fb.label) || '',
+      img: s.imageUrl || (fb && fb.img) || IMG.book,
+      route
+    };
+  });
 }
 
 const CAT = { podcast:1, stories:2, musics:3, books:4 };
@@ -301,9 +417,6 @@ function renderCarousel(slides){
   let i = 0;
   const html = `
   <div class="carousel" id="carousel">
-    <a class="brand-ribbon" href="#/" title="اساطیر آینده">
-      <span class="brand-ribbon__flag"><img src="/site/img/logo.png" alt="اساطیر آینده"></span>
-    </a>
     <div class="carousel__track" id="c-track">
       ${data.map(s=>`
         <div class="carousel__slide">
@@ -487,26 +600,24 @@ async function renderDetail(key, id){
     if(!r.ok) return `<div class="lib-empty">یافت نشد.</div>`;
     const it = await r.json();
     const img = it.imageUrl || CAT_HERO[key];
-    const audio = it.audioUrl
+    const player = it.audioUrl
       ? `<div class="detail__player">
            <audio controls controlsList="nodownload noplaybackrate" oncontextmenu="return false" src="${it.audioUrl}"></audio>
          </div>`
       : '';
-    const body = it.bodyText
+    const body = (it.bodyText && String(it.bodyText).trim())
       ? `<div class="detail__body-card"><div class="detail__body">${escapeHtml(it.bodyText)}</div></div>`
-      : (it.summary ? `<div class="detail__body-card"><div class="detail__body">${escapeHtml(it.summary)}</div></div>` : '');
+      : '';
     return `
       <div class="detail">
-        <div class="detail__hero">
-          <img src="${img}" alt="${escapeHtml(it.title)}">
-          <div class="detail__hero-cap">
-            <h1>${escapeHtml(it.title)}</h1>
-            ${it.summary?`<p>${escapeHtml(it.summary)}</p>`:''}
-          </div>
-        </div>
-        ${audio}
+        <div class="detail__hero"><img src="${img}" alt="${escapeHtml(it.title)}"></div>
+        <h1 class="detail__title">${escapeHtml(it.title)}</h1>
+        ${it.summary ? `<p class="detail__summary">${escapeHtml(it.summary)}</p>` : ''}
+        ${player}
         ${body}
-        <div style="text-align:center"><a class="back" href="#/english/${key}">← بازگشت به ${CAT_NAME[key]||'لیست'}</a></div>
+        <div style="text-align:center;margin-top:20px">
+          <a class="back" href="#/english/${key}">← بازگشت به ${CAT_NAME[key]||'لیست'}</a>
+        </div>
       </div>`;
   }catch{
     return `<div class="lib-empty">خطا در بارگذاری.</div>`;

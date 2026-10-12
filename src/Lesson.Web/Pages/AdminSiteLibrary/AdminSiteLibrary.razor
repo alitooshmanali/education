@@ -32,7 +32,7 @@
     <div class="sl__head">
         <div>
             <h1 class="sl__title">کتابخانه سایت</h1>
-            <p class="sl__sub">پادکست‌ها در پوشهٔ _PagePodcast ذخیره می‌شوند. «فقط صوت» = پخش درجا؛ در غیر این صورت صفحه جزئیات با متن.</p>
+            <p class="sl__sub">فقط عنوان، عکس، صوت و نوع نمایش را وارد کنید. شناسه و لینک به‌صورت خودکار ساخته می‌شود.</p>
         </div>
         <button class="btn btn-primary" type="button" @onclick="StartCreate">مورد جدید</button>
     </div>
@@ -66,30 +66,22 @@
                     <InputFile OnChange="OnImageFile" accept="image/*" />
                     @if (_imageContentId is long ic)
                     {
-                        <p style="margin-top:6px;font-size:12px;color:#6B7787">Content Id: @ic · <a href="/api/site/media/@ic" target="_blank">پیش‌نمایش</a></p>
+                        <p style="margin-top:6px;font-size:12px;color:#6B7787">تصویر ذخیره شد · <a href="/api/site/media/@ic" target="_blank">پیش‌نمایش</a></p>
                     }
                 </div>
                 <div class="sl-field full">
-                    <label>یا مسیر/URL تصویر (اختیاری)</label>
-                    <input @bind="_imagePath" placeholder="/site/img/podcast1.jpg" />
-                </div>
-                <div class="sl-field full">
-                    <label>آپلود فایل صوت (پادکست) — در پوشه سیستمی ذخیره می‌شود</label>
+                    <label>آپلود فایل صوت</label>
                     <InputFile OnChange="OnAudioFile" accept="audio/*,.mp3,.m4a,.wav,.ogg" />
                     @if (_audioId is long aid)
                     {
-                        <p style="margin-top:6px;font-size:12px;color:#6B7787">Audio Content Id: @aid · <a href="/api/site/media/@aid" target="_blank">پخش آزمایشی</a></p>
+                        <p style="margin-top:6px;font-size:12px;color:#6B7787">صوت ذخیره شد · <a href="/api/site/media/@aid" target="_blank">پخش آزمایشی</a></p>
                     }
                 </div>
                 <div class="sl-field">
-                    <label>یا شناسه Content صوت (دستی)</label>
-                    <input type="number" @bind="_audioId" />
-                </div>
-                <div class="sl-field">
-                    <label>نوع پادکست</label>
+                    <label>نوع نمایش</label>
                     <select @bind="_voiceOnlyStr">
-                        <option value="true">فقط صوت + عکس (پخش در همان صفحه)</option>
-                        <option value="false">صوت + متن (صفحه جزئیات جدا)</option>
+                        <option value="true">فقط صوت + عکس (پخش در همین صفحه)</option>
+                        <option value="false">صوت + متن (صفحه جزئیات)</option>
                     </select>
                 </div>
                 <div class="sl-field full">

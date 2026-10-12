@@ -225,3 +225,148 @@
         cursor: pointer;
     }
 }
+
+
+/* =========================================================
+   Mobile polish — platform (phone browsers)
+   ========================================================= */
+@media (max-width: 768px) {
+    .brand {
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+    .brand__mark,
+    .brand__mark--logo {
+        width: 44px;
+        height: 44px;
+    }
+    .brand__text strong {
+        font-size: 14px;
+    }
+    .brand__text span {
+        font-size: 11px;
+    }
+
+    .topbar {
+        min-height: 56px;
+        height: auto;
+        padding-block: 8px;
+        flex-wrap: wrap;
+        row-gap: 8px;
+    }
+    .topbar__left {
+        flex: 1;
+        min-width: 0;
+    }
+    .topbar__crumb {
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 55vw;
+    }
+    .topbar__right {
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+
+    /* teacher level/class selector — stack on phone */
+    .teacher-ctx,
+    .tcs,
+    .tcs-row {
+        flex-wrap: wrap;
+        gap: 6px;
+        max-width: 100%;
+    }
+    .teacher-ctx select,
+    .tcs select {
+        max-width: 42vw;
+        font-size: 12px;
+    }
+
+    .umenu__trigger {
+        padding: 4px 8px;
+        gap: 6px;
+    }
+    .umenu__meta {
+        display: none;
+    }
+    .umenu__panel {
+        inset-inline-end: 0;
+        min-width: min(260px, 88vw);
+    }
+
+    /* tables scroll horizontally instead of breaking layout */
+    .sp-card,
+    .sl-card,
+    .table-wrap,
+    .data-table-wrap,
+    table.sp-table,
+    table.sl-table,
+    .admin-table,
+    .grid-table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    table {
+        min-width: 520px;
+    }
+
+    /* cards & forms */
+    .sp-grid,
+    .sl-grid,
+    .form-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .sp-tabs,
+    .tabs {
+        gap: 6px;
+    }
+    .sp-tab {
+        font-size: 11.5px;
+        padding: 6px 10px;
+    }
+
+    .btn {
+        min-height: 40px;
+    }
+    .btn-sm {
+        min-height: 34px;
+    }
+
+    /* KPI / dashboard */
+    .kpi-grid,
+    .admin-kpis,
+    .stats-row {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 420px) {
+    .kpi-grid,
+    .admin-kpis,
+    .stats-row {
+        grid-template-columns: 1fr !important;
+    }
+    .topbar__crumb {
+        max-width: 42vw;
+        font-size: 13px;
+    }
+    .content {
+        padding: 12px 10px;
+    }
+}
+
+@supports (padding: max(0px)) {
+    .app-sidebar {
+        padding-top: max(20px, env(safe-area-inset-top));
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+    }
+    .topbar {
+        padding-top: max(8px, env(safe-area-inset-top));
+    }
+}
