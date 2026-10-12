@@ -281,6 +281,17 @@ button{font:inherit;cursor:pointer;border:0;background:none}
   .site-player{bottom:max(10px, env(safe-area-inset-bottom))}
   .footer{padding-bottom:max(28px, env(safe-area-inset-bottom))}
 }
+/* overflow safety + tighter small-screen */
+html,body{overflow-x:hidden}
+.lib-grid{grid-template-columns:repeat(auto-fill,minmax(min(140px,100%),1fr))}
+@media(max-width:420px){
+  .main{padding:0 10px 28px}
+  .footer{padding:18px 12px 24px}
+  .circle{width:min(126px,44vw)}
+  .circle-stage{width:min(126px,44vw)}
+  .detail__body{font-size:14px}
+}
+
 </style>
 </head>
 <body>

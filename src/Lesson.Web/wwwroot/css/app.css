@@ -1,7 +1,9 @@
-@import url("layout.css");
-@import url("components.css");
-@import url("pages.css");
-@import url("responsive.css");
+/* =========================================================
+   NOTE: layout.css / components.css / pages.css / responsive.css are
+   linked explicitly (in that order) from App.razor. Keep @import out of
+   this file — @import fetches before the rules below and makes the
+   cascade order unpredictable, which previously disabled responsive.css.
+   ========================================================= */
 
 /* =========================================================
    اساطیر آینده — Design System (Asatir-e Ayande)
