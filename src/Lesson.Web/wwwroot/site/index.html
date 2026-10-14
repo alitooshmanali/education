@@ -4,9 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>اساطیر آینده</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/fonts.css">
 <style>
 :root{
   --navy:#0A2B51; --sand:#D1AB7B; --cream:#F9F6ED; --ink:#132133; --muted:#6B7787;
@@ -75,6 +73,19 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 }
 .carousel__dots button{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.45);border:0;padding:0;cursor:pointer}
 .carousel__dots button.is-on{background:#D1AB7B;width:22px;border-radius:999px}
+.carousel{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.carousel__track{cursor:grab;will-change:transform}
+.carousel__track.is-dragging{cursor:grabbing;transition:none!important}
+.carousel__arrow{
+  position:absolute;top:50%;transform:translateY(-50%);z-index:12;
+  width:40px;height:40px;border-radius:50%;border:0;
+  background:rgba(255,255,255,.92);color:#0A2B51;
+  font-size:22px;font-weight:700;line-height:1;
+  display:grid;place-items:center;cursor:pointer;
+  box-shadow:0 4px 16px rgba(6,29,56,.25)
+}
+.carousel__arrow--prev{left:10px}
+.carousel__arrow--next{right:10px}
 
 /* —— circles —— */
 .circles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;margin:40px 0 24px;justify-items:center}
@@ -228,6 +239,9 @@ button{font:inherit;cursor:pointer;border:0;background:none}
   .carousel__caption h2{font-size:clamp(18px,5.5vw,26px)}
   .carousel__caption p{font-size:12px}
   .carousel__dots{bottom:10px;gap:6px}
+  .carousel__arrow{width:34px;height:34px;font-size:18px}
+  .carousel__arrow--prev{left:6px}
+  .carousel__arrow--next{right:6px}
 
   .hero-still{height:min(48vw,240px);min-height:160px}
 
@@ -432,36 +446,120 @@ function renderCarousel(slides){
       ${data.map(s=>`
         <div class="carousel__slide">
           <img src="${s.img}" alt="${s.title||''}" loading="eager"
-               onerror="this.style.opacity='.3'">
+               onerror="this.style.opacity='.3'" draggable="false">
           <div class="carousel__caption"><div>
             <h2>${s.title||''}</h2>
             ${s.sub?`<p>${s.sub}</p>`:''}
           </div></div>
         </div>`).join('')}
     </div>
+    <button type="button" class="carousel__arrow carousel__arrow--prev" id="c-prev" aria-label="قبلی">‹</button>
+    <button type="button" class="carousel__arrow carousel__arrow--next" id="c-next" aria-label="بعدی">›</button>
     <div class="carousel__dots" id="c-dots">
       ${data.map((_,d)=>`<button type="button" data-i="${d}" class="${d===0?'is-on':''}" aria-label="slide ${d+1}"></button>`).join('')}
     </div>
   </div>`;
   requestAnimationFrame(()=>{
+    const root = document.getElementById('carousel');
     const track = document.getElementById('c-track');
     const dots = document.getElementById('c-dots');
-    if(!track||!dots) return;
+    if(!track||!dots||!root) return;
+
     const go = (n)=>{
       i = ((n % data.length) + data.length) % data.length;
+      track.style.transition = 'transform .35s ease';
       track.style.transform = 'translate3d(' + (-i * 100) + '%,0,0)';
       dots.querySelectorAll('button').forEach((b,bi)=>b.classList.toggle('is-on', bi===i));
     };
-    go(0);
-    dots.querySelectorAll('button').forEach(b=>{
-      b.addEventListener('click', ()=>{ stopCarousel(); go(+b.dataset.i); start(); });
-    });
-    function start(){
+
+    const start = ()=>{
       stopCarousel();
       if(data.length > 1){
         carouselTimer = setInterval(()=>go(i+1), 4800);
       }
-    }
+    };
+
+    go(0);
+    dots.querySelectorAll('button').forEach(b=>{
+      b.addEventListener('click', ()=>{ stopCarousel(); go(+b.dataset.i); start(); });
+    });
+    document.getElementById('c-prev')?.addEventListener('click', ()=>{ stopCarousel(); go(i-1); start(); });
+    document.getElementById('c-next')?.addEventListener('click', ()=>{ stopCarousel(); go(i+1); start(); });
+
+    /* —— touch / pointer swipe (mobile + desktop drag) —— */
+    let startX = 0, startY = 0, deltaX = 0, dragging = false, axis = null;
+    const threshold = 40; // px
+
+    const onDown = (clientX, clientY)=>{
+      if(data.length < 2) return;
+      dragging = true;
+      axis = null;
+      startX = clientX;
+      startY = clientY;
+      deltaX = 0;
+      stopCarousel();
+      track.classList.add('is-dragging');
+      track.style.transition = 'none';
+    };
+    const onMove = (clientX, clientY)=>{
+      if(!dragging) return;
+      const dx = clientX - startX;
+      const dy = clientY - startY;
+      if(axis === null){
+        if(Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+        axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+        if(axis === 'y'){ dragging = false; track.classList.remove('is-dragging'); return; }
+      }
+      if(axis !== 'x') return;
+      deltaX = dx;
+      const pct = (deltaX / root.offsetWidth) * 100;
+      track.style.transform = 'translate3d(' + ((-i * 100) + pct) + '%,0,0)';
+    };
+    const onUp = ()=>{
+      if(!dragging && axis !== 'x'){ track.classList.remove('is-dragging'); return; }
+      track.classList.remove('is-dragging');
+      dragging = false;
+      if(Math.abs(deltaX) > threshold){
+        go(deltaX < 0 ? i + 1 : i - 1);
+      } else {
+        go(i);
+      }
+      deltaX = 0;
+      axis = null;
+      start();
+    };
+
+    // Pointer events (covers touch + mouse)
+    root.addEventListener('pointerdown', e=>{
+      if(e.button !== undefined && e.button !== 0) return;
+      if(e.target.closest('.carousel__arrow, .carousel__dots')) return;
+      onDown(e.clientX, e.clientY);
+      try{ root.setPointerCapture(e.pointerId); }catch(_){}
+    });
+    root.addEventListener('pointermove', e=>{
+      if(!dragging) return;
+      onMove(e.clientX, e.clientY);
+    });
+    root.addEventListener('pointerup', onUp);
+    root.addEventListener('pointercancel', onUp);
+    root.addEventListener('pointerleave', e=>{
+      if(dragging) onUp();
+    });
+
+    // Fallback touch for older browsers
+    root.addEventListener('touchstart', e=>{
+      if(!e.touches[0]) return;
+      if(e.target.closest('.carousel__arrow, .carousel__dots')) return;
+      onDown(e.touches[0].clientX, e.touches[0].clientY);
+    }, {passive:true});
+    root.addEventListener('touchmove', e=>{
+      if(!dragging || axis !== 'x' || !e.touches[0]) return;
+      onMove(e.touches[0].clientX, e.touches[0].clientY);
+      if(axis === 'x') e.preventDefault();
+    }, {passive:false});
+    root.addEventListener('touchend', onUp);
+    root.addEventListener('touchcancel', onUp);
+
     start();
   });
   return html;
