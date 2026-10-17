@@ -291,7 +291,7 @@ svg{display:block}
   .c4{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:900px){
-  .app{grid-template-columns:1fr}
+  .app{grid-template-columns:minmax(0,1fr)}
   .sb{position:fixed;inset-inline-start:0;top:0;width:270px;z-index:50;transform:translateX(102%);transition:.24s var(--ease)}
   [dir="rtl"] .sb{transform:translateX(-102%)}
   .sb.open{transform:none}
@@ -303,6 +303,37 @@ svg{display:block}
   .kpis{grid-template-columns:1fr}
   .c4{grid-template-columns:1fr}
 }
+/* ---------- responsive polish: phones & small screens ---------- */
+@media(max-width:900px){
+  .top{flex-wrap:wrap;row-gap:10px;gap:12px}
+  .top-tools{flex-wrap:wrap;justify-content:flex-end}
+  .top-tools .ctrl{flex:1 1 170px;min-width:0}
+}
+@media(max-width:680px){
+  .top{padding:10px 12px;gap:10px}
+  .top-t h1{font-size:15px}
+  .top-t .crumb{font-size:10.5px}
+  .top-tools{flex:1 1 100%;gap:8px;max-width:100%;min-width:0}
+  .top-tools .ctrl{order:3;flex:1 1 100%;width:auto!important;max-width:100%;min-width:0}
+  .ctrl input{min-width:0}
+  .bell{width:38px;height:38px}
+  .wrap{padding:14px 12px 36px}
+  .kpis,.c21,.c12,.c11,.c3,.c4{grid-template-columns:minmax(0,1fr)}
+  .frm{grid-template-columns:minmax(0,1fr)}
+  .kpi,.panel,.page,.frm>*{min-width:0}
+  .kt,.kd,.kv,.crumb{overflow-wrap:anywhere}
+  .p-head{flex-direction:column;align-items:flex-start;gap:10px}
+  .seg{flex-wrap:wrap}
+  .tabs{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
+@media(max-width:420px){
+  .top-t h1{font-size:14px}
+  .top-t .crumb{display:none}
+  .panel{padding:14px}
+  .btn{padding:10px 16px;font-size:12.5px}
+  .kv{font-size:24px}
+}
+
 </style>
 </head>
 <body>

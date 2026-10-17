@@ -1,227 +1,516 @@
 /* =========================================================
-   Responsive Design
-   Desktop → Tablet → Mobile
+   Responsive layer — platform dashboard
+   ---------------------------------------------------------
+   This file is linked LAST from App.razor and must be the
+   single source of truth for breakpoint behaviour.
+   Order:  <= 1080  tablet / drawer
+           <=  768  phone
+           <=  560  small phone
+           <=  400  very small
+   All selectors use the design-system tokens from app.css.
    ========================================================= */
 
-/* Tablet */
-@media (max-width: 1100px) {
-    .app-shell {
-        grid-template-columns: 1fr;
-    }
-
-    .app-sidebar {
-        position: fixed;
-        inset: 0 auto 0 0;
-        width: min(85vw, 280px);
-        transform: translateX(-110%);
-        transition: transform 0.2s ease;
-        z-index: 50;
-    }
-
-    /* RTL: slide from right */
-    [dir="rtl"] .app-sidebar {
-        inset: 0 0 0 auto;
-        transform: translateX(110%);
-    }
-
-    .app-sidebar[data-open="True"],
-    .app-sidebar[data-open="true"] {
-        transform: translateX(0);
-    }
-
-    [dir="rtl"] .app-sidebar[data-open="True"],
-    [dir="rtl"] .app-sidebar[data-open="true"] {
-        transform: translateX(0);
-    }
-
-    .nav-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.45);
-        z-index: 45;
-        display: none;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s ease;
-    }
-
-    .app-main.is-open .nav-backdrop {
-        display: block;
-        opacity: 1;
-        pointer-events: auto;
-    }
-
-    .menu-toggle {
-        display: inline-flex;
-    }
-
-    .topbar {
-        padding-inline: 16px;
-    }
-
-    .content {
-        padding: 20px 16px;
-    }
-
-    .grid.stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+/* ---------------------------------------------------------
+   0. Global guards — never let a stray wide child create a
+      page-level horizontal scrollbar. Internal scrollers
+      (.data-table-wrap, .tasks-scroll, …) still work.
+   --------------------------------------------------------- */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-/* Mobile */
-@media (max-width: 768px) {
-    .app-sidebar {
-        width: min(92vw, 300px);
-    }
-
-    .topbar {
-        gap: 8px;
-        padding-inline: 12px;
-    }
-
-    .theme-switch {
-        display: none;
-    }
-
-    .topbar__crumb {
-        font-size: 15px;
-    }
-
-    .user-meta {
-        display: none;
-    }
-
-    .content {
-        padding: 16px 12px;
-    }
-
-    .grid.stats,
-    .grid.two-col,
-    .video-grid,
-    .course-grid,
-    .form-grid.two-col {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .auth-page {
-        grid-template-columns: 1fr;
-        width: min(100%, 440px);
-        padding: 16px;
-        gap: 20px;
-    }
-
-    .auth-hero {
-        min-height: auto;
-        padding: 28px 20px;
-    }
-
-    .auth-card {
-        padding: 24px 18px;
-    }
-
-    .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .page-header .btn,
-    .toolbar .btn {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .toolbar.toolbar--flow {
-        flex-direction: column;
-    }
-
-    .topbar .btn-compact {
-        display: none;
-    }
-
-    .stat-card {
-        padding: 16px;
-        min-height: 100px;
-    }
-
-    .panel.pad {
-        padding: 16px;
-    }
-
-    .data-table-wrap {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        border-radius: var(--radius-md);
-    }
-
-    .dialog {
-        width: min(100%, 100%);
-        margin: 0 8px;
-        padding: 20px;
-    }
-
-    .public-navbar {
-        padding: 0 16px;
-    }
-
-    .public-navbar__nav {
-        display: none;
-    }
+.app-shell {
+  max-width: 100%;
+  /* do NOT clip — clips the fixed mobile drawer off-canvas */
+  overflow-x: visible;
+}
+.app-main {
+  max-width: 100%;
+  overflow-x: clip;
 }
 
-/* Small phones */
-@media (max-width: 420px) {
-    .auth-card h2 {
-        font-size: 1.25rem;
-    }
-
-    .btn {
-        height: 44px;
-        font-size: 0.9rem;
-    }
-
-    .field input,
-    .form-control {
-        font-size: 16px; /* prevent iOS zoom */
-    }
-
-    .stat-card__value {
-        font-size: 24px;
-    }
-
-    h1 {
-        font-size: 24px;
-    }
+/* Grid / flex children must be allowed to shrink below their
+   min-content width, otherwise wide tables and long words push
+   the whole layout sideways. */
+.grid > *,
+.panel,
+.content > *,
+.data-grid,
+.form-grid > * {
+  min-width: 0;
 }
 
-/* Ensure icons never become huge */
+/* Long unbroken strings (URLs, e-mails, hashes) must wrap. */
+.content, .panel, .data-table td, .data-grid__cell {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Fluid media + explicit aspect-ratio safety. */
+img, video, svg, canvas, iframe {
+  max-width: 100%;
+}
+
 .app-icon svg {
-    max-width: 100%;
-    max-height: 100%;
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
 }
 
-/* Nav toggle visibility */
+/* Protect intrinsically-sized single-row grids from overflowing
+   narrow viewports (minmax floor now clamped to 100%). */
+.grid.stats {
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+}
+.video-grid,
+.course-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+}
+
+/* Visually hidden native checkbox that drives the drawer. */
 .nav-toggle {
-    display: none;
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
+  display: none;
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
 
-@media (max-width: 768px) {
-    .nav-toggle-label,
-    .mobile-menu-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        border-radius: var(--radius-sm);
-        border: 1px solid var(--color-border);
-        background: var(--color-surface);
-        cursor: pointer;
-    }
+/* =========================================================
+   1. TABLET  <= 1080px — sidebar becomes an off-canvas drawer
+   ========================================================= */
+@media (max-width: 1080px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  /* Backdrop: full-screen dimmer */
+  .nav-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 900 !important;
+    background: rgba(6, 29, 56, 0.55) !important;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    border: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .app-shell.nav-open .nav-backdrop,
+  .app-main.is-open .nav-backdrop {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  /* Drawer panel — use left/right, NOT transform (transform was clipped / overridden) */
+  .app-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: min(88vw, 300px) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    z-index: 1000 !important;
+    background: var(--color-sidebar-bg, #061d38) !important;
+    color: var(--color-sidebar-text, rgba(242,245,249,.85)) !important;
+    box-shadow: -8px 0 40px rgba(6, 29, 56, 0.45);
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    transition: left 0.25s ease, right 0.25s ease;
+    /* reset any sticky / grid placement from desktop */
+    inset: auto !important;
+    transform: none !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  /* LTR: dock left, hide off-screen to the left */
+  html:not([dir="rtl"]) .app-sidebar,
+  [dir="ltr"] .app-sidebar {
+    left: -320px !important;
+    right: auto !important;
+  }
+  html:not([dir="rtl"]) .app-shell.nav-open .app-sidebar,
+  html:not([dir="rtl"]) .app-sidebar.is-open,
+  [dir="ltr"] .app-shell.nav-open .app-sidebar,
+  [dir="ltr"] .app-sidebar.is-open {
+    left: 0 !important;
+  }
+
+  /* RTL (default for this app): dock right, hide off-screen to the right */
+  [dir="rtl"] .app-sidebar,
+  .app-shell[dir="rtl"] .app-sidebar {
+    right: -320px !important;
+    left: auto !important;
+    box-shadow: 8px 0 40px rgba(6, 29, 56, 0.45);
+  }
+  [dir="rtl"] .app-shell.nav-open .app-sidebar,
+  [dir="rtl"] .app-sidebar.is-open,
+  .app-shell[dir="rtl"].nav-open .app-sidebar,
+  .app-shell[dir="rtl"] .app-sidebar.is-open {
+    right: 0 !important;
+    left: auto !important;
+  }
+
+  .menu-toggle {
+    display: inline-flex !important;
+  }
+
+  .content {
+    margin-inline: auto;
+    padding: 22px clamp(16px, 2.4vw, 28px);
+  }
+
+  .grid.stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .data-grid {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
+
+/* =========================================================
+   2. PHONE  <= 768px
+   ========================================================= */
+@media (max-width: 768px) {
+  :root {
+    --font-size-h1: 24px;
+    --font-size-h2: 21px;
+    --topbar-height: auto;
+  }
+
+  .app-sidebar {
+    width: min(92vw, 300px);
+  }
+
+  /* --- top bar: wraps instead of overflowing --- */
+  .topbar {
+    height: auto;
+    min-height: 58px;
+    padding: 8px clamp(12px, 3vw, 18px);
+    gap: 10px;
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .topbar__left {
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .topbar__right {
+    flex: 0 1 auto;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+
+  .topbar__crumb {
+    font-size: 15px;
+    max-width: 46vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* teacher level/class selector stacks cleanly */
+  .teacher-ctx,
+  .tcs,
+  .tcs-row {
+    flex-wrap: wrap;
+    gap: 6px;
+    max-width: 100%;
+  }
+  .teacher-ctx select,
+  .tcs select {
+    max-width: 44vw;
+    font-size: 12.5px;
+  }
+
+  .umenu__trigger {
+    padding: 4px 8px;
+    gap: 6px;
+    max-width: 42vw;
+  }
+  .umenu__meta {
+    display: none;
+  }
+  .umenu__panel {
+    inset-inline-end: 0;
+    min-width: min(260px, 88vw);
+  }
+
+  .theme-switch,
+  .topbar .btn-compact {
+    display: none;
+  }
+
+  /* --- content + stacking --- */
+  .content {
+    padding: 16px clamp(12px, 3.4vw, 18px) 28px;
+  }
+
+  .grid.stats,
+  .grid.two-col,
+  .video-grid,
+  .course-grid,
+  .form-grid.two-col,
+  .panel-stack,
+  .media-shell {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .page-header .btn,
+  .toolbar .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .toolbar {
+    gap: 8px;
+  }
+  .toolbar--flow {
+    flex-direction: column;
+  }
+  .toolbar__actions {
+    margin-inline-start: 0;
+    width: 100%;
+  }
+
+  /* --- tables: scroll inside their wrapper, never the page --- */
+  .data-table-wrap,
+  .table-wrap,
+  .tbl-wrap,
+  .tasks-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-md);
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 11px 13px;
+    white-space: nowrap;
+  }
+
+  /* --- cards / panels --- */
+  .panel.pad {
+    padding: 16px;
+  }
+  .stat-card {
+    padding: 16px;
+    min-height: 100px;
+  }
+  .stat-card__value,
+  .stat-value {
+    font-size: 24px;
+  }
+
+  /* --- forms --- */
+  .field input,
+  .field select,
+  .field textarea,
+  .form-control,
+  .form-select {
+    font-size: 16px; /* prevents iOS zoom-on-focus */
+  }
+
+  /* --- dialogs + toasts span the viewport --- */
+  .dialog-backdrop {
+    align-items: flex-start;
+    padding: 14px;
+  }
+  .dialog {
+    width: 100%;
+    max-width: 100%;
+    padding: 20px;
+    margin: 0;
+  }
+  .dialog__actions {
+    flex-direction: column-reverse;
+  }
+  .dialog__actions .btn {
+    width: 100%;
+  }
+
+  .toast-wrap {
+    width: calc(100% - 20px);
+    top: 10px;
+  }
+
+  /* --- data grid: horizontal scroll instead of overflow --- */
+  .data-grid {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .data-grid__head,
+  .data-grid__row {
+    min-width: 600px;
+  }
+
+  /* --- admin dashboards (pages.css / Admin.razor.css) --- */
+  .admin-dash__head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .admin-dash__actions .btn {
+    flex: 1 1 auto;
+  }
+  .admin-roles,
+  .admin-sat {
+    gap: 16px;
+  }
+}
+
+/* =========================================================
+   3. SMALL PHONE  <= 560px
+   ========================================================= */
+@media (max-width: 560px) {
+  .grid.stats,
+  .admin-kpis,
+  .admin-grid-2,
+  .admin-mini-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-grid,
+  .admin-kpis,
+  .stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .panel.pad {
+    padding: 14px;
+  }
+
+  .topbar__crumb {
+    max-width: 40vw;
+    font-size: 14px;
+  }
+
+}
+
+/* =========================================================
+   4. VERY SMALL  <= 400px
+   ========================================================= */
+@media (max-width: 400px) {
+  .content {
+    padding: 12px 10px 24px;
+  }
+
+  h1 { font-size: 22px; }
+
+  .btn {
+    min-height: 42px;
+    font-size: 13px;
+    padding: 0 14px;
+  }
+  .btn-sm {
+    min-height: 34px;
+  }
+
+  .topbar__crumb {
+    max-width: 34vw;
+    font-size: 13px;
+  }
+
+  .brand__text span {
+    display: none;
+  }
+
+  .data-grid__head,
+  .data-grid__row {
+    min-width: 520px;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+}
+
+/* =========================================================
+   5. SHORT LANDSCAPE  (phones rotated)
+   ========================================================= */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 480px) {
+  .app-sidebar {
+    padding-block: 12px;
+  }
+  .brand {
+    margin-bottom: 14px;
+  }
+  .nav-item {
+    min-height: 38px;
+    padding: 7px 10px;
+  }
+}
+
+/* =========================================================
+   6. SAFE AREAS (notched / curved devices)
+   ========================================================= */
+@supports (padding: max(0px)) {
+  .app-sidebar {
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  .app-sidebar,
+  .topbar {
+    padding-inline-start: max(14px, env(safe-area-inset-right));
+    padding-inline-end: max(14px, env(safe-area-inset-left));
+  }
+  .content {
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+  }
+  .toast-wrap {
+    padding-inline: max(10px, env(safe-area-inset-left));
+  }
+}
+
+/* =========================================================
+   7. LARGE DESKTOP  >= 1600px — keep content centred & readable
+   ========================================================= */
+@media (min-width: 1600px) {
+  .content {
+    margin-inline: auto;
+  }
+}
+
+/* =========================================================
+   8. MOTION / ACCESSIBILITY
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .app-sidebar,
+  .nav-backdrop,
+  .video-card,
+  .course-card,
+  .stat-card,
+  .card,
+  .progress-bar__fill,
+  .skeleton {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Keyboard users must always see where focus is. */
+:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+
+

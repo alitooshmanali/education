@@ -1,0 +1,344 @@
+@page "/admin/site-pages"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject ISitePageService Pages
+@inject IContentService Contents
+@inject IFolderService Folders
+@inject ICurrentUserContext Current
+
+<style>
+    .sp { max-width: 1100px; width: 100%; }
+    .sp__head { margin-bottom: 16px; }
+    .sp__title { margin: 0; font-size: 24px; font-weight: 900; color: #0A2B51; }
+    .sp__sub { margin: 4px 0 0; color: #6B7787; font-size: 13px; }
+    .sp-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .sp-tab { padding: 8px 14px; border-radius: 999px; border: 1px solid #E6E1D6; background: #fff; font-size: 12.5px; font-weight: 700; cursor: pointer; color: #0A2B51; }
+    .sp-tab.is-on { background: #0A2B51; color: #fff; border-color: #0A2B51; }
+    .sp-form { background: #fff; border: 1px solid #E6E1D6; border-radius: 16px; padding: 18px; margin-bottom: 16px; }
+    .sp-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .sp-field label { display: block; font-size: 12px; font-weight: 700; color: #6B7787; margin-bottom: 5px; }
+    .sp-field input, .sp-field select { width: 100%; box-sizing: border-box; border: 1px solid #E6E1D6; border-radius: 10px; padding: 9px 12px; font: inherit; }
+    .sp-field.full { grid-column: 1 / -1; }
+    .sp-card { background: #fff; border: 1px solid #E6E1D6; border-radius: 16px; overflow: hidden; }
+    .sp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .sp-table th { text-align: start; font-size: 11px; font-weight: 800; color: #6B7787; padding: 12px 14px; background: #fbfaf7; border-bottom: 1px solid #E6E1D6; }
+    .sp-table td { padding: 12px 14px; border-bottom: 1px solid #eef1f5; vertical-align: middle; }
+    .sp-thumb { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; background: #eef3fa; }
+    .sp-alert { padding: 10px 12px; border-radius: 10px; margin-bottom: 12px; font-size: 13px; }
+    .sp-alert.err { background: #fdecec; color: #8f2b21; }
+    .sp-alert.ok { background: #e6f6f0; color: #0c5c41; }
+    @@media (max-width: 800px) { .sp-grid { grid-template-columns: 1fr; } }
+</style>
+
+<section class="sp">
+    <div class="sp__head">
+        <h1 class="sp__title">صفحات سایت</h1>
+        <p class="sp__sub">کروسل، دایره‌ها و هیرو — فقط عنوان، عکس و ترتیب. لینک صفحات به‌صورت خودکار وصل می‌شود.</p>
+    </div>
+
+    <div class="sp-tabs">
+        @foreach (var p in _pageKeys)
+        {
+            <button type="button" class="sp-tab @(_pageKey == p.Key ? "is-on" : null)" @onclick="() => SelectPage(p.Key)">@p.Label</button>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(_error)) { <div class="sp-alert err">@_error</div> }
+    @if (!string.IsNullOrEmpty(_ok)) { <div class="sp-alert ok">@_ok</div> }
+
+    <div style="margin-bottom:12px">
+        <button class="btn btn-primary" type="button" @onclick="StartCreate">اسلات جدید برای «@_pageLabel»</button>
+    </div>
+
+    @if (_showForm)
+    {
+        <div class="sp-form">
+            <div class="sp-grid">
+                <div class="sp-field">
+                    <label>نوع</label>
+                    <select @bind="_slotType">
+                        <option value="@SiteSlotType.Carousel">کروسل</option>
+                        <option value="@SiteSlotType.Circle">دایره</option>
+                        <option value="@SiteSlotType.Hero">هیرو (بنر تک‌عکس)</option>
+                    </select>
+                </div>
+                <div class="sp-field">
+                    <label>عنوان</label>
+                    <input @bind="_title" />
+                </div>
+                <div class="sp-field">
+                    <label>زیرعنوان</label>
+                    <input @bind="_subtitle" />
+                </div>
+                <div class="sp-field">
+                    <label>ترتیب نمایش</label>
+                    <input type="number" @bind="_sort" />
+                </div>
+                @if (_slotType == SiteSlotType.Circle)
+                {
+                    <div class="sp-field">
+                        <label>صفحه مقصد (خودکار وصل می‌شود)</label>
+                        <select @bind="_destKey">
+                            <option value="">— انتخاب کنید —</option>
+                            @foreach (var d in DestinationsForCurrentPage())
+                            {
+                                <option value="@d.Key">@d.Label</option>
+                            }
+                        </select>
+                    </div>
+                }
+                <div class="sp-field full">
+                    <label>آپلود تصویر (در Content ذخیره می‌شود)</label>
+                    <InputFile OnChange="OnFile" accept="image/*" />
+                    @if (_contentId is { } cid)
+                    {
+                        <p style="margin-top:8px;font-size:12px;color:#6B7787">Content Id: @cid · <a href="/api/site/media/@cid" target="_blank">پیش‌نمایش</a></p>
+                    }
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="btn btn-primary" type="button" disabled="@_busy" @onclick="SaveAsync">ذخیره</button>
+                <button class="btn btn-ghost" type="button" @onclick="() => _showForm = false">لغو</button>
+            </div>
+        </div>
+    }
+
+    <div class="sp-card">
+        <table class="sp-table">
+            <thead>
+                <tr>
+                    <th>تصویر</th>
+                    <th>نوع</th>
+                    <th>عنوان</th>
+                    <th>مقصد</th>
+                    <th>ترتیب</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (_items.Count == 0)
+                {
+                    <tr><td colspan="6" style="padding:24px;text-align:center;color:#6B7787">برای این صفحه اسلاتی نیست. با «اسلات جدید» اضافه کنید.</td></tr>
+                }
+                else
+                {
+                    @foreach (var it in _items)
+                    {
+                        <tr>
+                            <td>
+                                @if (it.ImageUrl is not null)
+                                {
+                                    <img class="sp-thumb" src="@it.ImageUrl" alt="" />
+                                }
+                                else { <span style="color:#6B7787">—</span> }
+                            </td>
+                            <td>@TypeLabel(it.SlotType)</td>
+                            <td><b>@(it.Title ?? "—")</b><div style="font-size:11px;color:#6B7787">@(it.Subtitle ?? "")</div></td>
+                            <td style="font-size:12px">@DestLabel(it.LinkHref)</td>
+                            <td>@it.SortOrder</td>
+                            <td style="text-align:end;white-space:nowrap">
+                                <button class="btn btn-sm btn-ghost" type="button" @onclick="() => StartEdit(it)">ویرایش</button>
+                                <button class="btn btn-sm btn-outline" type="button" @onclick="() => DeleteAsync(it.Id)">حذف</button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private static readonly (string Key, string Label)[] _pageKeys =
+    [
+        ("home", "صفحه اصلی"),
+        ("english", "زبان انگلیسی"),
+        ("english-podcast", "پادکست"),
+        ("english-stories", "داستان"),
+        ("english-musics", "موسیقی (انگلیسی)"),
+        ("english-books", "کتاب"),
+        ("painting", "نقاشی"),
+        ("computer", "کامپیوتر"),
+        ("music-skill", "موسیقی")
+    ];
+
+    private string _pageKey = "home";
+    private string _pageLabel = "صفحه اصلی";
+    private List<SiteSlotDto> _items = new();
+    private bool _showForm, _busy;
+    private long? _editId, _contentId;
+    private string _title = "", _subtitle = "", _destKey = "";
+    private string? _error, _ok;
+    private SiteSlotType _slotType = SiteSlotType.Carousel;
+    private int _sort;
+    private long? _siteFolderId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await EnsureSiteFolderAsync();
+        await Reload();
+    }
+
+    private async Task EnsureSiteFolderAsync()
+    {
+        var folder = await Folders.GetSystemFolderAsync(Lesson.Domain.SystemFolders.PageSiteImages);
+        _siteFolderId = folder.Id;
+    }
+
+    private async Task SelectPage(string key)
+    {
+        _pageKey = key;
+        _pageLabel = _pageKeys.First(x => x.Key == key).Label;
+        _showForm = false;
+        await Reload();
+    }
+
+    private async Task Reload()
+    {
+        _items = (await Pages.GetAllAdminAsync(_pageKey)).Where(x => x.IsActive).ToList();
+    }
+
+    private void StartCreate()
+    {
+        _editId = null; _contentId = null; _title = ""; _subtitle = ""; _destKey = "";
+        _slotType = SiteSlotType.Carousel; _sort = _items.Count; _showForm = true; _error = _ok = null;
+    }
+
+    private void StartEdit(SiteSlotDto it)
+    {
+        _editId = it.Id; _contentId = it.ImageContentId; _title = it.Title ?? ""; _subtitle = it.Subtitle ?? "";
+        _destKey = DestKeyFromHref(it.LinkHref); _slotType = it.SlotType; _sort = it.SortOrder; _showForm = true; _error = _ok = null;
+    }
+
+    private async Task OnFile(InputFileChangeEventArgs e)
+    {
+        _error = _ok = null;
+        if (_siteFolderId is null)
+        {
+            _error = "پوشه‌ای در سیستم نیست. ابتدا از بخش محتوا یک پوشه بسازید.";
+            return;
+        }
+        var file = e.File;
+        if (file is null) return;
+        if (file.Size > 8 * 1024 * 1024) { _error = "حداکثر حجم ۸ مگابایت."; return; }
+
+        _busy = true;
+        try
+        {
+            await using var stream = file.OpenReadStream(maxAllowedSize: 8 * 1024 * 1024);
+            await using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            ms.Position = 0;
+            var req = new UploadContentRequest(
+                _siteFolderId.Value,
+                file.Name,
+                file.Name,
+                ms,
+                ms.Length,
+                new[] { LanguageLevel.A1 },
+                ContentType.Image);
+            var entity = await Contents.UploadAsync(req, Current.UserId, isAdmin: true);
+            _contentId = entity.Id;
+            _ok = "تصویر آپلود شد.";
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = _ok = null;
+        if (_contentId is null && _editId is null)
+        {
+            _error = "ابتدا تصویر را آپلود کنید.";
+            return;
+        }
+        _busy = true;
+        try
+        {
+            string? autoLink = null;
+            if (_slotType == SiteSlotType.Circle)
+            {
+                autoLink = HrefFromDestKey(_destKey) ?? AutoLinkBySort(_pageKey, _sort);
+                if (string.IsNullOrEmpty(autoLink))
+                {
+                    _error = "برای دایره، صفحه مقصد را انتخاب کنید.";
+                    return;
+                }
+            }
+            await Pages.UpsertAsync(_editId, _pageKey, _slotType, _title, _subtitle, autoLink, _contentId, _sort, true);
+            _ok = "ذخیره شد.";
+            _showForm = false;
+            await Reload();
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private async Task DeleteAsync(long id)
+    {
+        await Pages.SoftDeleteAsync(id);
+        await Reload();
+    }
+
+
+    private static readonly (string Key, string Label, string Href)[] AllDestinations =
+    [
+        ("english", "زبان انگلیسی", "#/english"),
+        ("painting", "نقاشی", "#/painting"),
+        ("computer", "کامپیوتر", "#/computer"),
+        ("music-skill", "موسیقی", "#/music-skill"),
+        ("english-podcast", "پادکست", "#/english/podcast"),
+        ("english-stories", "داستان", "#/english/stories"),
+        ("english-musics", "موسیقی (انگلیسی)", "#/english/musics"),
+        ("english-books", "کتاب", "#/english/books")
+    ];
+
+    private IEnumerable<(string Key, string Label)> DestinationsForCurrentPage()
+    {
+        if (_pageKey == "home")
+            return AllDestinations.Where(x => x.Key is "english" or "painting" or "computer" or "music-skill")
+                .Select(x => (x.Key, x.Label));
+        if (_pageKey == "english")
+            return AllDestinations.Where(x => x.Key.StartsWith("english-"))
+                .Select(x => (x.Key, x.Label));
+        return AllDestinations.Select(x => (x.Key, x.Label));
+    }
+
+    private static string? AutoLinkBySort(string pageKey, int sort)
+    {
+        if (pageKey == "home")
+            return sort switch { 0 => "#/english", 1 => "#/painting", 2 => "#/computer", 3 => "#/music-skill", _ => null };
+        if (pageKey == "english")
+            return sort switch { 0 => "#/english/podcast", 1 => "#/english/stories", 2 => "#/english/musics", 3 => "#/english/books", _ => null };
+        return null;
+    }
+
+    private static string? HrefFromDestKey(string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return null;
+        var hit = AllDestinations.FirstOrDefault(x => x.Key == key);
+        return string.IsNullOrEmpty(hit.Href) ? null : hit.Href;
+    }
+
+    private static string DestKeyFromHref(string? href)
+    {
+        if (string.IsNullOrWhiteSpace(href)) return "";
+        var hit = AllDestinations.FirstOrDefault(x => x.Href == href);
+        return hit.Key ?? "";
+    }
+
+    private static string DestLabel(string? href)
+    {
+        if (string.IsNullOrWhiteSpace(href)) return "—";
+        var hit = AllDestinations.FirstOrDefault(x => x.Href == href);
+        return string.IsNullOrEmpty(hit.Label) ? href! : hit.Label;
+    }
+
+    private static string TypeLabel(SiteSlotType t) => t switch
+    {
+        SiteSlotType.Carousel => "کروسل",
+        SiteSlotType.Circle => "دایره",
+        SiteSlotType.Hero => "هیرو",
+        _ => t.ToString()
+    };
+}

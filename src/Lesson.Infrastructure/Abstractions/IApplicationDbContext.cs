@@ -24,6 +24,8 @@ public interface IApplicationDbContext
     DbSet<QuizRetakeGrant> QuizRetakeGrants { get; }
     DbSet<ContentFeedback> ContentFeedbacks { get; }
     DbSet<TeacherLevel> TeacherLevels { get; }
+    DbSet<SiteLibraryItem> SiteLibraryItems { get; }
+    DbSet<SitePageSlot> SitePageSlots { get; }
     DbSet<ClassRoom> ClassRooms { get; }
     DbSet<ClassScheduleDay> ClassScheduleDays { get; }
     DbSet<ContentStudentAccess> ContentStudentAccesses { get; }

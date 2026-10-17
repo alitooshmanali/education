@@ -212,7 +212,7 @@ button:disabled {
 }
 
 .grid.two-col {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
 /* ---- Stat Cards ---- */
@@ -411,7 +411,7 @@ textarea.form-control {
 }
 
 .form-grid.two-col {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
 /* ---- Tables ---- */
@@ -1089,6 +1089,7 @@ html.theme-dark .status-badge.tone-neutral,
    ========================================================= */
 .data-grid {
     width: 100%;
+    max-width: 100%;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     overflow: hidden;

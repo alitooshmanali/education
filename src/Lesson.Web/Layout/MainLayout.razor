@@ -50,19 +50,19 @@
 }
 </style>
 
-<div class="app-shell @(ThemeClass)" dir="rtl" lang="fa">
-    <input id="nav-check" type="checkbox" class="nav-toggle" @bind="_isNavOpen" />
-
-    <aside class="app-sidebar" data-open="@_isNavOpen" aria-label="Primary navigation">
+<div class="app-shell @(ThemeClass) @(_isNavOpen ? "nav-open" : null)" dir="rtl" lang="fa">
+    <aside class="app-sidebar @(_isNavOpen ? "is-open" : null)" data-open="@_isNavOpen" aria-label="Primary navigation" style="@(_isNavOpen ? "right:0;left:auto;transform:none;" : null)">
         <div class="brand">
-            <div class="brand__mark">AA</div>
+            <div class="brand__mark brand__mark--logo">
+                <img src="/img/logo.png" alt="اساطیر آینده" />
+            </div>
             <div class="brand__text">
                 <strong>اساطیر آینده</strong>
                 <span>پلتفرم آموزش آنلاین</span>
             </div>
         </div>
 
-        <nav aria-label="Primary">
+        <nav aria-label="Primary" @onclick="OnNavClick">
             @if (_isStudent)
             {
                 <section class="nav-section">
@@ -98,6 +98,8 @@
                     <NavLink class="nav-item" href="/admin/users"><AppIcon Name="users" /> کاربران</NavLink>
                     <NavLink class="nav-item" href="/admin/teachers"><AppIcon Name="users" /> مدرسان</NavLink>
                     <NavLink class="nav-item" href="/admin/classes"><AppIcon Name="folder" /> کلاس‌ها</NavLink>
+                    <NavLink class="nav-item" href="/admin/site-pages"><AppIcon Name="dashboard" /> صفحات سایت</NavLink>
+                    <NavLink class="nav-item" href="/admin/site-library"><AppIcon Name="folder" /> کتابخانه سایت</NavLink>
                     <NavLink class="nav-item" href="/admin/schedule"><AppIcon Name="audit" /> برنامهٔ هفتگی</NavLink>
                 </section>
                 <section class="nav-section">
@@ -116,9 +118,9 @@
         </nav>
     </aside>
 
-    <section class="app-main @(_isNavOpen ? "is-open" : string.Empty)">
-        <label for="nav-check" class="nav-backdrop" @onclick="CloseNav"></label>
+    <div class="nav-backdrop" @onclick="CloseNav" role="button" aria-label="بستن منو"></div>
 
+    <section class="app-main @(_isNavOpen ? "is-open" : string.Empty)">
         <header class="topbar">
             <div class="topbar__left">
                 <button class="menu-toggle" type="button" @onclick="ToggleNav" aria-label="منو">
@@ -245,6 +247,11 @@
     {
         _userMenuOpen = false;
         Logout();
+    }
+
+    private void OnNavClick()
+    {
+        if (_isNavOpen) _isNavOpen = false;
     }
 
 

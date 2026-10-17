@@ -1,0 +1,267 @@
+@page "/admin/site-library"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject ISiteLibraryService Library
+@inject IContentService Contents
+@inject IFolderService Folders
+@inject ICurrentUserContext Current
+
+<style>
+    .sl { max-width: 1100px; width: 100%; }
+    .sl__head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; margin-bottom:18px; align-items:flex-start; }
+    .sl__title { margin:0; font-size:24px; font-weight:900; color:#0A2B51; }
+    .sl__sub { margin:4px 0 0; color:#6B7787; font-size:13px; }
+    .sl-form { background:#fff; border:1px solid #E6E1D6; border-radius:16px; padding:18px; margin-bottom:16px; }
+    .sl-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+    .sl-field label { display:block; font-size:12px; font-weight:700; color:#6B7787; margin-bottom:5px; }
+    .sl-field input, .sl-field select, .sl-field textarea {
+        width:100%; box-sizing:border-box; border:1px solid #E6E1D6; border-radius:10px; padding:9px 12px; font:inherit;
+    }
+    .sl-field.full { grid-column:1/-1; }
+    .sl-card { background:#fff; border:1px solid #E6E1D6; border-radius:16px; overflow:hidden; }
+    .sl-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .sl-table th { text-align:start; font-size:11px; font-weight:800; color:#6B7787; padding:12px 14px; background:#fbfaf7; border-bottom:1px solid #E6E1D6; }
+    .sl-table td { padding:12px 14px; border-bottom:1px solid #eef1f5; vertical-align:top; }
+    .sl-pill { display:inline-flex; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#eef3fa; color:#0A2B51; }
+    .sl-alert { padding:10px 12px; border-radius:10px; margin-bottom:12px; font-size:13px; }
+    .sl-alert.err { background:#fdecec; color:#8f2b21; }
+    .sl-alert.ok { background:#e6f6f0; color:#0c5c41; }
+    @@media (max-width:800px){ .sl-grid { grid-template-columns:1fr; } }
+</style>
+
+<section class="sl">
+    <div class="sl__head">
+        <div>
+            <h1 class="sl__title">کتابخانه سایت</h1>
+            <p class="sl__sub">فقط عنوان، عکس، صوت و نوع نمایش را وارد کنید. شناسه و لینک به‌صورت خودکار ساخته می‌شود.</p>
+        </div>
+        <button class="btn btn-primary" type="button" @onclick="StartCreate">مورد جدید</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_error)) { <div class="sl-alert err">@_error</div> }
+    @if (!string.IsNullOrEmpty(_ok)) { <div class="sl-alert ok">@_ok</div> }
+
+    @if (_showForm)
+    {
+        <div class="sl-form">
+            <div class="sl-grid">
+                <div class="sl-field">
+                    <label>عنوان</label>
+                    <input @bind="_title" />
+                </div>
+                <div class="sl-field">
+                    <label>دسته</label>
+                    <select @bind="_category">
+                        @foreach (var c in Enum.GetValues<SiteLibraryCategory>())
+                        {
+                            <option value="@c">@CatLabel(c)</option>
+                        }
+                    </select>
+                </div>
+                <div class="sl-field">
+                    <label>ترتیب</label>
+                    <input type="number" @bind="_sort" />
+                </div>
+                <div class="sl-field full">
+                    <label>آپلود تصویر جلد (پوشهٔ سیستمی بر اساس دسته)</label>
+                    <InputFile OnChange="OnImageFile" accept="image/*" />
+                    @if (_imageContentId is long ic)
+                    {
+                        <p style="margin-top:6px;font-size:12px;color:#6B7787">تصویر ذخیره شد · <a href="/api/site/media/@ic" target="_blank">پیش‌نمایش</a></p>
+                    }
+                </div>
+                <div class="sl-field full">
+                    <label>آپلود فایل صوت</label>
+                    <InputFile OnChange="OnAudioFile" accept="audio/*,.mp3,.m4a,.wav,.ogg" />
+                    @if (_audioId is long aid)
+                    {
+                        <p style="margin-top:6px;font-size:12px;color:#6B7787">صوت ذخیره شد · <a href="/api/site/media/@aid" target="_blank">پخش آزمایشی</a></p>
+                    }
+                </div>
+                <div class="sl-field">
+                    <label>نوع نمایش</label>
+                    <select @bind="_voiceOnlyStr">
+                        <option value="true">فقط صوت + عکس (پخش در همین صفحه)</option>
+                        <option value="false">صوت + متن (صفحه جزئیات)</option>
+                    </select>
+                </div>
+                <div class="sl-field full">
+                    <label>خلاصه</label>
+                    <input @bind="_summary" />
+                </div>
+                <div class="sl-field full">
+                    <label>متن کامل</label>
+                    <textarea rows="5" @bind="_body"></textarea>
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="btn btn-primary" type="button" disabled="@_busy" @onclick="SaveAsync">ذخیره</button>
+                <button class="btn btn-ghost" type="button" @onclick="() => _showForm = false">لغو</button>
+            </div>
+        </div>
+    }
+
+    <div class="sl-card">
+        <table class="sl-table">
+            <thead>
+                <tr>
+                    <th>عنوان</th>
+                    <th>دسته</th>
+                    <th>صوت‌تنها</th>
+                    <th>وضعیت</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (_items.Count == 0)
+                {
+                    <tr><td colspan="5" style="padding:24px;text-align:center;color:#6B7787">موردی نیست.</td></tr>
+                }
+                else
+                {
+                    @foreach (var it in _items)
+                    {
+                        <tr>
+                            <td><b>@it.Title</b></td>
+                            <td><span class="sl-pill">@CatLabel(it.Category)</span></td>
+                            <td>@(it.IsVoiceOnly ? "بله" : "خیر")</td>
+                            <td>@(it.IsActive ? "فعال" : "غیرفعال")</td>
+                            <td style="text-align:end">
+                                <button class="btn btn-sm btn-ghost" type="button" @onclick="() => StartEdit(it)">ویرایش</button>
+                                <button class="btn btn-sm btn-outline" type="button" @onclick="() => DeleteAsync(it.Id)">حذف</button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private List<SiteLibraryItemDto> _items = new();
+    private bool _showForm, _busy;
+    private long? _editId;
+    private string _title = "", _summary = "", _body = "", _imagePath = "", _voiceOnlyStr = "false";
+    private string? _error, _ok;
+    private SiteLibraryCategory _category = SiteLibraryCategory.Podcast;
+    private int _sort;
+    private long? _audioId, _imageContentId;
+
+    protected override async Task OnInitializedAsync() => await Reload();
+
+    private async Task Reload()
+    {
+        _items = (await Library.GetAllAdminAsync()).ToList();
+    }
+
+    private void StartCreate()
+    {
+        _editId = null; _title = ""; _summary = ""; _body = ""; _imagePath = "";
+        _category = SiteLibraryCategory.Podcast; _sort = 0; _audioId = null; _imageContentId = null;
+        _voiceOnlyStr = "false"; _showForm = true; _error = _ok = null;
+    }
+
+    private void StartEdit(SiteLibraryItemDto it)
+    {
+        _editId = it.Id; _title = it.Title; _summary = it.Summary ?? ""; _body = it.BodyText ?? "";
+        _imagePath = (it.ImageUrl is not null && !it.ImageUrl.StartsWith("/api/")) ? it.ImageUrl : "";
+        _category = it.Category; _sort = it.SortOrder;
+        _voiceOnlyStr = it.IsVoiceOnly ? "true" : "false";
+        _audioId = it.AudioContentId; _imageContentId = it.ImageContentId;
+        _showForm = true; _error = _ok = null;
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = _ok = null;
+        if (string.IsNullOrWhiteSpace(_title)) { _error = "عنوان لازم است."; return; }
+        _busy = true;
+        try
+        {
+            await Library.UpsertAsync(
+                _editId, _title, _summary, _body, _category, _imagePath,
+                _imageContentId is 0 ? null : _imageContentId,
+                _audioId is 0 ? null : _audioId,
+                _voiceOnlyStr == "true", _sort, true);
+            _ok = "ذخیره شد.";
+            _showForm = false;
+            await Reload();
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private async Task DeleteAsync(long id)
+    {
+        await Library.SoftDeleteAsync(id);
+        await Reload();
+    }
+
+
+
+    private async Task OnAudioFile(InputFileChangeEventArgs e)
+    {
+        _error = _ok = null;
+        var file = e.File;
+        if (file is null) return;
+        if (file.Size > 50 * 1024 * 1024) { _error = "حداکثر حجم صوت ۵۰ مگابایت."; return; }
+        try
+        {
+            _busy = true;
+            var folderName = _category == SiteLibraryCategory.Podcast
+                ? Lesson.Domain.SystemFolders.PagePodcast
+                : Lesson.Domain.SystemFolders.PageSiteImages;
+            var folder = await Folders.GetSystemFolderAsync(folderName);
+            await using var stream = file.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024);
+            await using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            ms.Position = 0;
+            var req = new UploadContentRequest(
+                folder.Id, file.Name, file.Name, ms, ms.Length,
+                new[] { LanguageLevel.A1 }, ContentType.Audio);
+            var entity = await Contents.UploadAsync(req, Current.UserId, isAdmin: true);
+            _audioId = entity.Id;
+            _ok = "فایل صوت در پوشهٔ سیستمی ذخیره شد.";
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private async Task OnImageFile(InputFileChangeEventArgs e)
+    {
+        _error = _ok = null;
+        var file = e.File;
+        if (file is null) return;
+        if (file.Size > 8 * 1024 * 1024) { _error = "حداکثر ۸ مگابایت."; return; }
+        try
+        {
+            _busy = true;
+            var folderName = _category switch
+            {
+                SiteLibraryCategory.Story => Lesson.Domain.SystemFolders.PageStories,
+                SiteLibraryCategory.Podcast => Lesson.Domain.SystemFolders.PagePodcast,
+                _ => Lesson.Domain.SystemFolders.PageSiteImages
+            };
+            var folder = await Folders.GetSystemFolderAsync(folderName);
+            await using var stream = file.OpenReadStream(maxAllowedSize: 8 * 1024 * 1024);
+            await using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            ms.Position = 0;
+            var req = new UploadContentRequest(folder.Id, file.Name, file.Name, ms, ms.Length, new[] { LanguageLevel.A1 }, ContentType.Image);
+            var entity = await Contents.UploadAsync(req, Current.UserId, isAdmin: true);
+            _imageContentId = entity.Id;
+            _ok = "تصویر در پوشهٔ سیستمی ذخیره شد.";
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private static string CatLabel(SiteLibraryCategory c) => c switch
+    {
+        SiteLibraryCategory.Podcast => "پادکست",
+        SiteLibraryCategory.Story => "داستان",
+        SiteLibraryCategory.Music => "موسیقی",
+        SiteLibraryCategory.Book => "کتاب",
+        _ => c.ToString()
+    };
+}

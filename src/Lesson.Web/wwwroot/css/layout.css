@@ -6,7 +6,7 @@
 .app-shell {
     min-height: 100vh;
     display: grid;
-    grid-template-columns: var(--sidebar-width) 1fr;
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
     background: var(--color-background);
 }
 
@@ -273,6 +273,7 @@
     padding: var(--space-xl) var(--space-2xl);
     max-width: var(--content-max-width);
     width: 100%;
+    margin-inline: auto;
 }
 
 /* Nav toggle / backdrop (mobile) */
@@ -417,4 +418,18 @@
     inset: 0;
     z-index: 45;
     background: transparent;
+}
+
+
+/* Brand logo mark */
+.brand__mark--logo {
+  background: #fff !important;
+  padding: 4px;
+  overflow: hidden;
+}
+.brand__mark--logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }

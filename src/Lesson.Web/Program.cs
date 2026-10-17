@@ -50,6 +50,8 @@ builder.Services.AddScoped<IStoryService, StoryService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IFeedbackService, FeedbackService>();
 builder.Services.AddScoped<IClassService, ClassService>();
+builder.Services.AddScoped<ISiteLibraryService, SiteLibraryService>();
+builder.Services.AddScoped<ISitePageService, SitePageService>();
 builder.Services.AddScoped<ITeacherWorkspaceService, TeacherWorkspaceService>();
 builder.Services.AddScoped<TeacherSessionState>();
 
@@ -57,6 +59,21 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 
 var app = builder.Build();
+
+// Ensure protected site folders exist
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var folders = scope.ServiceProvider.GetRequiredService<IFolderService>();
+        await folders.EnsureSystemFoldersAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
+        logger.LogWarning(ex, "Could not ensure system folders (DB may be unavailable).");
+    }
+}
 
 app.UseExceptionHandler("/error");
 app.UseStatusCodePagesWithReExecute("/error/{0}");
@@ -70,6 +87,30 @@ app.MapRazorComponents<Lesson.Web.App>().AddInteractiveServerRenderMode();
 
 // Public marketing website
 app.MapGet("/site", () => Results.Redirect("/site/index.html"));
+
+// Public site library API
+app.MapGet("/api/site/library", async (SiteLibraryCategory? category, ISiteLibraryService lib) =>
+    Results.Ok(await lib.GetPublicAsync(category)));
+
+app.MapGet("/api/site/pages/{pageKey}", async (string pageKey, ISitePageService pages) =>
+    Results.Ok(await pages.GetPublicPageAsync(pageKey)));
+
+app.MapGet("/api/site/media/{contentId:long}", async (HttpContext context, long contentId, ISitePageService pages, IContentStreamingService streaming) =>
+{
+    if (!await pages.IsPublicMediaAsync(contentId))
+        return Results.NotFound();
+    // Public stream for site-linked content only
+    var result = await streaming.OpenAsync(contentId, 0, string.Empty, string.Empty, isAdmin: true);
+    if (result is null) return Results.NotFound();
+    return Results.Stream(result.Stream, result.ContentType, enableRangeProcessing: result.Stream.CanSeek, fileDownloadName: result.FileName);
+});
+
+app.MapGet("/api/site/library/{id:long}", async (long id, ISiteLibraryService lib) =>
+{
+    var item = await lib.GetByIdAsync(id);
+    return item is null ? Results.NotFound() : Results.Ok(item);
+});
+
 
 // ---------- Auth ----------
 app.MapPost("/api/auth/login", async (HttpContext context, Lesson.Infrastructure.Abstractions.IAuthenticationService auth) =>

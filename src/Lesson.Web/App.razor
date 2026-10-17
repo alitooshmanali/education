@@ -2,15 +2,25 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <base href="/" />
     <title>اساطیر آینده — آموزشگاه زبان و مهارت</title>
     <meta name="description" content="آموزشگاه اساطیر آینده — دوره‌های زبان انگلیسی، کامپیوتر، موسیقی و نقاشی به‌همراه پلتفرم آموزش آنلاین." />
+    @*
+        Stylesheet order matters: base tokens/reset first, then structure,
+        components and pages, with responsive.css last so its breakpoints win.
+        Do NOT re-add @import rules in app.css or link the sheets twice —
+        duplicated, out-of-order loading silently defeats the media queries.
+    *@
     <link rel="stylesheet" href="css/app.css" />
-    <link rel="stylesheet" href="css/pages.css" />
-    <link rel="stylesheet" href="css/components.css" />
+    @* Blazor CSS-isolation bundle (Login/Admin/AppButton .razor.css).
+       Must be linked explicitly — it is generated but not auto-injected. *@
+    <link rel="stylesheet" href="Lesson.Web.styles.css" />
     <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/pages.css" />
     <link rel="stylesheet" href="css/gauges.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />

@@ -82,6 +82,28 @@
     @@media (max-width: 900px) {
         .tctx__meta { display: none; }
     }
+
+    @@media (max-width: 768px) {
+        .tctx {
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-inline-end: 0;
+            width: 100%;
+        }
+        .tctx__field { min-width: 0; flex: 1 1 40%; }
+        .tctx__field--wide { flex: 1 1 45%; }
+        .tctx__field select {
+            max-width: 100%;
+            width: 100%;
+            height: 36px;
+            font-size: 12px;
+        }
+        .tctx__meta {
+            flex: 1 1 100%;
+            max-width: 100%;
+            font-size: 10.5px;
+        }
+    }
 </style>
 
 @code {

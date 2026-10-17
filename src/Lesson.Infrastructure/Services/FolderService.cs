@@ -1,3 +1,4 @@
+using Lesson.Domain;
 using Lesson.Domain.Entities;
 using Lesson.Domain.Enums;
 using Lesson.Infrastructure.Abstractions;
@@ -53,6 +54,9 @@ public sealed class FolderService : IFolderService
         }
 
         var trimmed = name.Trim();
+        if (SystemFolders.IsProtected(trimmed))
+            throw new InvalidOperationException("این نام برای پوشهٔ سیستمی رزرو شده و قابل ایجاد دستی نیست.");
+
         var relativePath = string.IsNullOrWhiteSpace(parentPath) ? trimmed : $"{parentPath}/{trimmed}";
 
         var exists = await _db.Folders.AnyAsync(
@@ -76,12 +80,21 @@ public sealed class FolderService : IFolderService
     public async Task RenameAsync(long folderId, string name, CancellationToken cancellationToken = default)
     {
         var folder = await _db.Folders.FirstAsync(x => x.Id == folderId, cancellationToken);
-        folder.Name = name.Trim();
+        if (SystemFolders.IsProtected(folder.Name))
+            throw new InvalidOperationException("پوشهٔ سیستمی قابل تغییر نام نیست.");
+        var trimmed = name.Trim();
+        if (SystemFolders.IsProtected(trimmed))
+            throw new InvalidOperationException("این نام برای پوشهٔ سیستمی رزرو شده است.");
+        folder.Name = trimmed;
         await RebuildPathAsync(folder, cancellationToken);
     }
 
     public async Task DeleteAsync(long folderId, CancellationToken cancellationToken = default)
     {
+        var folder = await _db.Folders.AsNoTracking().FirstOrDefaultAsync(x => x.Id == folderId, cancellationToken);
+        if (folder is not null && SystemFolders.IsProtected(folder.Name))
+            throw new InvalidOperationException("پوشهٔ سیستمی قابل حذف نیست.");
+
         var hasChildren = await _db.Folders.AnyAsync(x => x.ParentFolderId == folderId, cancellationToken);
         if (hasChildren)
             throw new InvalidOperationException("ابتدا زیرپوشه‌ها را حذف کنید.");
@@ -94,8 +107,8 @@ public sealed class FolderService : IFolderService
         if (hasStories)
             throw new InvalidOperationException("ابتدا داستان‌های این پوشه را حذف کنید.");
 
-        var folder = await _db.Folders.FirstAsync(x => x.Id == folderId, cancellationToken);
-        _db.Folders.Remove(folder);
+        var entity = await _db.Folders.FirstAsync(x => x.Id == folderId, cancellationToken);
+        _db.Folders.Remove(entity);
         await _db.SaveChangesAsync(cancellationToken);
     }
 
@@ -163,4 +176,41 @@ public sealed class FolderService : IFolderService
                 contents);
         }).ToList();
     }
+    public bool IsSystemFolder(string? name) => SystemFolders.IsProtected(name);
+
+    public async Task EnsureSystemFoldersAsync(CancellationToken cancellationToken = default)
+    {
+        foreach (var name in SystemFolders.All)
+        {
+            var exists = await _db.Folders.AnyAsync(
+                x => x.Name == name && x.ParentFolderId == null,
+                cancellationToken);
+            if (exists) continue;
+
+            _db.Folders.Add(new Folder
+            {
+                Name = name,
+                ParentFolderId = null,
+                RelativePath = name,
+                Level = LanguageLevel.A1,
+                IsActive = true
+            });
+        }
+        await _db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<Folder> GetSystemFolderAsync(string systemFolderName, CancellationToken cancellationToken = default)
+    {
+        if (!SystemFolders.IsProtected(systemFolderName))
+            throw new ArgumentException("نام پوشهٔ سیستمی معتبر نیست.", nameof(systemFolderName));
+
+        await EnsureSystemFoldersAsync(cancellationToken);
+        var folder = await _db.Folders.FirstOrDefaultAsync(
+            x => x.Name == systemFolderName && x.ParentFolderId == null,
+            cancellationToken);
+        if (folder is null)
+            throw new InvalidOperationException($"پوشهٔ سیستمی {systemFolderName} یافت نشد.");
+        return folder;
+    }
+
 }
