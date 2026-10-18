@@ -43,8 +43,10 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
             entity.Property(x => x.Title).HasMaxLength(300).IsRequired();
             entity.Property(x => x.Summary).HasMaxLength(1000);
             entity.Property(x => x.ImagePath).HasMaxLength(1000);
+            entity.Property(x => x.RelatedItemIds).HasMaxLength(500);
             entity.HasOne(x => x.ImageContent).WithMany().HasForeignKey(x => x.ImageContentId).OnDelete(DeleteBehavior.NoAction);
             entity.HasOne(x => x.AudioContent).WithMany().HasForeignKey(x => x.AudioContentId).OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne(x => x.VideoContent).WithMany().HasForeignKey(x => x.VideoContentId).OnDelete(DeleteBehavior.NoAction);
         });
 
         

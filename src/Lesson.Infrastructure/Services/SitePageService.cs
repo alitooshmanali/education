@@ -73,7 +73,7 @@ public sealed class SitePageService(IApplicationDbContext db) : ISitePageService
         var inSlot = await db.SitePageSlots.AnyAsync(x => x.IsActive && x.ImageContentId == contentId, cancellationToken);
         if (inSlot) return true;
         return await db.SiteLibraryItems.AnyAsync(x =>
-            x.IsActive && (x.ImageContentId == contentId || x.AudioContentId == contentId), cancellationToken);
+            x.IsActive && (x.ImageContentId == contentId || x.AudioContentId == contentId || x.VideoContentId == contentId), cancellationToken);
     }
 
     private static string Normalize(string key) => key.Trim().ToLowerInvariant();

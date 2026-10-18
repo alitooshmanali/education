@@ -15,6 +15,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://0.0.0.0:5070");
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions>(o =>
+{
+    o.DetailedErrors = builder.Environment.IsDevelopment();
+    o.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
+    o.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(2);
+});
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

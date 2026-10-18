@@ -161,19 +161,25 @@ public sealed class TeacherWorkspaceService : ITeacherWorkspaceService
     public async Task SetContentRestrictionAsync(
         long teacherId, long contentId, bool isRestricted, IReadOnlyList<long>? allowedUserIds, CancellationToken ct = default)
     {
-        var content = await _db.Contents.Include(c => c.StudentAccesses)
-            .FirstAsync(c => c.Id == contentId, ct);
-        if (content.ClassId is long cid)
+        var meta = await _db.Contents.AsNoTracking()
+            .Where(c => c.Id == contentId)
+            .Select(c => new { c.Id, c.ClassId, c.CreatedByUserId })
+            .FirstAsync(ct);
+        if (meta.ClassId is long cid)
             await EnsureOwnsClassAsync(teacherId, cid, ct);
-        else if (content.CreatedByUserId != teacherId)
+        else if (meta.CreatedByUserId != teacherId)
             throw new InvalidOperationException("اجازهٔ تغییر دسترسی این محتوا را ندارید.");
 
-        content.IsRestricted = isRestricted;
-        content.StudentAccesses.Clear();
+        // Update flags without loading binary Content column
+        await _db.Contents.Where(c => c.Id == contentId)
+            .ExecuteUpdateAsync(s => s.SetProperty(c => c.IsRestricted, isRestricted), ct);
+
+        var oldAccess = await _db.ContentStudentAccesses.Where(a => a.ContentId == contentId).ToListAsync(ct);
+        _db.ContentStudentAccesses.RemoveRange(oldAccess);
         if (isRestricted && allowedUserIds is { Count: > 0 })
         {
             foreach (var uid in allowedUserIds.Distinct())
-                content.StudentAccesses.Add(new ContentStudentAccess { ContentId = contentId, UserId = uid });
+                _db.ContentStudentAccesses.Add(new ContentStudentAccess { ContentId = contentId, UserId = uid });
         }
         await _db.SaveChangesAsync(ct);
     }

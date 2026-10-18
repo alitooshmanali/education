@@ -297,7 +297,7 @@
         _classesNoTeacher = classes.Count(c => c.Status == ClassStatus.NoTeacher || c.TeacherId is null);
         _classesFull = classes.Count(c => c.Status == ClassStatus.Full);
 
-        _contents = (await Contents.GetAllAsync()).Count;
+        _contents = await Contents.CountActiveAsync();
         var tree = await Folders.GetTreeAsync();
         _folders = CountFolders(tree);
         _quizzes = (await Quizzes.GetAllAsync()).Count;

@@ -212,7 +212,7 @@ button:disabled {
 }
 
 .grid.two-col {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: 1fr 1fr;
 }
 
 /* ---- Stat Cards ---- */
@@ -411,7 +411,7 @@ textarea.form-control {
 }
 
 .form-grid.two-col {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: 1fr 1fr;
 }
 
 /* ---- Tables ---- */
@@ -1089,7 +1089,6 @@ html.theme-dark .status-badge.tone-neutral,
    ========================================================= */
 .data-grid {
     width: 100%;
-    max-width: 100%;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     overflow: hidden;
@@ -1175,16 +1174,14 @@ html.theme-dark .data-grid__row:hover,
     color: var(--color-text-secondary);
 }
 
-/* Mobile: horizontal scroll for data grid */
+/* Mobile: handled as cards in responsive.css — do not force min-width */
 @media (max-width: 900px) {
     .data-grid {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        overflow-x: visible;
     }
-
     .data-grid__head,
     .data-grid__row {
-        min-width: 720px;
+        min-width: 0;
     }
 }
 

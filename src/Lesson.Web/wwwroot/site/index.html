@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>اساطیر آینده</title>
-<link rel="stylesheet" href="/css/fonts.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --navy:#0A2B51; --sand:#D1AB7B; --cream:#F9F6ED; --ink:#132133; --muted:#6B7787;
@@ -22,7 +24,7 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 
 /* —— brand ribbon (logo) —— */
 .brand-ribbon{
-  position:fixed;top:0;inset-inline-start:16px;z-index:100;
+  position:absolute;top:0;inset-inline-start:16px;z-index:100;
   display:flex;flex-direction:column;align-items:center;
   text-decoration:none;pointer-events:auto
 }
@@ -173,6 +175,26 @@ button{font:inherit;cursor:pointer;border:0;background:none}
   margin-top:4px;padding:24px 22px;border-radius:16px;background:#fff;
   border:1px solid var(--line);box-shadow:0 8px 28px rgba(10,43,81,.05)
 }
+/* video watch page */
+.video-watch{display:grid;grid-template-columns:minmax(0,1fr) min(320px,34vw);gap:20px;align-items:start;margin:20px 0 40px}
+.video-watch__player{background:#000;border-radius:16px;overflow:hidden;aspect-ratio:16/9}
+.video-watch__player video{width:100%;height:100%;display:block;background:#000}
+.video-watch__side{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;max-height:min(70vh,560px);overflow:auto}
+.video-watch__side h3{font-size:14px;font-weight:900;color:var(--navy);margin:0 0 10px}
+.video-watch__group{margin-bottom:14px}
+.video-watch__group-label{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:8px}
+.video-watch__item{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;cursor:pointer;border:1px solid transparent}
+.video-watch__item:hover,.video-watch__item.is-on{background:#f5f3ec;border-color:var(--line)}
+.video-watch__item img{width:72px;height:48px;object-fit:cover;border-radius:8px;background:#eef3fa;flex-shrink:0}
+.video-watch__item span{font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.35}
+.video-watch__title{font-size:clamp(20px,3vw,28px);font-weight:900;color:var(--navy);margin:12px 0 6px}
+.video-watch__sum{color:var(--muted);font-size:13.5px;margin-bottom:12px}
+.circle-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;z-index:3;background:#000}
+.circle-stage{overflow:visible}
+@media(max-width:900px){
+  .video-watch{grid-template-columns:1fr}
+  .video-watch__side{max-height:none}
+}
 .detail__body{
   text-align:justify;text-justify:inter-word;line-height:2.05;
   font-size:15.5px;color:var(--ink);white-space:pre-wrap;margin:0
@@ -265,7 +287,27 @@ button{font:inherit;cursor:pointer;border:0;background:none}
   .detail__summary{font-size:12.5px;margin-bottom:12px}
   .detail__player{padding:10px 12px;border-radius:12px;margin-bottom:14px}
   .detail__body-card{padding:16px 14px;border-radius:12px}
-  .detail__body{font-size:14.5px;line-height:1.95}
+  /* video watch page */
+.video-watch{display:grid;grid-template-columns:minmax(0,1fr) min(320px,34vw);gap:20px;align-items:start;margin:20px 0 40px}
+.video-watch__player{background:#000;border-radius:16px;overflow:hidden;aspect-ratio:16/9}
+.video-watch__player video{width:100%;height:100%;display:block;background:#000}
+.video-watch__side{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;max-height:min(70vh,560px);overflow:auto}
+.video-watch__side h3{font-size:14px;font-weight:900;color:var(--navy);margin:0 0 10px}
+.video-watch__group{margin-bottom:14px}
+.video-watch__group-label{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:8px}
+.video-watch__item{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;cursor:pointer;border:1px solid transparent}
+.video-watch__item:hover,.video-watch__item.is-on{background:#f5f3ec;border-color:var(--line)}
+.video-watch__item img{width:72px;height:48px;object-fit:cover;border-radius:8px;background:#eef3fa;flex-shrink:0}
+.video-watch__item span{font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.35}
+.video-watch__title{font-size:clamp(20px,3vw,28px);font-weight:900;color:var(--navy);margin:12px 0 6px}
+.video-watch__sum{color:var(--muted);font-size:13.5px;margin-bottom:12px}
+.circle-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;z-index:3;background:#000}
+.circle-stage{overflow:visible}
+@media(max-width:900px){
+  .video-watch{grid-template-columns:1fr}
+  .video-watch__side{max-height:none}
+}
+.detail__body{font-size:14.5px;line-height:1.95}
 
   .site-player{
     bottom:10px;width:calc(100% - 20px);max-width:none;
@@ -291,21 +333,10 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 
 /* safe area (notch phones) */
 @supports (padding:max(0px)){
-  .brand-ribbon{top:max(0px, env(safe-area-inset-top))}
+  .brand-ribbon{top:0}
   .site-player{bottom:max(10px, env(safe-area-inset-bottom))}
   .footer{padding-bottom:max(28px, env(safe-area-inset-bottom))}
 }
-/* overflow safety + tighter small-screen */
-html,body{overflow-x:hidden}
-.lib-grid{grid-template-columns:repeat(auto-fill,minmax(min(140px,100%),1fr))}
-@media(max-width:420px){
-  .main{padding:0 10px 28px}
-  .footer{padding:18px 12px 24px}
-  .circle{width:min(126px,44vw)}
-  .circle-stage{width:min(126px,44vw)}
-  .detail__body{font-size:14px}
-}
-
 </style>
 </head>
 <body>
@@ -368,6 +399,7 @@ const HOME_CIRCLES = [
 
 const ENGLISH_CIRCLES = [
   { id:'podcast', label:'پادکست',  img: IMG.headph,  route:'#/english/podcast' },
+  { id:'videos',  label:'فیلم‌ها',   img: IMG.code,    route:'#/english/videos' },
   { id:'stories', label:'داستان',  img: IMG.story,   route:'#/english/stories' },
   { id:'musics',  label:'موسیقی',  img: IMG.concert, route:'#/english/musics' },
   { id:'books',   label:'کتاب',    img: IMG.oxford,  route:'#/english/books' },
@@ -395,6 +427,7 @@ function inferCircleRoute(title, fallback, index){
   const t = (title || '').trim();
   const rules = [
     [/پادکست|podcast/i, '#/english/podcast'],
+    [/فیلم|video/i, '#/english/videos'],
     [/داستان|stor/i, '#/english/stories'],
     [/کتاب|book/i, '#/english/books'],
     [/انگلیس|english/i, '#/english'],
@@ -427,9 +460,9 @@ function slotsToCircles(page, fallback){
   });
 }
 
-const CAT = { podcast:1, stories:2, musics:3, books:4 };
-const CAT_NAME = { podcast:'پادکست', stories:'داستان', musics:'موسیقی', books:'کتاب' };
-const CAT_HERO = { podcast:IMG.headph, stories:IMG.story, musics:IMG.concert, books:IMG.oxford };
+const CAT = { podcast:1, stories:2, musics:3, books:4, videos:5 };
+const CAT_NAME = { podcast:'پادکست', stories:'داستان', musics:'موسیقی', books:'کتاب', videos:'فیلم‌های آموزشی' };
+const CAT_HERO = { podcast:IMG.headph, stories:IMG.story, musics:IMG.concert, books:IMG.oxford, videos:IMG.code };
 
 const app = document.getElementById('app');
 const audioEl = document.getElementById('audio-el');
@@ -680,12 +713,14 @@ async function renderLibraryList(key){
   }
   return `<div class="circles">${items.map(it=>{
     const img = it.imageUrl || CAT_HERO[key];
-    const voiceOnly = !!it.isVoiceOnly;
-    const href = (!voiceOnly) ? `#/english/${key}/${it.id}` : 'javascript:void(0)';
+    const isVideo = key === 'videos';
+    const voiceOnly = !isVideo && !!it.isVoiceOnly;
+    const href = isVideo ? `#/english/videos/${it.id}` : ((!voiceOnly) ? `#/english/${key}/${it.id}` : 'javascript:void(0)');
     const voice = (voiceOnly && it.audioUrl) ? it.audioUrl : '';
+    const videoUrl = (isVideo && it.videoUrl) ? it.videoUrl : '';
     const isVoice = voiceOnly && voice;
     return `<a class="circle-wrap" href="${href}" data-id="${it.id}"
-      data-audio="${voice}" data-title="${escapeHtml(it.title)}"
+      data-audio="${voice}" data-video="${videoUrl}" data-title="${escapeHtml(it.title)}"
       data-voice-only="${isVoice ? '1' : '0'}"
       title="${escapeHtml(it.title)}">
       <span class="circle-stage">
@@ -735,6 +770,140 @@ async function renderDetail(key, id){
 
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
+
+function stopVideoPreviews(){
+  document.querySelectorAll('video.circle-preview').forEach(v=>{
+    try{ v.pause(); v.remove(); }catch(_){}
+  });
+}
+
+function bindVideoHoverPreviews(root){
+  root.querySelectorAll('a.circle-wrap[data-video]').forEach(el=>{
+    const url = (el.getAttribute('data-video') || '').trim();
+    if(!url) return;
+    let timer = null, stopTimer = null, touchTimer = null;
+    const stage = el.querySelector('.circle-stage') || el;
+
+    const startPreview = ()=>{
+      stopVideoPreviews();
+      const v = document.createElement('video');
+      v.className = 'circle-preview';
+      v.src = url;
+      v.muted = true;
+      v.playsInline = true;
+      v.setAttribute('playsinline','');
+      v.preload = 'auto';
+      stage.appendChild(v);
+      v.play().catch(()=>{});
+      stopTimer = setTimeout(()=>{ try{ v.pause(); v.remove(); }catch(_){} }, 10000);
+    };
+
+    el.addEventListener('mouseenter', ()=>{
+      clearTimeout(timer);
+      timer = setTimeout(startPreview, 2000);
+    });
+    el.addEventListener('mouseleave', ()=>{
+      clearTimeout(timer); clearTimeout(stopTimer); stopVideoPreviews();
+    });
+    el.addEventListener('touchstart', ()=>{
+      touchTimer = setTimeout(startPreview, 2000);
+    }, {passive:true});
+    el.addEventListener('touchend', ()=>{ clearTimeout(touchTimer); });
+    el.addEventListener('touchcancel', ()=>{ clearTimeout(touchTimer); });
+
+    // explicit click navigation (hash)
+    el.addEventListener('click', (e)=>{
+      const id = el.getAttribute('data-id');
+      if(!id) return;
+      // allow normal hash navigation; ensure hash is set
+      const target = '#/english/videos/' + id;
+      if(location.hash !== target){
+        e.preventDefault();
+        location.hash = target;
+      }
+    });
+  });
+}
+
+async function renderVideoWatch(id){
+  try{
+    const r = await fetch('/api/site/library/' + encodeURIComponent(id));
+    if(!r.ok) return `<div class="lib-empty">یافت نشد. (کد ${r.status})</div>`;
+    const it = await r.json();
+    const img = it.imageUrl || CAT_HERO.videos || '';
+    const videoUrl = it.videoUrl || '';
+    const video = videoUrl
+      ? `<div class="video-watch__player"><video id="vw-player" controls playsinline controlsList="nodownload" src="${videoUrl}" poster="${img}"></video></div>`
+      : `<div class="lib-empty">برای این مورد فایل ویدیو ثبت نشده است.</div>`;
+
+    const sideItem = (x, badge)=>{
+      if(!x) return '';
+      const thumb = x.imageUrl || img;
+      const vurl = x.videoUrl || '';
+      return `<div class="video-watch__item" data-play-id="${x.id}" data-play-url="${vurl}" data-play-title="${escapeHtml(x.title||'')}">
+        <img src="${thumb}" alt="">
+        <span>${badge?`<small style="display:block;color:var(--muted);font-size:10px">${badge}</small>`:''}${escapeHtml(x.title||'')}</span>
+      </div>`;
+    };
+
+    let side = '';
+    if(it.previous) side += `<div class="video-watch__group"><div class="video-watch__group-label">قبلی</div>${sideItem(it.previous,'قبلی')}</div>`;
+    if(it.next) side += `<div class="video-watch__group"><div class="video-watch__group-label">بعدی</div>${sideItem(it.next,'بعدی')}</div>`;
+    if(it.related && it.related.length)
+      side += `<div class="video-watch__group"><div class="video-watch__group-label">مرتبط / پیشنهادی</div>${it.related.map(x=>sideItem(x,'')).join('')}</div>`;
+    if(!side) side = `<p style="font-size:12.5px;color:var(--muted);margin:0">مورد مرتبطی تعریف نشده.</p>`;
+
+    return `
+      <div class="video-watch">
+        <div>
+          ${video}
+          <h1 class="video-watch__title">${escapeHtml(it.title||'')}</h1>
+          ${it.summary?`<p class="video-watch__sum">${escapeHtml(it.summary)}</p>`:''}
+          ${it.bodyText?`<div class="detail__body-card"><div class="detail__body">${escapeHtml(it.bodyText)}</div></div>`:''}
+        </div>
+        <aside class="video-watch__side">
+          <h3>مسیر یادگیری</h3>
+          ${side}
+        </aside>
+      </div>
+      <div style="text-align:center"><a class="back" href="#/english/videos">← فیلم‌های آموزشی</a></div>`;
+  }catch(err){
+    console.error(err);
+    return `<div class="lib-empty">خطا در بارگذاری ویدیو.</div>`;
+  }
+}
+
+function bindVideoWatchClicks(root){
+  root.querySelectorAll('[data-play-id]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const id = el.getAttribute('data-play-id');
+      const url = el.getAttribute('data-play-url');
+      const player = document.getElementById('vw-player');
+      if(url && player){
+        player.src = url;
+        player.play().catch(()=>{});
+        root.querySelectorAll('.video-watch__item').forEach(x=>x.classList.remove('is-on'));
+        el.classList.add('is-on');
+        history.replaceState(null,'', '#/english/videos/' + id);
+        try{
+          const r = await fetch('/api/site/library/' + id);
+          if(r.ok){
+            const it = await r.json();
+            const title = root.querySelector('.video-watch__title');
+            const sum = root.querySelector('.video-watch__sum');
+            if(title) title.textContent = it.title || '';
+            if(sum) sum.textContent = it.summary || '';
+            if(it.imageUrl) player.poster = it.imageUrl;
+          }
+        }catch(_){}
+      } else if(id){
+        location.hash = '#/english/videos/' + id;
+      }
+    });
+  });
+}
+
+
 async function route(){
   stopCarousel();
   stopInlinePlayer();
@@ -772,10 +941,15 @@ async function route(){
   }
 
   /* english library section or detail */
-  if(parts[0]==='english' && ['podcast','stories','musics','books'].includes(parts[1])){
+  if(parts[0]==='english' && ['podcast','stories','musics','books','videos'].includes(parts[1])){
     const key = parts[1];
     if(parts[2]){
-      app.innerHTML = `<div class="main">${await renderDetail(key, parts[2])}</div>`;
+      if(key === 'videos'){
+        app.innerHTML = `<div class="main">${await renderVideoWatch(parts[2])}</div>`;
+        bindVideoWatchClicks(app);
+      } else {
+        app.innerHTML = `<div class="main">${await renderDetail(key, parts[2])}</div>`;
+      }
       return;
     }
     const page = await fetchPage('english-' + key);
@@ -798,6 +972,10 @@ async function route(){
         playAudio(url, el.getAttribute('data-title') || '', el);
       });
     });
+    /* educational videos: hover 2s → 10s preview in circle */
+    if(key === 'videos'){
+      bindVideoHoverPreviews(app);
+    }
     return;
   }
 

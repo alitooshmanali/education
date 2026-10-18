@@ -25,9 +25,9 @@
                     else foreach (var s in _rows)
                     {
                         <tr>
-                            <td><b>@s.Username</b></td>
+                            <td data-label="نام کاربری"><b>@s.Username</b></td>
                             <td>@(s.Level?.ToString() ?? "—")</td>
-                            <td>@(s.IsActive ? "فعال" : "غیرفعال")</td>
+                            <td data-label="سطح">@(s.IsActive ? "فعال" : "غیرفعال")</td>
                         </tr>
                     }
                 </tbody>

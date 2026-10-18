@@ -31,11 +31,11 @@
                     else foreach (var v in _items)
                     {
                         <tr>
-                            <td><b>@v.DisplayName</b></td>
+                            <td data-label="عنوان"><b>@v.DisplayName</b></td>
                             <td>@v.FolderName</td>
-                            <td class="num">@FormatSize(v.FileSize)</td>
+                            <td class="num" data-label="پوشه">@FormatSize(v.FileSize)</td>
                             <td>@(v.IsRestricted ? "محدود" : "همهٔ کلاس")</td>
-                            <td class="end">
+                            <td class="end" data-label="حجم">
                                 <button class="btn btn-sm btn-ghost" type="button"
                                         @onclick="() => ToggleRestrict(v)">@(v.IsRestricted ? "باز کردن برای همه" : "محدودسازی")</button>
                             </td>

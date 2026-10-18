@@ -35,11 +35,11 @@
                     else foreach (var r in _rows)
                     {
                         <tr>
-                            <td><b>@r.Username</b></td>
+                            <td data-label="دانش‌آموز"><b>@r.Username</b></td>
                             <td class="num">@r.VideosCompleted</td>
-                            <td class="num">@r.StoriesCompleted</td>
+                            <td class="num" data-label="ویدیو">@r.StoriesCompleted</td>
                             <td class="num">@r.QuizzesTaken</td>
-                            <td class="num">@(r.AvgQuizScore?.ToString("0.#") ?? "—")</td>
+                            <td class="num" data-label="داستان">@(r.AvgQuizScore?.ToString("0.#") ?? "—")</td>
                             <td class="num">@(r.AvgSatisfaction?.ToString("0.0") ?? "—")</td>
                         </tr>
                     }

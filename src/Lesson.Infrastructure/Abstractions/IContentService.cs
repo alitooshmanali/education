@@ -49,6 +49,7 @@ public sealed record UserProgressSummaryDto(
 public interface IContentService
 {
     Task<IReadOnlyList<ContentDto>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<int> CountActiveAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ContentDto>> GetForUserAsync(long userId, bool isAdmin, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ContentDto>> GetByLevelAsync(LanguageLevel level, CancellationToken cancellationToken = default);
     Task<LessonContent?> FindAsync(long contentId, CancellationToken cancellationToken = default);

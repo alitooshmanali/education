@@ -835,6 +835,16 @@ namespace Lesson.Infrastructure.Migrations
                     b.Property<bool>("IsVoiceOnly")
                         .HasColumnType("bit");
 
+                    b.Property<long?>("NextItemId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("PreviousItemId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("RelatedItemIds")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
@@ -850,11 +860,16 @@ namespace Lesson.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<long?>("VideoContentId")
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AudioContentId");
 
                     b.HasIndex("ImageContentId");
+
+                    b.HasIndex("VideoContentId");
 
                     b.ToTable("SiteLibraryItems");
                 });
@@ -1443,9 +1458,16 @@ namespace Lesson.Infrastructure.Migrations
                         .HasForeignKey("ImageContentId")
                         .OnDelete(DeleteBehavior.NoAction);
 
+                    b.HasOne("Lesson.Domain.Entities.LessonContent", "VideoContent")
+                        .WithMany()
+                        .HasForeignKey("VideoContentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.Navigation("AudioContent");
 
                     b.Navigation("ImageContent");
+
+                    b.Navigation("VideoContent");
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.SitePageSlot", b =>

@@ -19,28 +19,34 @@ public sealed class ContentService : IContentService
         _db = db;
     }
 
+    private static IQueryable<ContentDto> ProjectMeta(IQueryable<LessonContent> q) =>
+        q.Select(x => new ContentDto(
+            x.Id,
+            x.OriginalFileName,
+            x.DisplayName,
+            x.FileExtension,
+            x.MimeType,
+            x.FileSize,
+            x.Type,
+            x.DurationSeconds,
+            x.FolderId,
+            x.Folder != null ? x.Folder.RelativePath : string.Empty,
+            x.Levels.Select(l => l.Level).ToList()));
+
     public async Task<IReadOnlyList<ContentDto>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        var list = await _db.Contents.AsNoTracking()
-            .Include(x => x.Folder)
-            .Include(x => x.Levels)
+        => await ProjectMeta(_db.Contents.AsNoTracking())
             .OrderBy(x => x.DisplayName)
             .ToListAsync(cancellationToken);
 
-        return list.Select(ToDto).ToList();
-    }
+    public Task<int> CountActiveAsync(CancellationToken cancellationToken = default)
+        => _db.Contents.AsNoTracking().CountAsync(c => c.IsActive, cancellationToken);
 
     public async Task<IReadOnlyList<ContentDto>> GetByLevelAsync(LanguageLevel level, CancellationToken cancellationToken = default)
-    {
-        var list = await _db.Contents.AsNoTracking()
-            .Include(x => x.Folder)
-            .Include(x => x.Levels)
-            .Where(x => x.Levels.Any(l => l.Level == level) || x.Folder!.Level == level)
+        => await ProjectMeta(
+                _db.Contents.AsNoTracking()
+                    .Where(x => x.Levels.Any(l => l.Level == level) || (x.Folder != null && x.Folder.Level == level)))
             .OrderBy(x => x.DisplayName)
             .ToListAsync(cancellationToken);
-
-        return list.Select(ToDto).ToList();
-    }
 
     public async Task<IReadOnlyList<ContentDto>> GetForUserAsync(long userId, bool isAdmin, CancellationToken cancellationToken = default)
     {
@@ -52,23 +58,52 @@ public sealed class ContentService : IContentService
             return Array.Empty<ContentDto>();
 
         var level = user.Level.Value;
-
-        // Content visible if assigned to student's level (via ContentLevels or folder level)
-        var list = await _db.Contents.AsNoTracking()
-            .Include(x => x.Folder)
-            .Include(x => x.Levels)
-            .Where(c => c.IsActive && (
-                c.Levels.Any(l => l.Level == level) ||
-                (c.Folder != null && c.Folder.Level == level)))
+        return await ProjectMeta(
+                _db.Contents.AsNoTracking()
+                    .Where(c => c.IsActive && (
+                        c.Levels.Any(l => l.Level == level) ||
+                        (c.Folder != null && c.Folder.Level == level))))
             .OrderBy(x => x.DisplayName)
             .ToListAsync(cancellationToken);
-
-        return list.Select(ToDto).ToList();
     }
 
-    public Task<LessonContent?> FindAsync(long contentId, CancellationToken cancellationToken = default)
-        => _db.Contents.Include(x => x.Levels).Include(x => x.Folder)
-            .FirstOrDefaultAsync(x => x.Id == contentId, cancellationToken);
+    /// <summary>Does NOT load binary Content column — use IContentStreamingService to play.</summary>
+    public async Task<LessonContent?> FindAsync(long contentId, CancellationToken cancellationToken = default)
+    {
+        var row = await _db.Contents.AsNoTracking()
+            .Where(x => x.Id == contentId)
+            .Select(x => new
+            {
+                x.Id, x.OriginalFileName, x.DisplayName, x.FileExtension, x.MimeType, x.FileSize,
+                x.Type, x.DurationSeconds, x.FolderId, x.ClassId, x.CreatedByUserId, x.IsRestricted,
+                x.IsActive, x.CreatedAt, x.UpdatedAt,
+                Levels = x.Levels.Select(l => l.Level).ToList()
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+        if (row is null) return null;
+        var entity = new LessonContent
+        {
+            Id = row.Id,
+            OriginalFileName = row.OriginalFileName,
+            DisplayName = row.DisplayName,
+            FileExtension = row.FileExtension,
+            MimeType = row.MimeType,
+            FileSize = row.FileSize,
+            Type = row.Type,
+            DurationSeconds = row.DurationSeconds,
+            FolderId = row.FolderId,
+            ClassId = row.ClassId,
+            CreatedByUserId = row.CreatedByUserId,
+            IsRestricted = row.IsRestricted,
+            IsActive = row.IsActive,
+            CreatedAt = row.CreatedAt,
+            UpdatedAt = row.UpdatedAt,
+            Content = Array.Empty<byte>()
+        };
+        foreach (var lv in row.Levels)
+            entity.Levels.Add(new ContentLevel { ContentId = row.Id, Level = lv });
+        return entity;
+    }
 
     public async Task<IReadOnlyList<LanguageLevel>> GetAllowedUploadLevelsAsync(long userId, bool isAdmin, CancellationToken cancellationToken = default)
     {
@@ -175,10 +210,10 @@ public sealed class ContentService : IContentService
 
     public async Task MoveAsync(long contentId, long folderId, CancellationToken cancellationToken = default)
     {
-        var content = await _db.Contents.FirstAsync(x => x.Id == contentId, cancellationToken);
-        var folder = await _db.Folders.FirstAsync(x => x.Id == folderId, cancellationToken);
-        content.FolderId = folder.Id;
-        await _db.SaveChangesAsync(cancellationToken);
+        _ = await _db.Folders.AsNoTracking().FirstAsync(x => x.Id == folderId, cancellationToken);
+        var n = await _db.Contents.Where(x => x.Id == contentId)
+            .ExecuteUpdateAsync(s => s.SetProperty(c => c.FolderId, folderId), cancellationToken);
+        if (n == 0) throw new InvalidOperationException("محتوا یافت نشد.");
     }
 
     public async Task SetLevelsAsync(
@@ -193,19 +228,19 @@ public sealed class ContentService : IContentService
 
         await EnsureTeacherLevelsAllowedAsync(actorUserId, isAdmin, levels, cancellationToken);
 
-        var content = await _db.Contents.Include(x => x.Levels).FirstAsync(x => x.Id == contentId, cancellationToken);
-        content.Levels.Clear();
+        // levels only — do not load binary Content
+        var existing = await _db.ContentLevels.Where(l => l.ContentId == contentId).ToListAsync(cancellationToken);
+        _db.ContentLevels.RemoveRange(existing);
         foreach (var level in levels.Distinct())
-            content.Levels.Add(new ContentLevel { ContentId = contentId, Level = level });
-
+            _db.ContentLevels.Add(new ContentLevel { ContentId = contentId, Level = level });
         await _db.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteAsync(long contentId, CancellationToken cancellationToken = default)
     {
-        var content = await _db.Contents.FirstAsync(x => x.Id == contentId, cancellationToken);
-        _db.Contents.Remove(content);
-        await _db.SaveChangesAsync(cancellationToken);
+        // soft-ish hard delete without loading blob into memory
+        var n = await _db.Contents.Where(x => x.Id == contentId).ExecuteDeleteAsync(cancellationToken);
+        if (n == 0) throw new InvalidOperationException("محتوا یافت نشد.");
     }
 
     public async Task<ContentProgressDto?> GetProgressAsync(long userId, long contentId, CancellationToken cancellationToken = default)
