@@ -189,6 +189,8 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 .video-watch__item span{font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.35}
 .video-watch__title{font-size:clamp(20px,3vw,28px);font-weight:900;color:var(--navy);margin:12px 0 6px}
 .video-watch__sum{color:var(--muted);font-size:13.5px;margin-bottom:12px}
+.video-watch__more{text-align:center;font-size:11px;color:var(--muted);padding:8px 0;font-weight:700}
+.video-watch__list{display:flex;flex-direction:column;gap:4px}
 .circle-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;z-index:3;background:#000}
 .circle-stage{overflow:visible}
 @media(max-width:900px){
@@ -301,6 +303,8 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 .video-watch__item span{font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.35}
 .video-watch__title{font-size:clamp(20px,3vw,28px);font-weight:900;color:var(--navy);margin:12px 0 6px}
 .video-watch__sum{color:var(--muted);font-size:13.5px;margin-bottom:12px}
+.video-watch__more{text-align:center;font-size:11px;color:var(--muted);padding:8px 0;font-weight:700}
+.video-watch__list{display:flex;flex-direction:column;gap:4px}
 .circle-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;z-index:3;background:#000}
 .circle-stage{overflow:visible}
 @media(max-width:900px){
@@ -830,77 +834,201 @@ async function renderVideoWatch(id){
     const r = await fetch('/api/site/library/' + encodeURIComponent(id));
     if(!r.ok) return `<div class="lib-empty">یافت نشد. (کد ${r.status})</div>`;
     const it = await r.json();
-    const img = it.imageUrl || CAT_HERO.videos || '';
-    const videoUrl = it.videoUrl || '';
-    const video = videoUrl
-      ? `<div class="video-watch__player"><video id="vw-player" controls playsinline controlsList="nodownload" src="${videoUrl}" poster="${img}"></video></div>`
-      : `<div class="lib-empty">برای این مورد فایل ویدیو ثبت نشده است.</div>`;
-
-    const sideItem = (x, badge)=>{
-      if(!x) return '';
-      const thumb = x.imageUrl || img;
-      const vurl = x.videoUrl || '';
-      return `<div class="video-watch__item" data-play-id="${x.id}" data-play-url="${vurl}" data-play-title="${escapeHtml(x.title||'')}">
-        <img src="${thumb}" alt="">
-        <span>${badge?`<small style="display:block;color:var(--muted);font-size:10px">${badge}</small>`:''}${escapeHtml(x.title||'')}</span>
-      </div>`;
-    };
-
-    let side = '';
-    if(it.previous) side += `<div class="video-watch__group"><div class="video-watch__group-label">قبلی</div>${sideItem(it.previous,'قبلی')}</div>`;
-    if(it.next) side += `<div class="video-watch__group"><div class="video-watch__group-label">بعدی</div>${sideItem(it.next,'بعدی')}</div>`;
-    if(it.related && it.related.length)
-      side += `<div class="video-watch__group"><div class="video-watch__group-label">مرتبط / پیشنهادی</div>${it.related.map(x=>sideItem(x,'')).join('')}</div>`;
-    if(!side) side = `<p style="font-size:12.5px;color:var(--muted);margin:0">مورد مرتبطی تعریف نشده.</p>`;
-
-    return `
-      <div class="video-watch">
-        <div>
-          ${video}
-          <h1 class="video-watch__title">${escapeHtml(it.title||'')}</h1>
-          ${it.summary?`<p class="video-watch__sum">${escapeHtml(it.summary)}</p>`:''}
-          ${it.bodyText?`<div class="detail__body-card"><div class="detail__body">${escapeHtml(it.bodyText)}</div></div>`:''}
-        </div>
-        <aside class="video-watch__side">
-          <h3>مسیر یادگیری</h3>
-          ${side}
-        </aside>
-      </div>
-      <div style="text-align:center"><a class="back" href="#/english/videos">← فیلم‌های آموزشی</a></div>`;
+    return buildVideoWatchHtml(it);
   }catch(err){
     console.error(err);
     return `<div class="lib-empty">خطا در بارگذاری ویدیو.</div>`;
   }
 }
 
-function bindVideoWatchClicks(root){
+function sideItemHtml(x, badge, imgFallback){
+  if(!x) return '';
+  const thumb = x.imageUrl || imgFallback || '';
+  const vurl = x.videoUrl || '';
+  return `<div class="video-watch__item" data-play-id="${x.id}" data-play-url="${vurl}" data-play-title="${escapeHtml(x.title||'')}">
+    <img src="${thumb}" alt="">
+    <span>${badge?`<small style="display:block;color:var(--muted);font-size:10px">${badge}</small>`:''}${escapeHtml(x.title||'')}</span>
+  </div>`;
+}
+
+async function fetchLibraryPage(category, skip, take, excludeId){
+  const qs = new URLSearchParams();
+  if(category != null) qs.set('category', category);
+  qs.set('skip', String(skip||0));
+  qs.set('take', String(take||10));
+  if(excludeId) qs.set('excludeId', String(excludeId));
+  try{
+    const r = await fetch('/api/site/library?' + qs.toString());
+    if(!r.ok) return { items:[], total:0, hasMore:false };
+    const data = await r.json();
+    // paginated shape or plain array (legacy)
+    if(Array.isArray(data)) return { items:data, total:data.length, hasMore:false };
+    return {
+      items: data.items || data.Items || [],
+      total: data.total ?? data.Total ?? 0,
+      hasMore: !!(data.hasMore ?? data.HasMore)
+    };
+  }catch{ return { items:[], total:0, hasMore:false }; }
+}
+
+/** Build sidebar: prev/next + related/suggested in pages of 10, or all-videos infinite if both empty */
+async function buildVideoSideHtml(it){
+  const img = it.imageUrl || CAT_HERO.videos || '';
+  let side = '';
+  if(it.previous) side += `<div class="video-watch__group"><div class="video-watch__group-label">قبلی</div>${sideItemHtml(it.previous,'قبلی',img)}</div>`;
+  if(it.next) side += `<div class="video-watch__group"><div class="video-watch__group-label">بعدی</div>${sideItemHtml(it.next,'بعدی',img)}</div>`;
+
+  const related = it.related || [];
+  const suggested = it.suggested || [];
+
+  if(related.length){
+    const first = related.slice(0, 10);
+    side += `<div class="video-watch__group" data-list="related" data-ids="${related.map(x=>x.id).join(',')}" data-offset="10">
+      <div class="video-watch__group-label">مرتبط</div>
+      <div class="video-watch__list">${first.map(x=>sideItemHtml(x,'',img)).join('')}</div>
+      ${related.length > 10 ? '<div class="video-watch__more" data-more="related">در حال بارگذاری…</div>' : ''}
+    </div>`;
+  }
+  if(suggested.length){
+    const first = suggested.slice(0, 10);
+    side += `<div class="video-watch__group" data-list="suggested" data-ids="${suggested.map(x=>x.id).join(',')}" data-offset="10">
+      <div class="video-watch__group-label">پیشنهادی</div>
+      <div class="video-watch__list">${first.map(x=>sideItemHtml(x,'',img)).join('')}</div>
+      ${suggested.length > 10 ? '<div class="video-watch__more" data-more="suggested">در حال بارگذاری…</div>' : ''}
+    </div>`;
+  }
+
+  // neither related nor suggested → all videos, 10 at a time
+  if(!related.length && !suggested.length){
+    const page = await fetchLibraryPage(CAT.videos, 0, 10, it.id);
+    side += `<div class="video-watch__group" data-list="all" data-skip="10" data-exclude="${it.id}" data-hasmore="${page.hasMore ? '1':'0'}">
+      <div class="video-watch__group-label">همه فیلم‌ها</div>
+      <div class="video-watch__list">${(page.items||[]).map(x=>sideItemHtml(x,'',img)).join('')}</div>
+      <div class="video-watch__more" data-more="all" style="${page.hasMore?'':'display:none'}">اسکرول برای موارد بیشتر…</div>
+    </div>`;
+  }
+  if(!side) side = `<p style="font-size:12.5px;color:var(--muted);margin:0">فیلم دیگری نیست.</p>`;
+  return side;
+}
+
+async function buildVideoWatchHtml(it){
+  const img = it.imageUrl || CAT_HERO.videos || '';
+  const videoUrl = it.videoUrl || '';
+  const video = videoUrl
+    ? `<div class="video-watch__player"><video id="vw-player" controls playsinline controlsList="nodownload" src="${videoUrl}" poster="${img}"></video></div>`
+    : `<div class="lib-empty">برای این مورد فایل ویدیو ثبت نشده است.</div>`;
+  const side = await buildVideoSideHtml(it);
+  return `
+    <div class="video-watch" data-current-id="${it.id}">
+      <div>
+        ${video}
+        <h1 class="video-watch__title">${escapeHtml(it.title||'')}</h1>
+        ${it.summary?`<p class="video-watch__sum">${escapeHtml(it.summary)}</p>`:''}
+        ${it.bodyText?`<div class="detail__body-card"><div class="detail__body">${escapeHtml(it.bodyText)}</div></div>`:''}
+      </div>
+      <aside class="video-watch__side" id="vw-side">
+        <h3>مسیر یادگیری</h3>
+        <div id="vw-side-body">${side}</div>
+      </aside>
+    </div>
+    <div style="text-align:center"><a class="back" href="#/english/videos">← فیلم‌های آموزشی</a></div>`;
+}
+
+function bindVideoSideInfinite(root){
+  const side = root.querySelector('#vw-side') || root.querySelector('.video-watch__side');
+  if(!side || side._infBound) return;
+  side._infBound = true;
+  let loading = false;
+  side.addEventListener('scroll', async ()=>{
+    if(loading) return;
+    if(side.scrollTop + side.clientHeight < side.scrollHeight - 40) return;
+    const group = side.querySelector('.video-watch__group[data-list]');
+    if(!group) return;
+    const listType = group.getAttribute('data-list');
+    const listEl = group.querySelector('.video-watch__list');
+    const moreEl = group.querySelector('.video-watch__more');
+    if(!listEl) return;
+    loading = true;
+    try{
+      if(listType === 'all'){
+        if(group.getAttribute('data-hasmore') !== '1') return;
+        const skip = parseInt(group.getAttribute('data-skip')||'0',10);
+        const exclude = group.getAttribute('data-exclude');
+        const page = await fetchLibraryPage(CAT.videos, skip, 10, exclude);
+        const img = CAT_HERO.videos || '';
+        listEl.insertAdjacentHTML('beforeend', (page.items||[]).map(x=>sideItemHtml(x,'',img)).join(''));
+        group.setAttribute('data-skip', String(skip + (page.items||[]).length));
+        group.setAttribute('data-hasmore', page.hasMore ? '1' : '0');
+        if(moreEl) moreEl.style.display = page.hasMore ? '' : 'none';
+        wirePlayClicks(root);
+      } else if(listType === 'related' || listType === 'suggested'){
+        const ids = (group.getAttribute('data-ids')||'').split(',').filter(Boolean);
+        let offset = parseInt(group.getAttribute('data-offset')||'0',10);
+        if(offset >= ids.length){ if(moreEl) moreEl.style.display='none'; return; }
+        const slice = ids.slice(offset, offset+10);
+        const img = CAT_HERO.videos || '';
+        for(const id of slice){
+          try{
+            const r = await fetch('/api/site/library/' + id);
+            if(r.ok){
+              const it = await r.json();
+              listEl.insertAdjacentHTML('beforeend', sideItemHtml(it,'',img));
+            }
+          }catch(_){}
+        }
+        offset += slice.length;
+        group.setAttribute('data-offset', String(offset));
+        if(moreEl) moreEl.style.display = offset >= ids.length ? 'none' : '';
+        wirePlayClicks(root);
+      }
+    } finally { loading = false; }
+  });
+}
+
+function wirePlayClicks(root){
+  const player = () => document.getElementById('vw-player');
+  const sideBody = () => document.getElementById('vw-side-body');
   root.querySelectorAll('[data-play-id]').forEach(el=>{
+    if(el._wired) return;
+    el._wired = true;
     el.addEventListener('click', async ()=>{
       const id = el.getAttribute('data-play-id');
-      const url = el.getAttribute('data-play-url');
-      const player = document.getElementById('vw-player');
-      if(url && player){
-        player.src = url;
-        player.play().catch(()=>{});
-        root.querySelectorAll('.video-watch__item').forEach(x=>x.classList.remove('is-on'));
-        el.classList.add('is-on');
+      if(!id) return;
+      try{
+        const r = await fetch('/api/site/library/' + encodeURIComponent(id));
+        if(!r.ok) return;
+        const it = await r.json();
+        const p = player();
+        if(p && it.videoUrl){
+          p.src = it.videoUrl;
+          if(it.imageUrl) p.poster = it.imageUrl;
+          p.play().catch(()=>{});
+        }
+        const title = root.querySelector('.video-watch__title');
+        const sum = root.querySelector('.video-watch__sum');
+        if(title) title.textContent = it.title || '';
+        if(sum) sum.textContent = it.summary || '';
         history.replaceState(null,'', '#/english/videos/' + id);
-        try{
-          const r = await fetch('/api/site/library/' + id);
-          if(r.ok){
-            const it = await r.json();
-            const title = root.querySelector('.video-watch__title');
-            const sum = root.querySelector('.video-watch__sum');
-            if(title) title.textContent = it.title || '';
-            if(sum) sum.textContent = it.summary || '';
-            if(it.imageUrl) player.poster = it.imageUrl;
-          }
-        }catch(_){}
-      } else if(id){
-        location.hash = '#/english/videos/' + id;
-      }
+        const sb = sideBody();
+        if(sb){
+          // reset infinite scroll binding
+          const side = root.querySelector('#vw-side');
+          if(side) side._infBound = false;
+          sb.innerHTML = await buildVideoSideHtml(it);
+          wirePlayClicks(root);
+          bindVideoSideInfinite(root);
+        }
+        root.querySelectorAll('.video-watch__item').forEach(x=>x.classList.remove('is-on'));
+        const active = root.querySelector(`[data-play-id="${id}"]`);
+        if(active) active.classList.add('is-on');
+      }catch(err){ console.error(err); }
     });
   });
+}
+
+function bindVideoWatchClicks(root){
+  wirePlayClicks(root);
+  bindVideoSideInfinite(root);
 }
 
 

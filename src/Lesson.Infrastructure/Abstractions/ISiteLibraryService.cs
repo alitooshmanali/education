@@ -26,15 +26,25 @@ public sealed record SiteLibraryItemDto(
     long? PreviousItemId,
     long? NextItemId,
     string? RelatedItemIds,
+    string? SuggestedItemIds,
     int SortOrder,
     bool IsActive,
     SiteLibraryItemRefDto? Previous = null,
     SiteLibraryItemRefDto? Next = null,
-    IReadOnlyList<SiteLibraryItemRefDto>? Related = null);
+    IReadOnlyList<SiteLibraryItemRefDto>? Related = null,
+    IReadOnlyList<SiteLibraryItemRefDto>? Suggested = null);
+
+public sealed record SiteLibraryPageDto(
+    IReadOnlyList<SiteLibraryItemDto> Items,
+    int Total,
+    int Skip,
+    int Take,
+    bool HasMore);
 
 public interface ISiteLibraryService
 {
     Task<IReadOnlyList<SiteLibraryItemDto>> GetPublicAsync(SiteLibraryCategory? category = null, CancellationToken cancellationToken = default);
+    Task<SiteLibraryPageDto> GetPublicPageAsync(SiteLibraryCategory? category, int skip, int take, long? excludeId = null, CancellationToken cancellationToken = default);
     Task<SiteLibraryItemDto?> GetByIdAsync(long id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<SiteLibraryItemDto>> GetAllAdminAsync(CancellationToken cancellationToken = default);
     Task<SiteLibraryItemDto> UpsertAsync(
@@ -51,6 +61,7 @@ public interface ISiteLibraryService
         long? previousItemId,
         long? nextItemId,
         string? relatedItemIds,
+        string? suggestedItemIds,
         int sortOrder,
         bool isActive,
         CancellationToken cancellationToken = default);

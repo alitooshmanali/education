@@ -17,6 +17,10 @@
         width:100%; box-sizing:border-box; border:1px solid #E6E1D6; border-radius:10px; padding:9px 12px; font:inherit;
     }
     .sl-field.full { grid-column:1/-1; }
+    .sl-related { display:flex; flex-wrap:wrap; gap:8px 14px; padding:10px 12px; border:1px solid #E6E1D6; border-radius:12px; background:#fbfaf7; max-height:180px; overflow:auto; }
+    .sl-check { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#0A2B51; cursor:pointer; }
+    .sl-check input { width:auto; }
+    .sl-hint { margin:6px 0 0; font-size:12px; color:#6B7787; }
     .sl-card { background:#fff; border:1px solid #E6E1D6; border-radius:16px; overflow:hidden; }
     .sl-table { width:100%; border-collapse:collapse; font-size:13px; }
     .sl-table th { text-align:start; font-size:11px; font-weight:800; color:#6B7787; padding:12px 14px; background:#fbfaf7; border-bottom:1px solid #E6E1D6; }
@@ -118,11 +122,11 @@
                         </select>
                     </div>
                     <div class="sl-field full">
-                        <label>فیلم‌های مرتبط / پیشنهادی</label>
+                        <label>فیلم‌های مرتبط (چندتایی)</label>
                         <div class="sl-related">
                             @if (!VideoOptions().Any())
                             {
-                                <p class="sl-hint">هنوز فیلم دیگری ثبت نشده. بعد از ذخیرهٔ چند فیلم، اینجا لیست می‌آید.</p>
+                                <p class="sl-hint">هنوز فیلم دیگری ثبت نشده.</p>
                             }
                             else
                             {
@@ -136,7 +140,28 @@
                                 }
                             }
                         </div>
-                        <p class="sl-hint">از لیست فیلم‌های قبلاً بارگذاری‌شده انتخاب کنید؛ شناسه به‌صورت خودکار ذخیره می‌شود.</p>
+                        <p class="sl-hint">چند مورد را می‌توانید هم‌زمان تیک بزنید.</p>
+                    </div>
+                    <div class="sl-field full">
+                        <label>فیلم‌های پیشنهادی (چندتایی)</label>
+                        <div class="sl-related">
+                            @if (!VideoOptions().Any())
+                            {
+                                <p class="sl-hint">هنوز فیلم دیگری ثبت نشده.</p>
+                            }
+                            else
+                            {
+                                @foreach (var v in VideoOptions())
+                                {
+                                    <label class="sl-check">
+                                        <input type="checkbox" checked="@_suggestedIds.Contains(v.Id)"
+                                               @onchange="(ChangeEventArgs e) => ToggleSuggested(v.Id, e.Value)" />
+                                        <span>@v.Title</span>
+                                    </label>
+                                }
+                            }
+                        </div>
+                        <p class="sl-hint">پیشنهادهای انتهای فیلم یا سایدبار — چندتایی.</p>
                     </div>
                 }
                 <div class="sl-field full">
@@ -203,6 +228,7 @@
     private long? _audioId, _imageContentId, _videoId;
     private string _prevIdStr = "", _nextIdStr = "";
     private HashSet<long> _relatedIds = new();
+    private HashSet<long> _suggestedIds = new();
 
     protected override async Task OnInitializedAsync() => await Reload();
 
@@ -216,7 +242,8 @@
         _editId = null; _title = ""; _summary = ""; _body = ""; _imagePath = "";
         _category = SiteLibraryCategory.Podcast; _sort = 0;
         _audioId = null; _imageContentId = null; _videoId = null;
-        _prevIdStr = ""; _nextIdStr = ""; _relatedIds = new();
+        _prevIdStr = ""; _nextIdStr = "";
+        _relatedIds = new(); _suggestedIds = new();
         _voiceOnlyStr = "false"; _showForm = true; _error = _ok = null;
     }
 
@@ -229,7 +256,8 @@
         _audioId = it.AudioContentId; _imageContentId = it.ImageContentId; _videoId = it.VideoContentId;
         _prevIdStr = it.PreviousItemId?.ToString() ?? "";
         _nextIdStr = it.NextItemId?.ToString() ?? "";
-        _relatedIds = ParseRelatedSet(it.RelatedItemIds);
+        _relatedIds = ParseIdSet(it.RelatedItemIds);
+        _suggestedIds = ParseIdSet(it.SuggestedItemIds);
         _showForm = true; _error = _ok = null;
     }
 
@@ -240,9 +268,10 @@
         _busy = true;
         try
         {
-                        long? prevId = long.TryParse(_prevIdStr, out var p) ? p : null;
+            long? prevId = long.TryParse(_prevIdStr, out var p) ? p : null;
             long? nextId = long.TryParse(_nextIdStr, out var n) ? n : null;
             var related = _relatedIds.Count == 0 ? null : string.Join(",", _relatedIds.OrderBy(x => x));
+            var suggested = _suggestedIds.Count == 0 ? null : string.Join(",", _suggestedIds.OrderBy(x => x));
             await Library.UpsertAsync(
                 _editId, _title, _summary, _body, _category,
                 string.IsNullOrWhiteSpace(_imagePath) ? null : _imagePath,
@@ -250,7 +279,7 @@
                 _audioId is 0 ? null : _audioId,
                 _videoId is 0 ? null : _videoId,
                 _voiceOnlyStr == "true",
-                prevId, nextId, related,
+                prevId, nextId, related, suggested,
                 _sort, true);
             _ok = "ذخیره شد.";
             _showForm = false;
@@ -265,8 +294,6 @@
         await Library.SoftDeleteAsync(id);
         await Reload();
     }
-
-
 
     private async Task OnAudioFile(InputFileChangeEventArgs e)
     {
@@ -326,7 +353,6 @@
         finally { _busy = false; }
     }
 
-
     private async Task OnVideoFile(InputFileChangeEventArgs e)
     {
         _error = _ok = null;
@@ -357,17 +383,24 @@
 
     private void ToggleRelated(long id, object? value)
     {
-        var on = value switch
-        {
-            bool b => b,
-            string s when bool.TryParse(s, out var bb) => bb,
-            _ => false
-        };
-        if (on) _relatedIds.Add(id);
+        if (IsChecked(value)) _relatedIds.Add(id);
         else _relatedIds.Remove(id);
     }
 
-    private static HashSet<long> ParseRelatedSet(string? raw)
+    private void ToggleSuggested(long id, object? value)
+    {
+        if (IsChecked(value)) _suggestedIds.Add(id);
+        else _suggestedIds.Remove(id);
+    }
+
+    private static bool IsChecked(object? value) => value switch
+    {
+        bool b => b,
+        string s when bool.TryParse(s, out var bb) => bb,
+        _ => false
+    };
+
+    private static HashSet<long> ParseIdSet(string? raw)
     {
         var set = new HashSet<long>();
         if (string.IsNullOrWhiteSpace(raw)) return set;

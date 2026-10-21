@@ -848,6 +848,10 @@ namespace Lesson.Infrastructure.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
+                    b.Property<string>("SuggestedItemIds")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("Summary")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");

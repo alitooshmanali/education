@@ -95,8 +95,12 @@ app.MapRazorComponents<Lesson.Web.App>().AddInteractiveServerRenderMode();
 app.MapGet("/site", () => Results.Redirect("/site/index.html"));
 
 // Public site library API
-app.MapGet("/api/site/library", async (SiteLibraryCategory? category, ISiteLibraryService lib) =>
-    Results.Ok(await lib.GetPublicAsync(category)));
+app.MapGet("/api/site/library", async (SiteLibraryCategory? category, int? skip, int? take, long? excludeId, ISiteLibraryService lib) =>
+{
+    if (skip is not null || take is not null || excludeId is not null)
+        return Results.Ok(await lib.GetPublicPageAsync(category, skip ?? 0, take ?? 10, excludeId));
+    return Results.Ok(await lib.GetPublicAsync(category));
+});
 
 app.MapGet("/api/site/pages/{pageKey}", async (string pageKey, ISitePageService pages) =>
     Results.Ok(await pages.GetPublicPageAsync(pageKey)));

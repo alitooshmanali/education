@@ -5,7 +5,7 @@ namespace Lesson.Domain.Entities;
 
 /// <summary>
 /// Public marketing-site library item (Podcast / Story / Music / Book / Video).
-/// Videos support previous/next chain and related suggestions (YouTube-style learning path).
+/// Videos support previous/next, multi related and multi suggested lists.
 /// </summary>
 public sealed class SiteLibraryItem : BaseEntity
 {
@@ -26,17 +26,16 @@ public sealed class SiteLibraryItem : BaseEntity
     public long? VideoContentId { get; set; }
     public LessonContent? VideoContent { get; set; }
 
-    /// <summary>When true and audio exists, click plays audio without opening detail.</summary>
     public bool IsVoiceOnly { get; set; }
 
-    /// <summary>Previous video in the learning path (must watch before).</summary>
     public long? PreviousItemId { get; set; }
-
-    /// <summary>Next video in the learning path.</summary>
     public long? NextItemId { get; set; }
 
-    /// <summary>Comma-separated related/suggested item ids.</summary>
+    /// <summary>Comma-separated related item ids (multi).</summary>
     public string? RelatedItemIds { get; set; }
+
+    /// <summary>Comma-separated suggested item ids (multi).</summary>
+    public string? SuggestedItemIds { get; set; }
 
     public int SortOrder { get; set; }
 }

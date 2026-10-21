@@ -9,10 +9,29 @@ public sealed class SiteLibraryService(IApplicationDbContext db) : ISiteLibraryS
 {
     public async Task<IReadOnlyList<SiteLibraryItemDto>> GetPublicAsync(SiteLibraryCategory? category = null, CancellationToken cancellationToken = default)
     {
+        var page = await GetPublicPageAsync(category, 0, 500, null, cancellationToken);
+        return page.Items;
+    }
+
+    public async Task<SiteLibraryPageDto> GetPublicPageAsync(
+        SiteLibraryCategory? category, int skip, int take, long? excludeId = null, CancellationToken cancellationToken = default)
+    {
+        skip = Math.Max(0, skip);
+        take = Math.Clamp(take, 1, 50);
+
         var q = db.SiteLibraryItems.AsNoTracking().Where(x => x.IsActive);
         if (category is { } c) q = q.Where(x => x.Category == c);
-        var list = await q.OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToListAsync(cancellationToken);
-        return list.Select(x => Map(x)).ToList();
+        if (excludeId is { } ex) q = q.Where(x => x.Id != ex);
+
+        var total = await q.CountAsync(cancellationToken);
+        var list = await q.OrderBy(x => x.SortOrder).ThenBy(x => x.Id)
+            .Skip(skip).Take(take)
+            .ToListAsync(cancellationToken);
+
+        return new SiteLibraryPageDto(
+            list.Select(x => Map(x)).ToList(),
+            total, skip, take,
+            skip + list.Count < total);
     }
 
     public async Task<SiteLibraryItemDto?> GetByIdAsync(long id, CancellationToken cancellationToken = default)
@@ -22,7 +41,6 @@ public sealed class SiteLibraryService(IApplicationDbContext db) : ISiteLibraryS
 
         SiteLibraryItemRefDto? prev = null;
         SiteLibraryItemRefDto? next = null;
-        List<SiteLibraryItemRefDto> related = new();
 
         if (x.PreviousItemId is { } prevId)
         {
@@ -35,20 +53,23 @@ public sealed class SiteLibraryService(IApplicationDbContext db) : ISiteLibraryS
             if (n is not null) next = MapRef(n);
         }
 
-        var relatedIds = ParseIds(x.RelatedItemIds);
-        if (relatedIds.Count > 0)
-        {
-            var items = await db.SiteLibraryItems.AsNoTracking()
-                .Where(i => relatedIds.Contains(i.Id) && i.IsActive)
-                .ToListAsync(cancellationToken);
-            related = relatedIds
-                .Select(rid => items.FirstOrDefault(i => i.Id == rid))
-                .Where(i => i is not null)
-                .Select(i => MapRef(i!))
-                .ToList();
-        }
+        var related = await LoadRefsAsync(ParseIds(x.RelatedItemIds), cancellationToken);
+        var suggested = await LoadRefsAsync(ParseIds(x.SuggestedItemIds), cancellationToken);
 
-        return Map(x, prev, next, related);
+        return Map(x, prev, next, related, suggested);
+    }
+
+    private async Task<List<SiteLibraryItemRefDto>> LoadRefsAsync(List<long> ids, CancellationToken ct)
+    {
+        if (ids.Count == 0) return new();
+        var items = await db.SiteLibraryItems.AsNoTracking()
+            .Where(i => ids.Contains(i.Id) && i.IsActive)
+            .ToListAsync(ct);
+        return ids
+            .Select(rid => items.FirstOrDefault(i => i.Id == rid))
+            .Where(i => i is not null)
+            .Select(i => MapRef(i!))
+            .ToList();
     }
 
     public async Task<IReadOnlyList<SiteLibraryItemDto>> GetAllAdminAsync(CancellationToken cancellationToken = default)
@@ -62,7 +83,7 @@ public sealed class SiteLibraryService(IApplicationDbContext db) : ISiteLibraryS
     public async Task<SiteLibraryItemDto> UpsertAsync(
         long? id, string title, string? summary, string? bodyText, SiteLibraryCategory category,
         string? imagePath, long? imageContentId, long? audioContentId, long? videoContentId,
-        bool isVoiceOnly, long? previousItemId, long? nextItemId, string? relatedItemIds,
+        bool isVoiceOnly, long? previousItemId, long? nextItemId, string? relatedItemIds, string? suggestedItemIds,
         int sortOrder, bool isActive, CancellationToken cancellationToken = default)
     {
         SiteLibraryItem entity;
@@ -86,6 +107,7 @@ public sealed class SiteLibraryService(IApplicationDbContext db) : ISiteLibraryS
         entity.PreviousItemId = previousItemId is 0 or null ? null : previousItemId;
         entity.NextItemId = nextItemId is 0 or null ? null : nextItemId;
         entity.RelatedItemIds = NormalizeIds(relatedItemIds);
+        entity.SuggestedItemIds = NormalizeIds(suggestedItemIds);
         entity.SortOrder = sortOrder;
         entity.IsActive = isActive;
         entity.UpdatedAt = DateTimeOffset.UtcNow;
@@ -126,12 +148,13 @@ public sealed class SiteLibraryService(IApplicationDbContext db) : ISiteLibraryS
         SiteLibraryItem x,
         SiteLibraryItemRefDto? prev = null,
         SiteLibraryItemRefDto? next = null,
-        IReadOnlyList<SiteLibraryItemRefDto>? related = null) => new(
+        IReadOnlyList<SiteLibraryItemRefDto>? related = null,
+        IReadOnlyList<SiteLibraryItemRefDto>? suggested = null) => new(
         x.Id, x.Title, x.Summary, x.BodyText, x.Category,
         ImageUrl(x), AudioUrl(x), VideoUrl(x),
         x.ImageContentId, x.AudioContentId, x.VideoContentId,
-        x.IsVoiceOnly, x.PreviousItemId, x.NextItemId, x.RelatedItemIds,
-        x.SortOrder, x.IsActive, prev, next, related);
+        x.IsVoiceOnly, x.PreviousItemId, x.NextItemId, x.RelatedItemIds, x.SuggestedItemIds,
+        x.SortOrder, x.IsActive, prev, next, related, suggested);
 
     private static string? ImageUrl(SiteLibraryItem x)
     {
