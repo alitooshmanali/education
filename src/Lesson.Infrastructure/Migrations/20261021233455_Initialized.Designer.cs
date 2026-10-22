@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Lesson.Infrastructure.Migrations
 {
     [DbContext(typeof(LessonDbContext))]
-    [Migration("20261021151059_AddSuggestedVideos")]
-    partial class AddSuggestedVideos
+    [Migration("20261021233455_Initialized")]
+    partial class Initialized
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
