@@ -25,9 +25,9 @@
                     else foreach (var v in _items)
                     {
                         <tr>
-                            <td><b>@v.DisplayName</b></td>
+                            <td data-label="عنوان"><b>@v.DisplayName</b></td>
                             <td>@v.FolderName</td>
-                            <td>@(v.IsRestricted ? "محدود" : "همه")</td>
+                            <td data-label="پوشه">@(v.IsRestricted ? "محدود" : "همه")</td>
                             <td class="end">
                                 <button class="btn btn-sm btn-ghost" type="button" @onclick="() => ToggleRestrict(v)">
                                     @(v.IsRestricted ? "باز برای همه" : "محدودسازی")

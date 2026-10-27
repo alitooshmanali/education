@@ -8,12 +8,14 @@ public static class SystemFolders
     public const string PageSiteImages = "_PageSiteImages";
     public const string PageStories = "_PageStories";
     public const string PagePodcast = "_PagePodcast";
+    public const string PageVideos = "_PageVideos";
 
     public static readonly string[] All =
     [
         PageSiteImages,
         PageStories,
-        PagePodcast
+        PagePodcast,
+        PageVideos
     ];
 
     public static bool IsProtected(string? name)

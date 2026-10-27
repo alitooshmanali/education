@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>اساطیر آینده</title>
-<link rel="stylesheet" href="/css/fonts.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --navy:#0A2B51; --sand:#D1AB7B; --cream:#F9F6ED; --ink:#132133; --muted:#6B7787;
@@ -22,7 +24,7 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 
 /* —— brand ribbon (logo) —— */
 .brand-ribbon{
-  position:fixed;top:0;inset-inline-start:16px;z-index:100;
+  position:absolute;top:0;inset-inline-start:16px;z-index:100;
   display:flex;flex-direction:column;align-items:center;
   text-decoration:none;pointer-events:auto
 }
@@ -173,6 +175,28 @@ button{font:inherit;cursor:pointer;border:0;background:none}
   margin-top:4px;padding:24px 22px;border-radius:16px;background:#fff;
   border:1px solid var(--line);box-shadow:0 8px 28px rgba(10,43,81,.05)
 }
+/* video watch page */
+.video-watch{display:grid;grid-template-columns:minmax(0,1fr) min(320px,34vw);gap:20px;align-items:start;margin:20px 0 40px}
+.video-watch__player{background:#000;border-radius:16px;overflow:hidden;aspect-ratio:16/9}
+.video-watch__player video{width:100%;height:100%;display:block;background:#000}
+.video-watch__side{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;max-height:min(70vh,560px);overflow:auto}
+.video-watch__side h3{font-size:14px;font-weight:900;color:var(--navy);margin:0 0 10px}
+.video-watch__group{margin-bottom:14px}
+.video-watch__group-label{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:8px}
+.video-watch__item{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;cursor:pointer;border:1px solid transparent}
+.video-watch__item:hover,.video-watch__item.is-on{background:#f5f3ec;border-color:var(--line)}
+.video-watch__item img{width:72px;height:48px;object-fit:cover;border-radius:8px;background:#eef3fa;flex-shrink:0}
+.video-watch__item span{font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.35}
+.video-watch__title{font-size:clamp(20px,3vw,28px);font-weight:900;color:var(--navy);margin:12px 0 6px}
+.video-watch__sum{color:var(--muted);font-size:13.5px;margin-bottom:12px}
+.video-watch__more{text-align:center;font-size:11px;color:var(--muted);padding:8px 0;font-weight:700}
+.video-watch__list{display:flex;flex-direction:column;gap:4px}
+.circle-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;z-index:3;background:#000}
+.circle-stage{overflow:visible}
+@media(max-width:900px){
+  .video-watch{grid-template-columns:1fr}
+  .video-watch__side{max-height:none}
+}
 .detail__body{
   text-align:justify;text-justify:inter-word;line-height:2.05;
   font-size:15.5px;color:var(--ink);white-space:pre-wrap;margin:0
@@ -265,7 +289,29 @@ button{font:inherit;cursor:pointer;border:0;background:none}
   .detail__summary{font-size:12.5px;margin-bottom:12px}
   .detail__player{padding:10px 12px;border-radius:12px;margin-bottom:14px}
   .detail__body-card{padding:16px 14px;border-radius:12px}
-  .detail__body{font-size:14.5px;line-height:1.95}
+  /* video watch page */
+.video-watch{display:grid;grid-template-columns:minmax(0,1fr) min(320px,34vw);gap:20px;align-items:start;margin:20px 0 40px}
+.video-watch__player{background:#000;border-radius:16px;overflow:hidden;aspect-ratio:16/9}
+.video-watch__player video{width:100%;height:100%;display:block;background:#000}
+.video-watch__side{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;max-height:min(70vh,560px);overflow:auto}
+.video-watch__side h3{font-size:14px;font-weight:900;color:var(--navy);margin:0 0 10px}
+.video-watch__group{margin-bottom:14px}
+.video-watch__group-label{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:8px}
+.video-watch__item{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;cursor:pointer;border:1px solid transparent}
+.video-watch__item:hover,.video-watch__item.is-on{background:#f5f3ec;border-color:var(--line)}
+.video-watch__item img{width:72px;height:48px;object-fit:cover;border-radius:8px;background:#eef3fa;flex-shrink:0}
+.video-watch__item span{font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.35}
+.video-watch__title{font-size:clamp(20px,3vw,28px);font-weight:900;color:var(--navy);margin:12px 0 6px}
+.video-watch__sum{color:var(--muted);font-size:13.5px;margin-bottom:12px}
+.video-watch__more{text-align:center;font-size:11px;color:var(--muted);padding:8px 0;font-weight:700}
+.video-watch__list{display:flex;flex-direction:column;gap:4px}
+.circle-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;z-index:3;background:#000}
+.circle-stage{overflow:visible}
+@media(max-width:900px){
+  .video-watch{grid-template-columns:1fr}
+  .video-watch__side{max-height:none}
+}
+.detail__body{font-size:14.5px;line-height:1.95}
 
   .site-player{
     bottom:10px;width:calc(100% - 20px);max-width:none;
@@ -291,20 +337,362 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 
 /* safe area (notch phones) */
 @supports (padding:max(0px)){
-  .brand-ribbon{top:max(0px, env(safe-area-inset-top))}
+  .brand-ribbon{top:0}
   .site-player{bottom:max(10px, env(safe-area-inset-bottom))}
   .footer{padding-bottom:max(28px, env(safe-area-inset-bottom))}
 }
-/* overflow safety + tighter small-screen */
-html,body{overflow-x:hidden}
-.lib-grid{grid-template-columns:repeat(auto-fill,minmax(min(140px,100%),1fr))}
-@media(max-width:420px){
-  .main{padding:0 10px 28px}
-  .footer{padding:18px 12px 24px}
-  .circle{width:min(126px,44vw)}
-  .circle-stage{width:min(126px,44vw)}
-  .detail__body{font-size:14px}
+
+
+/* ==================================================
+   ASATIR-E AYANDE
+   Cinematic Entrance + Premium Gold Logo Animation
+   ================================================== */
+
+/* 1. ورود سینمایی نشان */
+#site-brand-ribbon {
+  transform-origin: top center;
+  animation:
+    logo-attention 5s ease-in-out 1.6s infinite;
+  will-change: transform;
 }
+
+/* قاب اصلی لوگو */
+#site-brand-ribbon .brand-ribbon__flag {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  box-shadow:
+    0 12px 30px rgba(6, 29, 56, 0.28),
+    0 0 0 1px rgba(209, 171, 123, 0.30),
+    0 0 18px rgba(209, 171, 123, 0.15);
+
+  /* ورود و سپس تپش نور */
+  animation:
+    logo-entrance 1.35s cubic-bezier(.16, 1, .3, 1) both,
+    gold-aura 3s ease-in-out 1.35s infinite;
+}
+
+/* 2. نور اولیه هنگام ورود */
+#site-brand-ribbon .brand-ribbon__flag::before {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+
+  background: radial-gradient(
+    ellipse at 50% 35%,
+    rgba(255, 224, 157, 0.65),
+    rgba(209, 171, 123, 0.18) 35%,
+    transparent 72%
+  );
+
+  opacity: 0;
+  animation: entrance-flash 1.6s ease-out both;
+}
+
+/* 3. عبور بازتاب طلایی از روی نشان */
+#site-brand-ribbon .brand-ribbon__flag::after {
+  content: "";
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  bottom: 0;
+  left: -110%;
+  width: 65%;
+  pointer-events: none;
+
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 25%,
+    rgba(255, 255, 255, 0.90) 48%,
+    rgba(232, 190, 116, 0.50) 62%,
+    transparent 100%
+  );
+
+  transform: skewX(-22deg);
+  animation: gold-shine 4.5s ease-in-out 1.1s infinite;
+}
+
+/* 4. ورود از بالا با محوشدگی و بزرگ‌شدن نرم */
+@keyframes logo-entrance {
+  0% {
+    opacity: 0;
+    transform: translateY(-65px) scale(0.82);
+    filter: blur(7px);
+  }
+
+  65% {
+    opacity: 1;
+    transform: translateY(5px) scale(1.035);
+    filter: blur(0);
+  }
+
+  82% {
+    transform: translateY(-3px) scale(0.99);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* 5. درخشش اولیه هنگام ظاهرشدن */
+@keyframes entrance-flash {
+  0% {
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+/* 6. حرکت ظریف دوره‌ای برای جلب توجه */
+@keyframes logo-attention {
+  0%, 72%, 100% {
+    transform: translateY(0) rotate(0);
+  }
+
+  76% {
+    transform: translateY(-5px) rotate(-3deg);
+  }
+
+  80% {
+    transform: translateY(0) rotate(3deg);
+  }
+
+  84% {
+    transform: translateY(-3px) rotate(-2deg);
+  }
+
+  88% {
+    transform: translateY(0) rotate(0);
+  }
+}
+
+/* 7. تپش هاله طلایی */
+@keyframes gold-aura {
+  0%, 100% {
+    box-shadow:
+      0 12px 30px rgba(6, 29, 56, 0.28),
+      0 0 0 1px rgba(209, 171, 123, 0.30),
+      0 0 18px rgba(209, 171, 123, 0.15);
+  }
+
+  50% {
+    box-shadow:
+      0 15px 38px rgba(6, 29, 56, 0.36),
+      0 0 0 2px rgba(232, 190, 116, 0.75),
+      0 0 32px rgba(232, 190, 116, 0.58);
+  }
+}
+
+/* 8. عبور نور در بازه‌های زمانی */
+@keyframes gold-shine {
+  0%, 28% {
+    left: -110%;
+  }
+
+  65%, 100% {
+    left: 160%;
+  }
+}
+
+/* 9. واکنش به ماوس */
+#site-brand-ribbon:hover .brand-ribbon__flag {
+  box-shadow:
+    0 18px 42px rgba(6, 29, 56, 0.40),
+    0 0 0 2px rgba(232, 190, 116, 0.85),
+    0 0 36px rgba(232, 190, 116, 0.70);
+}
+
+#site-brand-ribbon:hover img {
+  transform: scale(1.08);
+}
+
+#site-brand-ribbon img {
+  transition: transform 0.4s ease;
+}
+
+/* 10. رعایت تنظیمات کاهش حرکت */
+@media (prefers-reduced-motion: reduce) {
+  #site-brand-ribbon,
+  #site-brand-ribbon .brand-ribbon__flag,
+  #site-brand-ribbon .brand-ribbon__flag::before,
+  #site-brand-ribbon .brand-ribbon__flag::after {
+    animation: none !important;
+    filter: none;
+  }
+
+  #site-brand-ribbon img {
+    transition: none;
+  }
+}
+
+
+/* =========================================
+   ENGLISH VIDEOS — RECTANGULAR VIDEO CARDS
+   Thumbnail + 5-second hover preview
+   ========================================= */
+
+   #app .circles:has(a.circle-wrap[data-video]) {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 26px 20px !important;
+  align-items: start !important;
+  width: 100% !important;
+}
+
+/* کارت */
+#app .circles:has(a.circle-wrap[data-video]) > .circle-wrap {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  aspect-ratio: auto !important;
+  overflow: visible !important;
+  border-radius: 14px !important;
+  background: transparent !important;
+  transform: none;
+  transition: transform .3s ease;
+}
+
+/* قاب مشترک تصویر و پیش‌نمایش */
+#app .circles:has(a.circle-wrap[data-video]) .circle-stage {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  aspect-ratio: 16 / 9 !important;
+  flex: none !important;
+  overflow: hidden !important;
+  border-radius: 14px !important;
+  clip-path: inset(0 round 14px) !important;
+  background: #061d38 !important;
+}
+
+/* حذف تزئینات دایره‌ای */
+#app .circles:has(a.circle-wrap[data-video]) .circle-ring {
+  display: none !important;
+}
+
+/* لایه تصویر */
+#app .circles:has(a.circle-wrap[data-video]) .circle,
+#app .circles:has(a.circle-wrap[data-video]) .circle:has(video) {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  background: #061d38 !important;
+  box-shadow: none !important;
+  clip-path: inset(0) !important;
+}
+
+/* تصویر بندانگشتی */
+#app .circles:has(a.circle-wrap[data-video]) .circle img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover !important;
+  border-radius: 0 !important;
+}
+
+/* خود ویدئوی پیش‌نمایش ۵ ثانیه‌ای */
+#app .circles:has(a.circle-wrap[data-video]) .circle-stage video,
+#app .circles:has(a.circle-wrap[data-video]) .circle video,
+#app .circles:has(a.circle-wrap[data-video]) video {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  object-fit: cover !important;
+  clip-path: inset(0) !important;
+  background: #061d38 !important;
+}
+
+/* عنوان */
+#app .circles:has(a.circle-wrap[data-video]) .circle__label {
+  position: absolute !important;
+  inset-inline: 0 !important;
+  bottom: 0 !important;
+  z-index: 5 !important;
+  width: 100% !important;
+  padding: 28px 12px 10px !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  line-height: 1.8 !important;
+  text-align: start !important;
+  white-space: normal !important;
+  background: linear-gradient(
+    to top,
+    rgba(5, 20, 38, .92),
+    rgba(5, 20, 38, .35) 70%,
+    transparent
+  ) !important;
+}
+
+/* هاور */
+#app .circles:has(a.circle-wrap[data-video]) > .circle-wrap:hover {
+  transform: translateY(-4px);
+}
+
+#app .circles:has(a.circle-wrap[data-video]) .circle-stage {
+  box-shadow: 0 4px 14px rgba(6, 29, 56, .12);
+  transition: box-shadow .3s ease;
+}
+
+#app .circles:has(a.circle-wrap[data-video])
+  > .circle-wrap:hover .circle-stage {
+  box-shadow: 0 12px 28px rgba(6, 29, 56, .24);
+}
+
+/* تبلت */
+@media (max-width: 900px) {
+  #app .circles:has(a.circle-wrap[data-video]) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* موبایل */
+@media (max-width: 560px) {
+  #app .circles:has(a.circle-wrap[data-video]) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+
 
 </style>
 </head>
@@ -368,6 +756,7 @@ const HOME_CIRCLES = [
 
 const ENGLISH_CIRCLES = [
   { id:'podcast', label:'پادکست',  img: IMG.headph,  route:'#/english/podcast' },
+  { id:'videos',  label:'فیلم‌ها',   img: IMG.code,    route:'#/english/videos' },
   { id:'stories', label:'داستان',  img: IMG.story,   route:'#/english/stories' },
   { id:'musics',  label:'موسیقی',  img: IMG.concert, route:'#/english/musics' },
   { id:'books',   label:'کتاب',    img: IMG.oxford,  route:'#/english/books' },
@@ -395,6 +784,7 @@ function inferCircleRoute(title, fallback, index){
   const t = (title || '').trim();
   const rules = [
     [/پادکست|podcast/i, '#/english/podcast'],
+    [/فیلم|video/i, '#/english/videos'],
     [/داستان|stor/i, '#/english/stories'],
     [/کتاب|book/i, '#/english/books'],
     [/انگلیس|english/i, '#/english'],
@@ -427,9 +817,9 @@ function slotsToCircles(page, fallback){
   });
 }
 
-const CAT = { podcast:1, stories:2, musics:3, books:4 };
-const CAT_NAME = { podcast:'پادکست', stories:'داستان', musics:'موسیقی', books:'کتاب' };
-const CAT_HERO = { podcast:IMG.headph, stories:IMG.story, musics:IMG.concert, books:IMG.oxford };
+const CAT = { podcast:1, stories:2, musics:3, books:4, videos:5 };
+const CAT_NAME = { podcast:'پادکست', stories:'داستان', musics:'موسیقی', books:'کتاب', videos:'فیلم‌های آموزشی' };
+const CAT_HERO = { podcast:IMG.headph, stories:IMG.story, musics:IMG.concert, books:IMG.oxford, videos:IMG.code };
 
 const app = document.getElementById('app');
 const audioEl = document.getElementById('audio-el');
@@ -680,12 +1070,14 @@ async function renderLibraryList(key){
   }
   return `<div class="circles">${items.map(it=>{
     const img = it.imageUrl || CAT_HERO[key];
-    const voiceOnly = !!it.isVoiceOnly;
-    const href = (!voiceOnly) ? `#/english/${key}/${it.id}` : 'javascript:void(0)';
+    const isVideo = key === 'videos';
+    const voiceOnly = !isVideo && !!it.isVoiceOnly;
+    const href = isVideo ? `#/english/videos/${it.id}` : ((!voiceOnly) ? `#/english/${key}/${it.id}` : 'javascript:void(0)');
     const voice = (voiceOnly && it.audioUrl) ? it.audioUrl : '';
+    const videoUrl = (isVideo && it.videoUrl) ? it.videoUrl : '';
     const isVoice = voiceOnly && voice;
     return `<a class="circle-wrap" href="${href}" data-id="${it.id}"
-      data-audio="${voice}" data-title="${escapeHtml(it.title)}"
+      data-audio="${voice}" data-video="${videoUrl}" data-title="${escapeHtml(it.title)}"
       data-voice-only="${isVoice ? '1' : '0'}"
       title="${escapeHtml(it.title)}">
       <span class="circle-stage">
@@ -735,6 +1127,264 @@ async function renderDetail(key, id){
 
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
+
+function stopVideoPreviews(){
+  document.querySelectorAll('video.circle-preview').forEach(v=>{
+    try{ v.pause(); v.remove(); }catch(_){}
+  });
+}
+
+function bindVideoHoverPreviews(root){
+  root.querySelectorAll('a.circle-wrap[data-video]').forEach(el=>{
+    const url = (el.getAttribute('data-video') || '').trim();
+    if(!url) return;
+    let timer = null, stopTimer = null, touchTimer = null;
+    const stage = el.querySelector('.circle-stage') || el;
+
+    const startPreview = ()=>{
+      stopVideoPreviews();
+      const v = document.createElement('video');
+      v.className = 'circle-preview';
+      v.src = url;
+      v.muted = true;
+      v.playsInline = true;
+      v.setAttribute('playsinline','');
+      v.preload = 'auto';
+      stage.appendChild(v);
+      v.play().catch(()=>{});
+      stopTimer = setTimeout(()=>{ try{ v.pause(); v.remove(); }catch(_){} }, 10000);
+    };
+
+    el.addEventListener('mouseenter', ()=>{
+      clearTimeout(timer);
+      timer = setTimeout(startPreview, 2000);
+    });
+    el.addEventListener('mouseleave', ()=>{
+      clearTimeout(timer); clearTimeout(stopTimer); stopVideoPreviews();
+    });
+    el.addEventListener('touchstart', ()=>{
+      touchTimer = setTimeout(startPreview, 2000);
+    }, {passive:true});
+    el.addEventListener('touchend', ()=>{ clearTimeout(touchTimer); });
+    el.addEventListener('touchcancel', ()=>{ clearTimeout(touchTimer); });
+
+    // explicit click navigation (hash)
+    el.addEventListener('click', (e)=>{
+      const id = el.getAttribute('data-id');
+      if(!id) return;
+      // allow normal hash navigation; ensure hash is set
+      const target = '#/english/videos/' + id;
+      if(location.hash !== target){
+        e.preventDefault();
+        location.hash = target;
+      }
+    });
+  });
+}
+
+async function renderVideoWatch(id){
+  try{
+    const r = await fetch('/api/site/library/' + encodeURIComponent(id));
+    if(!r.ok) return `<div class="lib-empty">یافت نشد. (کد ${r.status})</div>`;
+    const it = await r.json();
+    return buildVideoWatchHtml(it);
+  }catch(err){
+    console.error(err);
+    return `<div class="lib-empty">خطا در بارگذاری ویدیو.</div>`;
+  }
+}
+
+function sideItemHtml(x, badge, imgFallback){
+  if(!x) return '';
+  const thumb = x.imageUrl || imgFallback || '';
+  const vurl = x.videoUrl || '';
+  return `<div class="video-watch__item" data-play-id="${x.id}" data-play-url="${vurl}" data-play-title="${escapeHtml(x.title||'')}">
+    <img src="${thumb}" alt="">
+    <span>${badge?`<small style="display:block;color:var(--muted);font-size:10px">${badge}</small>`:''}${escapeHtml(x.title||'')}</span>
+  </div>`;
+}
+
+async function fetchLibraryPage(category, skip, take, excludeId){
+  const qs = new URLSearchParams();
+  if(category != null) qs.set('category', category);
+  qs.set('skip', String(skip||0));
+  qs.set('take', String(take||10));
+  if(excludeId) qs.set('excludeId', String(excludeId));
+  try{
+    const r = await fetch('/api/site/library?' + qs.toString());
+    if(!r.ok) return { items:[], total:0, hasMore:false };
+    const data = await r.json();
+    // paginated shape or plain array (legacy)
+    if(Array.isArray(data)) return { items:data, total:data.length, hasMore:false };
+    return {
+      items: data.items || data.Items || [],
+      total: data.total ?? data.Total ?? 0,
+      hasMore: !!(data.hasMore ?? data.HasMore)
+    };
+  }catch{ return { items:[], total:0, hasMore:false }; }
+}
+
+/** Build sidebar: prev/next + related/suggested in pages of 10, or all-videos infinite if both empty */
+async function buildVideoSideHtml(it){
+  const img = it.imageUrl || CAT_HERO.videos || '';
+  let side = '';
+  if(it.previous) side += `<div class="video-watch__group"><div class="video-watch__group-label">قبلی</div>${sideItemHtml(it.previous,'قبلی',img)}</div>`;
+  if(it.next) side += `<div class="video-watch__group"><div class="video-watch__group-label">بعدی</div>${sideItemHtml(it.next,'بعدی',img)}</div>`;
+
+  const related = it.related || [];
+  const suggested = it.suggested || [];
+
+  if(related.length){
+    const first = related.slice(0, 10);
+    side += `<div class="video-watch__group" data-list="related" data-ids="${related.map(x=>x.id).join(',')}" data-offset="10">
+      <div class="video-watch__group-label">مرتبط</div>
+      <div class="video-watch__list">${first.map(x=>sideItemHtml(x,'',img)).join('')}</div>
+      ${related.length > 10 ? '<div class="video-watch__more" data-more="related">در حال بارگذاری…</div>' : ''}
+    </div>`;
+  }
+  if(suggested.length){
+    const first = suggested.slice(0, 10);
+    side += `<div class="video-watch__group" data-list="suggested" data-ids="${suggested.map(x=>x.id).join(',')}" data-offset="10">
+      <div class="video-watch__group-label">پیشنهادی</div>
+      <div class="video-watch__list">${first.map(x=>sideItemHtml(x,'',img)).join('')}</div>
+      ${suggested.length > 10 ? '<div class="video-watch__more" data-more="suggested">در حال بارگذاری…</div>' : ''}
+    </div>`;
+  }
+
+  // neither related nor suggested → all videos, 10 at a time
+  if(!related.length && !suggested.length){
+    const page = await fetchLibraryPage(CAT.videos, 0, 10, it.id);
+    side += `<div class="video-watch__group" data-list="all" data-skip="10" data-exclude="${it.id}" data-hasmore="${page.hasMore ? '1':'0'}">
+      <div class="video-watch__group-label">همه فیلم‌ها</div>
+      <div class="video-watch__list">${(page.items||[]).map(x=>sideItemHtml(x,'',img)).join('')}</div>
+      <div class="video-watch__more" data-more="all" style="${page.hasMore?'':'display:none'}">اسکرول برای موارد بیشتر…</div>
+    </div>`;
+  }
+  if(!side) side = `<p style="font-size:12.5px;color:var(--muted);margin:0">فیلم دیگری نیست.</p>`;
+  return side;
+}
+
+async function buildVideoWatchHtml(it){
+  const img = it.imageUrl || CAT_HERO.videos || '';
+  const videoUrl = it.videoUrl || '';
+  const video = videoUrl
+    ? `<div class="video-watch__player"><video id="vw-player" controls playsinline controlsList="nodownload" src="${videoUrl}" poster="${img}"></video></div>`
+    : `<div class="lib-empty">برای این مورد فایل ویدیو ثبت نشده است.</div>`;
+  const side = await buildVideoSideHtml(it);
+  return `
+    <div class="video-watch" data-current-id="${it.id}">
+      <div>
+        ${video}
+        <h1 class="video-watch__title">${escapeHtml(it.title||'')}</h1>
+        ${it.summary?`<p class="video-watch__sum">${escapeHtml(it.summary)}</p>`:''}
+        ${it.bodyText?`<div class="detail__body-card"><div class="detail__body">${escapeHtml(it.bodyText)}</div></div>`:''}
+      </div>
+      <aside class="video-watch__side" id="vw-side">
+        <h3>مسیر یادگیری</h3>
+        <div id="vw-side-body">${side}</div>
+      </aside>
+    </div>
+    <div style="text-align:center"><a class="back" href="#/english/videos">← فیلم‌های آموزشی</a></div>`;
+}
+
+function bindVideoSideInfinite(root){
+  const side = root.querySelector('#vw-side') || root.querySelector('.video-watch__side');
+  if(!side || side._infBound) return;
+  side._infBound = true;
+  let loading = false;
+  side.addEventListener('scroll', async ()=>{
+    if(loading) return;
+    if(side.scrollTop + side.clientHeight < side.scrollHeight - 40) return;
+    const group = side.querySelector('.video-watch__group[data-list]');
+    if(!group) return;
+    const listType = group.getAttribute('data-list');
+    const listEl = group.querySelector('.video-watch__list');
+    const moreEl = group.querySelector('.video-watch__more');
+    if(!listEl) return;
+    loading = true;
+    try{
+      if(listType === 'all'){
+        if(group.getAttribute('data-hasmore') !== '1') return;
+        const skip = parseInt(group.getAttribute('data-skip')||'0',10);
+        const exclude = group.getAttribute('data-exclude');
+        const page = await fetchLibraryPage(CAT.videos, skip, 10, exclude);
+        const img = CAT_HERO.videos || '';
+        listEl.insertAdjacentHTML('beforeend', (page.items||[]).map(x=>sideItemHtml(x,'',img)).join(''));
+        group.setAttribute('data-skip', String(skip + (page.items||[]).length));
+        group.setAttribute('data-hasmore', page.hasMore ? '1' : '0');
+        if(moreEl) moreEl.style.display = page.hasMore ? '' : 'none';
+        wirePlayClicks(root);
+      } else if(listType === 'related' || listType === 'suggested'){
+        const ids = (group.getAttribute('data-ids')||'').split(',').filter(Boolean);
+        let offset = parseInt(group.getAttribute('data-offset')||'0',10);
+        if(offset >= ids.length){ if(moreEl) moreEl.style.display='none'; return; }
+        const slice = ids.slice(offset, offset+10);
+        const img = CAT_HERO.videos || '';
+        for(const id of slice){
+          try{
+            const r = await fetch('/api/site/library/' + id);
+            if(r.ok){
+              const it = await r.json();
+              listEl.insertAdjacentHTML('beforeend', sideItemHtml(it,'',img));
+            }
+          }catch(_){}
+        }
+        offset += slice.length;
+        group.setAttribute('data-offset', String(offset));
+        if(moreEl) moreEl.style.display = offset >= ids.length ? 'none' : '';
+        wirePlayClicks(root);
+      }
+    } finally { loading = false; }
+  });
+}
+
+function wirePlayClicks(root){
+  const player = () => document.getElementById('vw-player');
+  const sideBody = () => document.getElementById('vw-side-body');
+  root.querySelectorAll('[data-play-id]').forEach(el=>{
+    if(el._wired) return;
+    el._wired = true;
+    el.addEventListener('click', async ()=>{
+      const id = el.getAttribute('data-play-id');
+      if(!id) return;
+      try{
+        const r = await fetch('/api/site/library/' + encodeURIComponent(id));
+        if(!r.ok) return;
+        const it = await r.json();
+        const p = player();
+        if(p && it.videoUrl){
+          p.src = it.videoUrl;
+          if(it.imageUrl) p.poster = it.imageUrl;
+          p.play().catch(()=>{});
+        }
+        const title = root.querySelector('.video-watch__title');
+        const sum = root.querySelector('.video-watch__sum');
+        if(title) title.textContent = it.title || '';
+        if(sum) sum.textContent = it.summary || '';
+        history.replaceState(null,'', '#/english/videos/' + id);
+        const sb = sideBody();
+        if(sb){
+          // reset infinite scroll binding
+          const side = root.querySelector('#vw-side');
+          if(side) side._infBound = false;
+          sb.innerHTML = await buildVideoSideHtml(it);
+          wirePlayClicks(root);
+          bindVideoSideInfinite(root);
+        }
+        root.querySelectorAll('.video-watch__item').forEach(x=>x.classList.remove('is-on'));
+        const active = root.querySelector(`[data-play-id="${id}"]`);
+        if(active) active.classList.add('is-on');
+      }catch(err){ console.error(err); }
+    });
+  });
+}
+
+function bindVideoWatchClicks(root){
+  wirePlayClicks(root);
+  bindVideoSideInfinite(root);
+}
+
+
 async function route(){
   stopCarousel();
   stopInlinePlayer();
@@ -772,10 +1422,15 @@ async function route(){
   }
 
   /* english library section or detail */
-  if(parts[0]==='english' && ['podcast','stories','musics','books'].includes(parts[1])){
+  if(parts[0]==='english' && ['podcast','stories','musics','books','videos'].includes(parts[1])){
     const key = parts[1];
     if(parts[2]){
-      app.innerHTML = `<div class="main">${await renderDetail(key, parts[2])}</div>`;
+      if(key === 'videos'){
+        app.innerHTML = `<div class="main">${await renderVideoWatch(parts[2])}</div>`;
+        bindVideoWatchClicks(app);
+      } else {
+        app.innerHTML = `<div class="main">${await renderDetail(key, parts[2])}</div>`;
+      }
       return;
     }
     const page = await fetchPage('english-' + key);
@@ -798,6 +1453,10 @@ async function route(){
         playAudio(url, el.getAttribute('data-title') || '', el);
       });
     });
+    /* educational videos: hover 2s → 10s preview in circle */
+    if(key === 'videos'){
+      bindVideoHoverPreviews(app);
+    }
     return;
   }
 
