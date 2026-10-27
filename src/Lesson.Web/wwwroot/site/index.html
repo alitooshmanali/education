@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>اساطیر آینده</title>
-<link rel="stylesheet" href="/css/fonts.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --navy:#0A2B51; --sand:#D1AB7B; --cream:#F9F6ED; --ink:#132133; --muted:#6B7787;
@@ -22,7 +24,7 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 
 /* —— brand ribbon (logo) —— */
 .brand-ribbon{
-  position:fixed;top:0;inset-inline-start:16px;z-index:100;
+  position:absolute;top:0;inset-inline-start:16px;z-index:100;
   display:flex;flex-direction:column;align-items:center;
   text-decoration:none;pointer-events:auto
 }
@@ -173,6 +175,28 @@ button{font:inherit;cursor:pointer;border:0;background:none}
   margin-top:4px;padding:24px 22px;border-radius:16px;background:#fff;
   border:1px solid var(--line);box-shadow:0 8px 28px rgba(10,43,81,.05)
 }
+/* video watch page */
+.video-watch{display:grid;grid-template-columns:minmax(0,1fr) min(320px,34vw);gap:20px;align-items:start;margin:20px 0 40px}
+.video-watch__player{background:#000;border-radius:16px;overflow:hidden;aspect-ratio:16/9}
+.video-watch__player video{width:100%;height:100%;display:block;background:#000}
+.video-watch__side{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;max-height:min(70vh,560px);overflow:auto}
+.video-watch__side h3{font-size:14px;font-weight:900;color:var(--navy);margin:0 0 10px}
+.video-watch__group{margin-bottom:14px}
+.video-watch__group-label{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:8px}
+.video-watch__item{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;cursor:pointer;border:1px solid transparent}
+.video-watch__item:hover,.video-watch__item.is-on{background:#f5f3ec;border-color:var(--line)}
+.video-watch__item img{width:72px;height:48px;object-fit:cover;border-radius:8px;background:#eef3fa;flex-shrink:0}
+.video-watch__item span{font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.35}
+.video-watch__title{font-size:clamp(20px,3vw,28px);font-weight:900;color:var(--navy);margin:12px 0 6px}
+.video-watch__sum{color:var(--muted);font-size:13.5px;margin-bottom:12px}
+.video-watch__more{text-align:center;font-size:11px;color:var(--muted);padding:8px 0;font-weight:700}
+.video-watch__list{display:flex;flex-direction:column;gap:4px}
+.circle-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;z-index:3;background:#000}
+.circle-stage{overflow:visible}
+@media(max-width:900px){
+  .video-watch{grid-template-columns:1fr}
+  .video-watch__side{max-height:none}
+}
 .detail__body{
   text-align:justify;text-justify:inter-word;line-height:2.05;
   font-size:15.5px;color:var(--ink);white-space:pre-wrap;margin:0
@@ -265,7 +289,29 @@ button{font:inherit;cursor:pointer;border:0;background:none}
   .detail__summary{font-size:12.5px;margin-bottom:12px}
   .detail__player{padding:10px 12px;border-radius:12px;margin-bottom:14px}
   .detail__body-card{padding:16px 14px;border-radius:12px}
-  .detail__body{font-size:14.5px;line-height:1.95}
+  /* video watch page */
+.video-watch{display:grid;grid-template-columns:minmax(0,1fr) min(320px,34vw);gap:20px;align-items:start;margin:20px 0 40px}
+.video-watch__player{background:#000;border-radius:16px;overflow:hidden;aspect-ratio:16/9}
+.video-watch__player video{width:100%;height:100%;display:block;background:#000}
+.video-watch__side{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;max-height:min(70vh,560px);overflow:auto}
+.video-watch__side h3{font-size:14px;font-weight:900;color:var(--navy);margin:0 0 10px}
+.video-watch__group{margin-bottom:14px}
+.video-watch__group-label{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:8px}
+.video-watch__item{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;cursor:pointer;border:1px solid transparent}
+.video-watch__item:hover,.video-watch__item.is-on{background:#f5f3ec;border-color:var(--line)}
+.video-watch__item img{width:72px;height:48px;object-fit:cover;border-radius:8px;background:#eef3fa;flex-shrink:0}
+.video-watch__item span{font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.35}
+.video-watch__title{font-size:clamp(20px,3vw,28px);font-weight:900;color:var(--navy);margin:12px 0 6px}
+.video-watch__sum{color:var(--muted);font-size:13.5px;margin-bottom:12px}
+.video-watch__more{text-align:center;font-size:11px;color:var(--muted);padding:8px 0;font-weight:700}
+.video-watch__list{display:flex;flex-direction:column;gap:4px}
+.circle-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;z-index:3;background:#000}
+.circle-stage{overflow:visible}
+@media(max-width:900px){
+  .video-watch{grid-template-columns:1fr}
+  .video-watch__side{max-height:none}
+}
+.detail__body{font-size:14.5px;line-height:1.95}
 
   .site-player{
     bottom:10px;width:calc(100% - 20px);max-width:none;
@@ -291,20 +337,80 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 
 /* safe area (notch phones) */
 @supports (padding:max(0px)){
-  .brand-ribbon{top:max(0px, env(safe-area-inset-top))}
+  .brand-ribbon{top:0}
   .site-player{bottom:max(10px, env(safe-area-inset-bottom))}
   .footer{padding-bottom:max(28px, env(safe-area-inset-bottom))}
 }
-/* overflow safety + tighter small-screen */
-html,body{overflow-x:hidden}
-.lib-grid{grid-template-columns:repeat(auto-fill,minmax(min(140px,100%),1fr))}
-@media(max-width:420px){
-  .main{padding:0 10px 28px}
-  .footer{padding:18px 12px 24px}
-  .circle{width:min(126px,44vw)}
-  .circle-stage{width:min(126px,44vw)}
-  .detail__body{font-size:14px}
+
+/* —— placement CTA & modal —— */
+.place-cta{
+  margin:8px 0 28px;padding:22px 20px;border-radius:20px;
+  background:linear-gradient(135deg,#0A2B51 0%,#1a4a7a 60%,#D1AB7B 160%);
+  color:#fff;text-align:center;box-shadow:0 14px 36px rgba(10,43,81,.22)
 }
+.place-cta h2{margin:0 0 6px;font-size:clamp(18px,3vw,24px);font-weight:900}
+.place-cta p{margin:0 0 14px;font-size:13.5px;opacity:.92;font-weight:600}
+.place-cta__btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--sand);color:var(--navy);font-weight:900;font-size:14px;
+  padding:12px 22px;border-radius:999px;border:0;cursor:pointer;
+  box-shadow:0 6px 18px rgba(0,0,0,.18)
+}
+.place-cta__btn:hover{filter:brightness(1.05)}
+.place-sticky{
+  position:fixed;bottom:18px;inset-inline-end:16px;z-index:90;
+  background:var(--navy);color:#fff;font-weight:800;font-size:13px;
+  padding:12px 18px;border-radius:999px;border:0;cursor:pointer;
+  box-shadow:0 10px 28px rgba(10,43,81,.35);display:none
+}
+@media(max-width:720px){ .place-sticky{display:inline-flex} }
+.place-modal{
+  position:fixed;inset:0;z-index:200;background:rgba(10,43,81,.55);
+  display:none;align-items:center;justify-content:center;padding:16px
+}
+.place-modal.is-open{display:flex}
+.place-modal__card{
+  width:min(420px,100%);background:#fff;border-radius:18px;padding:22px 20px;
+  box-shadow:0 20px 50px rgba(0,0,0,.25);direction:rtl
+}
+.place-modal__card h3{margin:0 0 6px;font-size:18px;color:var(--navy);font-weight:900}
+.place-modal__card p{margin:0 0 14px;font-size:13px;color:var(--muted)}
+.place-modal__card input{
+  width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;
+  padding:12px 14px;font:inherit;margin-bottom:12px;direction:ltr;text-align:left
+}
+.place-modal__actions{display:flex;gap:8px;justify-content:flex-end}
+.place-modal__actions button{
+  padding:10px 16px;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer;border:0
+}
+.place-modal__ok{background:var(--navy);color:#fff}
+.place-modal__cancel{background:#eef1f5;color:var(--ink)}
+.place-err{color:#8f2b21;font-size:12.5px;margin:-6px 0 10px;font-weight:700}
+.place-page{max-width:720px;margin:0 auto;padding:24px 16px 48px}
+.place-page h1{font-size:clamp(20px,4vw,28px);color:var(--navy);font-weight:900;margin:0 0 8px}
+.place-progress{height:8px;background:#e8e4da;border-radius:999px;margin:12px 0 20px;overflow:hidden}
+.place-progress > span{display:block;height:100%;background:var(--sand);border-radius:999px;transition:width .25s}
+.place-q{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px}
+.place-q__skill{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:6px}
+.place-q__text{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:12px;line-height:1.6}
+.place-opt{
+  display:block;width:100%;text-align:start;padding:10px 12px;margin:6px 0;
+  border:1px solid var(--line);border-radius:12px;background:#fbfaf7;font-weight:600;font-size:13.5px;cursor:pointer
+}
+.place-opt.is-on{border-color:var(--navy);background:#eef3fa;color:var(--navy)}
+.place-nav{display:flex;gap:8px;justify-content:space-between;margin-top:16px}
+.place-nav button{padding:11px 18px;border-radius:12px;font-weight:800;font-size:13px;cursor:pointer;border:0}
+.place-nav .next{background:var(--navy);color:#fff}
+.place-nav .prev{background:#eef1f5;color:var(--ink)}
+.place-result{
+  background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px 22px;text-align:center
+}
+.place-result__level{font-size:clamp(28px,6vw,42px);font-weight:900;color:var(--navy);margin:8px 0}
+.place-result__label{font-size:15px;font-weight:700;color:var(--sand);margin-bottom:16px}
+.place-scores{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0;text-align:start}
+.place-scores div{background:#fbfaf7;border:1px solid var(--line);border-radius:12px;padding:12px}
+.place-scores b{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+.place-scores span{font-size:18px;font-weight:900;color:var(--navy)}
 
 </style>
 </head>
@@ -331,6 +437,20 @@ html,body{overflow-x:hidden}
     آموزشگاه زبان و مهارت
     · <a href="/login">ورود به پلتفرم</a>
   </footer>
+
+  <button type="button" class="place-sticky" id="place-sticky" onclick="openPlacementModal()">تعیین سطح</button>
+  <div class="place-modal" id="place-modal" role="dialog" aria-modal="true">
+    <div class="place-modal__card">
+      <h3>تعیین سطح رایگان</h3>
+      <p>شماره موبایل‌ات را وارد کن تا نتیجه ذخیره شود و برای مشاوره باهات تماس بگیریم.</p>
+      <input id="place-phone" type="tel" inputmode="numeric" placeholder="09121234567" maxlength="15" />
+      <div class="place-err" id="place-phone-err" hidden></div>
+      <div class="place-modal__actions">
+        <button type="button" class="place-modal__cancel" onclick="closePlacementModal()">انصراف</button>
+        <button type="button" class="place-modal__ok" id="place-start-btn" onclick="startPlacement()">شروع آزمون</button>
+      </div>
+    </div>
+  </div>
 </div>
 <script>
 /* —— image assets (Unsplash, thematic) —— */
@@ -368,6 +488,7 @@ const HOME_CIRCLES = [
 
 const ENGLISH_CIRCLES = [
   { id:'podcast', label:'پادکست',  img: IMG.headph,  route:'#/english/podcast' },
+  { id:'videos',  label:'فیلم‌ها',   img: IMG.code,    route:'#/english/videos' },
   { id:'stories', label:'داستان',  img: IMG.story,   route:'#/english/stories' },
   { id:'musics',  label:'موسیقی',  img: IMG.concert, route:'#/english/musics' },
   { id:'books',   label:'کتاب',    img: IMG.oxford,  route:'#/english/books' },
@@ -395,6 +516,7 @@ function inferCircleRoute(title, fallback, index){
   const t = (title || '').trim();
   const rules = [
     [/پادکست|podcast/i, '#/english/podcast'],
+    [/فیلم|video/i, '#/english/videos'],
     [/داستان|stor/i, '#/english/stories'],
     [/کتاب|book/i, '#/english/books'],
     [/انگلیس|english/i, '#/english'],
@@ -427,9 +549,9 @@ function slotsToCircles(page, fallback){
   });
 }
 
-const CAT = { podcast:1, stories:2, musics:3, books:4 };
-const CAT_NAME = { podcast:'پادکست', stories:'داستان', musics:'موسیقی', books:'کتاب' };
-const CAT_HERO = { podcast:IMG.headph, stories:IMG.story, musics:IMG.concert, books:IMG.oxford };
+const CAT = { podcast:1, stories:2, musics:3, books:4, videos:5 };
+const CAT_NAME = { podcast:'پادکست', stories:'داستان', musics:'موسیقی', books:'کتاب', videos:'فیلم‌های آموزشی' };
+const CAT_HERO = { podcast:IMG.headph, stories:IMG.story, musics:IMG.concert, books:IMG.oxford, videos:IMG.code };
 
 const app = document.getElementById('app');
 const audioEl = document.getElementById('audio-el');
@@ -680,12 +802,14 @@ async function renderLibraryList(key){
   }
   return `<div class="circles">${items.map(it=>{
     const img = it.imageUrl || CAT_HERO[key];
-    const voiceOnly = !!it.isVoiceOnly;
-    const href = (!voiceOnly) ? `#/english/${key}/${it.id}` : 'javascript:void(0)';
+    const isVideo = key === 'videos';
+    const voiceOnly = !isVideo && !!it.isVoiceOnly;
+    const href = isVideo ? `#/english/videos/${it.id}` : ((!voiceOnly) ? `#/english/${key}/${it.id}` : 'javascript:void(0)');
     const voice = (voiceOnly && it.audioUrl) ? it.audioUrl : '';
+    const videoUrl = (isVideo && it.videoUrl) ? it.videoUrl : '';
     const isVoice = voiceOnly && voice;
     return `<a class="circle-wrap" href="${href}" data-id="${it.id}"
-      data-audio="${voice}" data-title="${escapeHtml(it.title)}"
+      data-audio="${voice}" data-video="${videoUrl}" data-title="${escapeHtml(it.title)}"
       data-voice-only="${isVoice ? '1' : '0'}"
       title="${escapeHtml(it.title)}">
       <span class="circle-stage">
@@ -735,11 +859,462 @@ async function renderDetail(key, id){
 
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 
+
+function stopVideoPreviews(){
+  document.querySelectorAll('video.circle-preview').forEach(v=>{
+    try{ v.pause(); v.remove(); }catch(_){}
+  });
+}
+
+function bindVideoHoverPreviews(root){
+  root.querySelectorAll('a.circle-wrap[data-video]').forEach(el=>{
+    const url = (el.getAttribute('data-video') || '').trim();
+    if(!url) return;
+    let timer = null, stopTimer = null, touchTimer = null;
+    const stage = el.querySelector('.circle-stage') || el;
+
+    const startPreview = ()=>{
+      stopVideoPreviews();
+      const v = document.createElement('video');
+      v.className = 'circle-preview';
+      v.src = url;
+      v.muted = true;
+      v.playsInline = true;
+      v.setAttribute('playsinline','');
+      v.preload = 'auto';
+      stage.appendChild(v);
+      v.play().catch(()=>{});
+      stopTimer = setTimeout(()=>{ try{ v.pause(); v.remove(); }catch(_){} }, 10000);
+    };
+
+    el.addEventListener('mouseenter', ()=>{
+      clearTimeout(timer);
+      timer = setTimeout(startPreview, 2000);
+    });
+    el.addEventListener('mouseleave', ()=>{
+      clearTimeout(timer); clearTimeout(stopTimer); stopVideoPreviews();
+    });
+    el.addEventListener('touchstart', ()=>{
+      touchTimer = setTimeout(startPreview, 2000);
+    }, {passive:true});
+    el.addEventListener('touchend', ()=>{ clearTimeout(touchTimer); });
+    el.addEventListener('touchcancel', ()=>{ clearTimeout(touchTimer); });
+
+    // explicit click navigation (hash)
+    el.addEventListener('click', (e)=>{
+      const id = el.getAttribute('data-id');
+      if(!id) return;
+      // allow normal hash navigation; ensure hash is set
+      const target = '#/english/videos/' + id;
+      if(location.hash !== target){
+        e.preventDefault();
+        location.hash = target;
+      }
+    });
+  });
+}
+
+async function renderVideoWatch(id){
+  try{
+    const r = await fetch('/api/site/library/' + encodeURIComponent(id));
+    if(!r.ok) return `<div class="lib-empty">یافت نشد. (کد ${r.status})</div>`;
+    const it = await r.json();
+    return buildVideoWatchHtml(it);
+  }catch(err){
+    console.error(err);
+    return `<div class="lib-empty">خطا در بارگذاری ویدیو.</div>`;
+  }
+}
+
+function sideItemHtml(x, badge, imgFallback){
+  if(!x) return '';
+  const thumb = x.imageUrl || imgFallback || '';
+  const vurl = x.videoUrl || '';
+  return `<div class="video-watch__item" data-play-id="${x.id}" data-play-url="${vurl}" data-play-title="${escapeHtml(x.title||'')}">
+    <img src="${thumb}" alt="">
+    <span>${badge?`<small style="display:block;color:var(--muted);font-size:10px">${badge}</small>`:''}${escapeHtml(x.title||'')}</span>
+  </div>`;
+}
+
+async function fetchLibraryPage(category, skip, take, excludeId){
+  const qs = new URLSearchParams();
+  if(category != null) qs.set('category', category);
+  qs.set('skip', String(skip||0));
+  qs.set('take', String(take||10));
+  if(excludeId) qs.set('excludeId', String(excludeId));
+  try{
+    const r = await fetch('/api/site/library?' + qs.toString());
+    if(!r.ok) return { items:[], total:0, hasMore:false };
+    const data = await r.json();
+    // paginated shape or plain array (legacy)
+    if(Array.isArray(data)) return { items:data, total:data.length, hasMore:false };
+    return {
+      items: data.items || data.Items || [],
+      total: data.total ?? data.Total ?? 0,
+      hasMore: !!(data.hasMore ?? data.HasMore)
+    };
+  }catch{ return { items:[], total:0, hasMore:false }; }
+}
+
+/** Build sidebar: prev/next + related/suggested in pages of 10, or all-videos infinite if both empty */
+async function buildVideoSideHtml(it){
+  const img = it.imageUrl || CAT_HERO.videos || '';
+  let side = '';
+  if(it.previous) side += `<div class="video-watch__group"><div class="video-watch__group-label">قبلی</div>${sideItemHtml(it.previous,'قبلی',img)}</div>`;
+  if(it.next) side += `<div class="video-watch__group"><div class="video-watch__group-label">بعدی</div>${sideItemHtml(it.next,'بعدی',img)}</div>`;
+
+  const related = it.related || [];
+  const suggested = it.suggested || [];
+
+  if(related.length){
+    const first = related.slice(0, 10);
+    side += `<div class="video-watch__group" data-list="related" data-ids="${related.map(x=>x.id).join(',')}" data-offset="10">
+      <div class="video-watch__group-label">مرتبط</div>
+      <div class="video-watch__list">${first.map(x=>sideItemHtml(x,'',img)).join('')}</div>
+      ${related.length > 10 ? '<div class="video-watch__more" data-more="related">در حال بارگذاری…</div>' : ''}
+    </div>`;
+  }
+  if(suggested.length){
+    const first = suggested.slice(0, 10);
+    side += `<div class="video-watch__group" data-list="suggested" data-ids="${suggested.map(x=>x.id).join(',')}" data-offset="10">
+      <div class="video-watch__group-label">پیشنهادی</div>
+      <div class="video-watch__list">${first.map(x=>sideItemHtml(x,'',img)).join('')}</div>
+      ${suggested.length > 10 ? '<div class="video-watch__more" data-more="suggested">در حال بارگذاری…</div>' : ''}
+    </div>`;
+  }
+
+  // neither related nor suggested → all videos, 10 at a time
+  if(!related.length && !suggested.length){
+    const page = await fetchLibraryPage(CAT.videos, 0, 10, it.id);
+    side += `<div class="video-watch__group" data-list="all" data-skip="10" data-exclude="${it.id}" data-hasmore="${page.hasMore ? '1':'0'}">
+      <div class="video-watch__group-label">همه فیلم‌ها</div>
+      <div class="video-watch__list">${(page.items||[]).map(x=>sideItemHtml(x,'',img)).join('')}</div>
+      <div class="video-watch__more" data-more="all" style="${page.hasMore?'':'display:none'}">اسکرول برای موارد بیشتر…</div>
+    </div>`;
+  }
+  if(!side) side = `<p style="font-size:12.5px;color:var(--muted);margin:0">فیلم دیگری نیست.</p>`;
+  return side;
+}
+
+async function buildVideoWatchHtml(it){
+  const img = it.imageUrl || CAT_HERO.videos || '';
+  const videoUrl = it.videoUrl || '';
+  const video = videoUrl
+    ? `<div class="video-watch__player"><video id="vw-player" controls playsinline controlsList="nodownload" src="${videoUrl}" poster="${img}"></video></div>`
+    : `<div class="lib-empty">برای این مورد فایل ویدیو ثبت نشده است.</div>`;
+  const side = await buildVideoSideHtml(it);
+  return `
+    <div class="video-watch" data-current-id="${it.id}">
+      <div>
+        ${video}
+        <h1 class="video-watch__title">${escapeHtml(it.title||'')}</h1>
+        ${it.summary?`<p class="video-watch__sum">${escapeHtml(it.summary)}</p>`:''}
+        ${it.bodyText?`<div class="detail__body-card"><div class="detail__body">${escapeHtml(it.bodyText)}</div></div>`:''}
+      </div>
+      <aside class="video-watch__side" id="vw-side">
+        <h3>مسیر یادگیری</h3>
+        <div id="vw-side-body">${side}</div>
+      </aside>
+    </div>
+    <div style="text-align:center"><a class="back" href="#/english/videos">← فیلم‌های آموزشی</a></div>`;
+}
+
+function bindVideoSideInfinite(root){
+  const side = root.querySelector('#vw-side') || root.querySelector('.video-watch__side');
+  if(!side || side._infBound) return;
+  side._infBound = true;
+  let loading = false;
+  side.addEventListener('scroll', async ()=>{
+    if(loading) return;
+    if(side.scrollTop + side.clientHeight < side.scrollHeight - 40) return;
+    const group = side.querySelector('.video-watch__group[data-list]');
+    if(!group) return;
+    const listType = group.getAttribute('data-list');
+    const listEl = group.querySelector('.video-watch__list');
+    const moreEl = group.querySelector('.video-watch__more');
+    if(!listEl) return;
+    loading = true;
+    try{
+      if(listType === 'all'){
+        if(group.getAttribute('data-hasmore') !== '1') return;
+        const skip = parseInt(group.getAttribute('data-skip')||'0',10);
+        const exclude = group.getAttribute('data-exclude');
+        const page = await fetchLibraryPage(CAT.videos, skip, 10, exclude);
+        const img = CAT_HERO.videos || '';
+        listEl.insertAdjacentHTML('beforeend', (page.items||[]).map(x=>sideItemHtml(x,'',img)).join(''));
+        group.setAttribute('data-skip', String(skip + (page.items||[]).length));
+        group.setAttribute('data-hasmore', page.hasMore ? '1' : '0');
+        if(moreEl) moreEl.style.display = page.hasMore ? '' : 'none';
+        wirePlayClicks(root);
+      } else if(listType === 'related' || listType === 'suggested'){
+        const ids = (group.getAttribute('data-ids')||'').split(',').filter(Boolean);
+        let offset = parseInt(group.getAttribute('data-offset')||'0',10);
+        if(offset >= ids.length){ if(moreEl) moreEl.style.display='none'; return; }
+        const slice = ids.slice(offset, offset+10);
+        const img = CAT_HERO.videos || '';
+        for(const id of slice){
+          try{
+            const r = await fetch('/api/site/library/' + id);
+            if(r.ok){
+              const it = await r.json();
+              listEl.insertAdjacentHTML('beforeend', sideItemHtml(it,'',img));
+            }
+          }catch(_){}
+        }
+        offset += slice.length;
+        group.setAttribute('data-offset', String(offset));
+        if(moreEl) moreEl.style.display = offset >= ids.length ? 'none' : '';
+        wirePlayClicks(root);
+      }
+    } finally { loading = false; }
+  });
+}
+
+function wirePlayClicks(root){
+  const player = () => document.getElementById('vw-player');
+  const sideBody = () => document.getElementById('vw-side-body');
+  root.querySelectorAll('[data-play-id]').forEach(el=>{
+    if(el._wired) return;
+    el._wired = true;
+    el.addEventListener('click', async ()=>{
+      const id = el.getAttribute('data-play-id');
+      if(!id) return;
+      try{
+        const r = await fetch('/api/site/library/' + encodeURIComponent(id));
+        if(!r.ok) return;
+        const it = await r.json();
+        const p = player();
+        if(p && it.videoUrl){
+          p.src = it.videoUrl;
+          if(it.imageUrl) p.poster = it.imageUrl;
+          p.play().catch(()=>{});
+        }
+        const title = root.querySelector('.video-watch__title');
+        const sum = root.querySelector('.video-watch__sum');
+        if(title) title.textContent = it.title || '';
+        if(sum) sum.textContent = it.summary || '';
+        history.replaceState(null,'', '#/english/videos/' + id);
+        const sb = sideBody();
+        if(sb){
+          // reset infinite scroll binding
+          const side = root.querySelector('#vw-side');
+          if(side) side._infBound = false;
+          sb.innerHTML = await buildVideoSideHtml(it);
+          wirePlayClicks(root);
+          bindVideoSideInfinite(root);
+        }
+        root.querySelectorAll('.video-watch__item').forEach(x=>x.classList.remove('is-on'));
+        const active = root.querySelector(`[data-play-id="${id}"]`);
+        if(active) active.classList.add('is-on');
+      }catch(err){ console.error(err); }
+    });
+  });
+}
+
+function bindVideoWatchClicks(root){
+  wirePlayClicks(root);
+  bindVideoSideInfinite(root);
+}
+
+
+
+/* —— Placement test —— */
+let _placeCandidateId = null;
+let _placeQuestions = [];
+let _placeAnswers = {};
+let _placeIdx = 0;
+
+function openPlacementModal(){
+  const m = document.getElementById('place-modal');
+  if(!m) return;
+  m.classList.add('is-open');
+  const err = document.getElementById('place-phone-err');
+  if(err){ err.hidden = true; err.textContent = ''; }
+  const inp = document.getElementById('place-phone');
+  if(inp) setTimeout(()=>inp.focus(), 50);
+}
+function closePlacementModal(){
+  const m = document.getElementById('place-modal');
+  if(m) m.classList.remove('is-open');
+}
+document.getElementById('place-modal')?.addEventListener('click', e=>{
+  if(e.target.id === 'place-modal') closePlacementModal();
+});
+
+async function startPlacement(){
+  const inp = document.getElementById('place-phone');
+  const err = document.getElementById('place-phone-err');
+  const btn = document.getElementById('place-start-btn');
+  const phone = (inp?.value || '').trim();
+  if(err){ err.hidden = true; }
+  if(!phone){
+    if(err){ err.textContent = 'شماره موبایل را وارد کنید.'; err.hidden = false; }
+    return;
+  }
+  try{
+    if(btn) btn.disabled = true;
+    const res = await fetch('/api/placement/start', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ phone })
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok){
+      if(err){ err.textContent = data.error || 'خطا در ثبت شماره'; err.hidden = false; }
+      return;
+    }
+    _placeCandidateId = data.candidateId;
+    closePlacementModal();
+    location.hash = '#/placement';
+  } catch(ex){
+    if(err){ err.textContent = 'ارتباط با سرور برقرار نشد.'; err.hidden = false; }
+  } finally {
+    if(btn) btn.disabled = false;
+  }
+}
+
+async function loadPlacementQuestions(){
+  const res = await fetch('/api/placement/questions');
+  if(!res.ok) throw new Error('questions');
+  return await res.json();
+}
+
+function renderPlacementQuestion(){
+  const q = _placeQuestions[_placeIdx];
+  if(!q) return '';
+  const total = _placeQuestions.length;
+  const pct = Math.round(((_placeIdx) / total) * 100);
+  const skillFa = {Vocabulary:'واژگان',Listening:'شنیداری',Reading:'خواندن',Writing:'نوشتاری'}[q.skill] || q.skill;
+  const opts = (q.options || []).map((o,i)=>{
+    const on = _placeAnswers[q.id] === i ? ' is-on' : '';
+    return `<button type="button" class="place-opt${on}" data-qi="${_placeIdx}" data-oi="${i}">${o}</button>`;
+  }).join('');
+  return `
+    <div class="place-page">
+      <h1>آزمون تعیین سطح</h1>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 4px">سؤال ${_placeIdx+1} از ${total}</p>
+      <div class="place-progress"><span style="width:${pct}%"></span></div>
+      <div class="place-q">
+        <div class="place-q__skill">${skillFa}</div>
+        <div class="place-q__text">${q.text}</div>
+        ${opts}
+      </div>
+      <div class="place-nav">
+        <button type="button" class="prev" id="place-prev" ${_placeIdx===0?'disabled':''}>قبلی</button>
+        <button type="button" class="next" id="place-next">${_placeIdx===total-1?'پایان و نتیجه':'بعدی'}</button>
+      </div>
+    </div>`;
+}
+
+function wirePlacement(){
+  app.querySelectorAll('.place-opt').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const qi = +btn.getAttribute('data-qi');
+      const oi = +btn.getAttribute('data-oi');
+      const q = _placeQuestions[qi];
+      if(!q) return;
+      _placeAnswers[q.id] = oi;
+      app.querySelectorAll('.place-opt').forEach(b=>b.classList.remove('is-on'));
+      btn.classList.add('is-on');
+    });
+  });
+  document.getElementById('place-prev')?.addEventListener('click', ()=>{
+    if(_placeIdx>0){ _placeIdx--; paintPlacement(); }
+  });
+  document.getElementById('place-next')?.addEventListener('click', async ()=>{
+    const q = _placeQuestions[_placeIdx];
+    if(q && _placeAnswers[q.id] === undefined){
+      alert('لطفاً یک گزینه را انتخاب کنید.');
+      return;
+    }
+    if(_placeIdx < _placeQuestions.length - 1){
+      _placeIdx++;
+      paintPlacement();
+      return;
+    }
+    await submitPlacement();
+  });
+}
+
+function paintPlacement(){
+  app.innerHTML = renderPlacementQuestion();
+  wirePlacement();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function submitPlacement(){
+  if(!_placeCandidateId){ location.hash = '#/'; return; }
+  const answers = Object.keys(_placeAnswers).map(id => ({
+    questionId: id,
+    selectedIndex: _placeAnswers[id]
+  }));
+  app.innerHTML = `<div class="place-page"><p style="text-align:center;color:var(--muted)">در حال محاسبه نتیجه…</p></div>`;
+  try{
+    const res = await fetch('/api/placement/submit', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ candidateId: _placeCandidateId, answers })
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok){
+      app.innerHTML = `<div class="place-page"><p style="color:#8f2b21">${data.error||'خطا در ثبت نتیجه'}</p>
+        <div style="text-align:center;margin-top:16px"><a class="back" href="#/">← صفحه اصلی</a></div></div>`;
+      return;
+    }
+    app.innerHTML = `
+      <div class="place-page">
+        <div class="place-result">
+          <div style="font-size:13px;font-weight:700;color:var(--muted)">سطح پیشنهادی شما</div>
+          <div class="place-result__level">${data.suggestionLevel}</div>
+          <div class="place-result__label">${data.suggestionLabel||''}</div>
+          <div class="place-scores">
+            <div><b>شنیداری</b><span>${data.listeningScore}</span></div>
+            <div><b>خواندن</b><span>${data.readingScore}</span></div>
+            <div><b>نوشتاری</b><span>${data.writingScore}</span></div>
+            <div><b>واژگان</b><span>${data.vocabularyScore}</span></div>
+          </div>
+          <p style="font-size:13px;color:var(--muted);margin:0 0 16px">جمع نمره: <b>${data.totalScore}</b> از ۴۰ · میانگین: <b>${data.averageScore}</b></p>
+          <p style="font-size:13px;color:var(--ink);font-weight:600;margin-bottom:18px">برای شروع کلاس در این سطح، از طریق پلتفرم ثبت‌نام کنید یا با آموزشگاه تماس بگیرید.</p>
+          <a class="place-cta__btn" href="/login" style="display:inline-flex">ورود / ثبت‌نام پلتفرم</a>
+          <div style="margin-top:14px"><a class="back" href="#/">← صفحه اصلی</a></div>
+        </div>
+      </div>`;
+  } catch(ex){
+    app.innerHTML = `<div class="place-page"><p style="color:#8f2b21">ارتباط با سرور برقرار نشد.</p>
+      <div style="text-align:center;margin-top:16px"><a class="back" href="#/">← صفحه اصلی</a></div></div>`;
+  }
+}
+
+async function renderPlacementPage(){
+  if(!_placeCandidateId){
+    openPlacementModal();
+    location.hash = '#/';
+    return;
+  }
+  try{
+    _placeQuestions = await loadPlacementQuestions();
+    _placeAnswers = {};
+    _placeIdx = 0;
+    paintPlacement();
+  } catch(ex){
+    app.innerHTML = `<div class="place-page"><p style="color:#8f2b21">بارگذاری سؤالات ناموفق بود.</p>
+      <div style="text-align:center"><a class="back" href="#/">← صفحه اصلی</a></div></div>`;
+  }
+}
+
+
 async function route(){
   stopCarousel();
   stopInlinePlayer();
   const hash = location.hash || '#/';
   const parts = hash.replace(/^#\/?/,'').split('/').filter(Boolean);
+
+
+  /* placement test */
+  if(parts[0]==='placement'){
+    await renderPlacementPage();
+    return;
+  }
 
   /* home */
   if(parts.length===0){
@@ -752,6 +1327,11 @@ async function route(){
       ${renderCarousel(slides)}
       <div class="main">
         ${circlesHtml(circles)}
+        <div class="place-cta">
+          <h2>سطح زبانت را رایگان مشخص کن</h2>
+          <p>آزمون کوتاه حدود ۱۵ دقیقه · نتیجه فوری · بدون ثبت‌نام</p>
+          <button type="button" class="place-cta__btn" onclick="openPlacementModal()">شروع تعیین سطح</button>
+        </div>
       </div>`;
     return;
   }
@@ -772,10 +1352,15 @@ async function route(){
   }
 
   /* english library section or detail */
-  if(parts[0]==='english' && ['podcast','stories','musics','books'].includes(parts[1])){
+  if(parts[0]==='english' && ['podcast','stories','musics','books','videos'].includes(parts[1])){
     const key = parts[1];
     if(parts[2]){
-      app.innerHTML = `<div class="main">${await renderDetail(key, parts[2])}</div>`;
+      if(key === 'videos'){
+        app.innerHTML = `<div class="main">${await renderVideoWatch(parts[2])}</div>`;
+        bindVideoWatchClicks(app);
+      } else {
+        app.innerHTML = `<div class="main">${await renderDetail(key, parts[2])}</div>`;
+      }
       return;
     }
     const page = await fetchPage('english-' + key);
@@ -798,6 +1383,10 @@ async function route(){
         playAudio(url, el.getAttribute('data-title') || '', el);
       });
     });
+    /* educational videos: hover 2s → 10s preview in circle */
+    if(key === 'videos'){
+      bindVideoHoverPreviews(app);
+    }
     return;
   }
 

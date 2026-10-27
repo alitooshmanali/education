@@ -179,10 +179,14 @@
         try
         {
             await Library.UpsertAsync(
-                _editId, _title, _summary, _body, _category, _imagePath,
+                _editId, _title, _summary, _body, _category,
+                string.IsNullOrWhiteSpace(_imagePath) ? null : _imagePath,
                 _imageContentId is 0 ? null : _imageContentId,
                 _audioId is 0 ? null : _audioId,
-                _voiceOnlyStr == "true", _sort, true);
+                null,
+                _voiceOnlyStr == "true",
+                null, null, null, null,
+                _sort, true);
             _ok = "ذخیره شد.";
             _showForm = false;
             await Reload();

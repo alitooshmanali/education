@@ -15,6 +15,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://0.0.0.0:5070");
 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions>(o =>
+{
+    o.DetailedErrors = builder.Environment.IsDevelopment();
+    o.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
+    o.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(2);
+});
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -53,6 +59,7 @@ builder.Services.AddScoped<IClassService, ClassService>();
 builder.Services.AddScoped<ISiteLibraryService, SiteLibraryService>();
 builder.Services.AddScoped<ISitePageService, SitePageService>();
 builder.Services.AddScoped<ITeacherWorkspaceService, TeacherWorkspaceService>();
+builder.Services.AddScoped<ICandidateService, CandidateService>();
 builder.Services.AddScoped<TeacherSessionState>();
 
 builder.Services.AddHttpContextAccessor();
@@ -89,8 +96,12 @@ app.MapRazorComponents<Lesson.Web.App>().AddInteractiveServerRenderMode();
 app.MapGet("/site", () => Results.Redirect("/site/index.html"));
 
 // Public site library API
-app.MapGet("/api/site/library", async (SiteLibraryCategory? category, ISiteLibraryService lib) =>
-    Results.Ok(await lib.GetPublicAsync(category)));
+app.MapGet("/api/site/library", async (SiteLibraryCategory? category, int? skip, int? take, long? excludeId, ISiteLibraryService lib) =>
+{
+    if (skip is not null || take is not null || excludeId is not null)
+        return Results.Ok(await lib.GetPublicPageAsync(category, skip ?? 0, take ?? 10, excludeId));
+    return Results.Ok(await lib.GetPublicAsync(category));
+});
 
 app.MapGet("/api/site/pages/{pageKey}", async (string pageKey, ISitePageService pages) =>
     Results.Ok(await pages.GetPublicPageAsync(pageKey)));
@@ -113,6 +124,40 @@ app.MapGet("/api/site/library/{id:long}", async (long id, ISiteLibraryService li
 
 
 // ---------- Auth ----------
+
+// Placement test (public, guests)
+app.MapPost("/api/placement/start", async (PlacementStartBody body, ICandidateService svc) =>
+{
+    try
+    {
+        var r = await svc.StartAsync(body.Phone ?? "");
+        return Results.Ok(r);
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+app.MapGet("/api/placement/questions", (ICandidateService svc) =>
+    Results.Ok(svc.GetQuestions()));
+
+app.MapPost("/api/placement/submit", async (PlacementSubmitRequest body, ICandidateService svc) =>
+{
+    try
+    {
+        var r = await svc.SubmitAsync(body.CandidateId, body.Answers ?? Array.Empty<PlacementAnswerDto>());
+        return Results.Ok(r);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+app.MapGet("/api/admin/candidates", async (ICandidateService svc) =>
+    Results.Ok(await svc.GetAllAdminAsync())).RequireAuthorization("AdminOnly");
+
 app.MapPost("/api/auth/login", async (HttpContext context, Lesson.Infrastructure.Abstractions.IAuthenticationService auth) =>
 {
     var form = await context.Request.ReadFormAsync();
@@ -242,3 +287,5 @@ public sealed class CurrentUserContext : ICurrentUserContext
     public string? DeviceIdentifier => _http.HttpContext?.User.FindFirstValue("lesson.device");
     public string? SessionKey => _http.HttpContext?.User.FindFirstValue("lesson.session");
 }
+
+public sealed record PlacementStartBody(string? Phone);

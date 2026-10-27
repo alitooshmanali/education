@@ -4,8 +4,8 @@ using Lesson.Domain.Enums;
 namespace Lesson.Domain.Entities;
 
 /// <summary>
-/// Public marketing-site library item managed by Admin (Podcast / Story / Music / Book).
-/// Voice-only podcasts play inline; items with text open a detail view.
+/// Public marketing-site library item (Podcast / Story / Music / Book / Video).
+/// Videos support previous/next, multi related and multi suggested lists.
 /// </summary>
 public sealed class SiteLibraryItem : BaseEntity
 {
@@ -15,7 +15,6 @@ public sealed class SiteLibraryItem : BaseEntity
 
     public SiteLibraryCategory Category { get; set; }
 
-    /// <summary>Relative path under wwwroot or media store for cover image.</summary>
     public string? ImagePath { get; set; }
 
     public long? ImageContentId { get; set; }
@@ -24,8 +23,19 @@ public sealed class SiteLibraryItem : BaseEntity
     public long? AudioContentId { get; set; }
     public LessonContent? AudioContent { get; set; }
 
-    /// <summary>When true and audio exists, click plays audio without opening detail.</summary>
+    public long? VideoContentId { get; set; }
+    public LessonContent? VideoContent { get; set; }
+
     public bool IsVoiceOnly { get; set; }
+
+    public long? PreviousItemId { get; set; }
+    public long? NextItemId { get; set; }
+
+    /// <summary>Comma-separated related item ids (multi).</summary>
+    public string? RelatedItemIds { get; set; }
+
+    /// <summary>Comma-separated suggested item ids (multi).</summary>
+    public string? SuggestedItemIds { get; set; }
 
     public int SortOrder { get; set; }
 }

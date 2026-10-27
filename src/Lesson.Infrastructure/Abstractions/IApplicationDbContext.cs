@@ -29,6 +29,7 @@ public interface IApplicationDbContext
     DbSet<ClassRoom> ClassRooms { get; }
     DbSet<ClassScheduleDay> ClassScheduleDays { get; }
     DbSet<ContentStudentAccess> ContentStudentAccesses { get; }
+    DbSet<CandidateUser> CandidateUsers { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
