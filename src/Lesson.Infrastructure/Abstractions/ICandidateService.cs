@@ -4,10 +4,12 @@ namespace Lesson.Infrastructure.Abstractions;
 
 public sealed record PlacementQuestionDto(
     string Id,
-    string Skill,          // Listening | Reading | Writing | Vocabulary
+    string Skill,          // Listening | Reading | Writing | Vocabulary | Speaking
     string Text,
     IReadOnlyList<string> Options,
-    string? AudioUrl = null);
+    string? AudioUrl = null,
+    string? ListenText = null,   // متنی که باید شنیده شود (TTS/صوت)
+    string? SpeakText = null);   // عبارتی که کاربر باید تلفظ کند
 
 public sealed record PlacementStartResult(long CandidateId, string PhoneNumber);
 

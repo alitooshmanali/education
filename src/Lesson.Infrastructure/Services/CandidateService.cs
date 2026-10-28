@@ -12,17 +12,14 @@ public sealed class CandidateService : ICandidateService
 {
     private readonly LessonDbContext _db;
 
-    // کلید سؤال → ایندکس گزینهٔ صحیح (۰-based)
+    // کلید سؤال → ایندکس گزینهٔ صحیح (۰-based). برای Speaking: 0 = تلفظ درست
     private static readonly Dictionary<string, int> CorrectAnswers = new(StringComparer.OrdinalIgnoreCase)
     {
-        // Vocabulary (5)
         ["v1"] = 1, ["v2"] = 2, ["v3"] = 0, ["v4"] = 3, ["v5"] = 1,
-        // Listening (5) — فعلاً متنی؛ بعداً audioUrl اضافه می‌شود
-        ["l1"] = 0, ["l2"] = 2, ["l3"] = 1, ["l4"] = 0, ["l5"] = 3,
-        // Reading (5)
+        ["l1"] = 0, ["l2"] = 2, ["l3"] = 1,
         ["r1"] = 1, ["r2"] = 0, ["r3"] = 2, ["r4"] = 1, ["r5"] = 3,
-        // Writing (5) — MCQ ساختار جمله
-        ["w1"] = 2, ["w2"] = 0, ["w3"] = 1, ["w4"] = 3, ["w5"] = 0,
+        ["w1"] = 2, ["w2"] = 0, ["w3"] = 1,
+        ["s1"] = 0, ["s2"] = 0, ["s3"] = 0,
     };
 
     private static readonly List<PlacementQuestionDto> Bank =
@@ -39,17 +36,16 @@ public sealed class CandidateService : ICandidateService
         new("v5", "Vocabulary", "\"Reluctant\" means…",
             ["happy", "unwilling", "hungry", "loud"]),
 
-        // —— Listening (text stand-in; replace with audio later) ——
-        new("l1", "Listening", "You hear: \"The meeting starts at half past nine.\" What time is that?",
-            ["9:30", "9:15", "8:30", "10:30"]),
-        new("l2", "Listening", "Speaker says they will arrive \"in a quarter of an hour.\" How many minutes?",
-            ["5", "30", "15", "45"]),
-        new("l3", "Listening", "\"Could you speak up, please?\" means…",
-            ["speak slower", "speak louder", "sit down", "leave"]),
-        new("l4", "Listening", "Announcement: \"Platform 3 for the train to London.\" Where do you go?",
-            ["Platform 3", "Platform 1", "Ticket office", "Bus stop"]),
-        new("l5", "Listening", "\"I'll pick you up at the airport.\" The speaker will…",
-            ["call you", "send a gift", "fly with you", "come and collect you"]),
+        // —— Listening (۳ سؤال با ListenText — کلاینت با TTS پخش می‌کند) ——
+        new("l1", "Listening", "به صوت گوش دهید. ساعت شروع جلسه چند است؟",
+            ["9:30", "9:15", "8:30", "10:30"],
+            null, "The meeting starts at half past nine."),
+        new("l2", "Listening", "به صوت گوش دهید. چند دقیقه دیگر می‌رسند؟",
+            ["5", "30", "15", "45"],
+            null, "I will arrive in a quarter of an hour."),
+        new("l3", "Listening", "به صوت گوش دهید. گوینده چه می‌خواهد؟",
+            ["آرام‌تر صحبت کنید", "بلندتر صحبت کنید", "بنشینید", "بروید"],
+            null, "Could you speak up, please?"),
 
         // —— Reading ——
         new("r1", "Reading", "Text: \"Libraries are free for all residents.\" Who can use the library for free?",
@@ -63,17 +59,21 @@ public sealed class CandidateService : ICandidateService
         new("r5", "Reading", "Notice: \"Office closed until further notice.\" The office is…",
             ["open today", "open tomorrow", "permanently sold", "closed for now"]),
 
-        // —— Writing (grammar / structure) ——
+        // —— Writing (گرامر) ——
         new("w1", "Writing", "Choose the correct sentence:",
             ["She go to school every day.", "She going to school every day.", "She goes to school every day.", "She gone to school every day."]),
         new("w2", "Writing", "Complete: \"If it rains, we _____ at home.\"",
             ["will stay", "stayed", "staying", "have stay"]),
         new("w3", "Writing", "Correct article: \"I saw _____ elephant at the zoo.\"",
             ["a", "an", "the a", "—"]),
-        new("w4", "Writing", "Past simple of \"write\":",
-            ["writed", "written", "writing", "wrote"]),
-        new("w5", "Writing", "Choose the best formal closing:",
-            ["Yours sincerely,", "See ya,", "Bye bye,", "Later,"]),
+
+        // —— Speaking (۳ سؤال — نمره در WritingScore ترکیب می‌شود) ——
+        new("s1", "Speaking", "میکروفون را روشن کنید و این کلمه را با صدای واضح تلفظ کنید:",
+            [], null, null, "hello"),
+        new("s2", "Speaking", "میکروفون را روشن کنید و این عبارت را تلفظ کنید:",
+            [], null, null, "good morning"),
+        new("s3", "Speaking", "میکروفون را روشن کنید و این کلمه را تلفظ کنید:",
+            [], null, null, "thank you"),
     ];
 
     public CandidateService(LessonDbContext db) => _db = db;
@@ -84,7 +84,6 @@ public sealed class CandidateService : ICandidateService
         if (phone is null)
             throw new ArgumentException("شماره موبایل معتبر نیست. مثال: 09121234567");
 
-        // اگر قبلاً آزمون کامل کرده، رکورد جدید می‌سازیم (امکان تکرار)
         var entity = new CandidateUser
         {
             PhoneNumber = phone,
@@ -114,9 +113,9 @@ public sealed class CandidateService : ICandidateService
             .GroupBy(a => a.QuestionId, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(g => g.Key, g => g.Last().SelectedIndex, StringComparer.OrdinalIgnoreCase);
 
-        decimal ScoreSkill(string skill)
+        decimal ScoreSkills(params string[] skills)
         {
-            var qs = Bank.Where(q => q.Skill.Equals(skill, StringComparison.OrdinalIgnoreCase)).ToList();
+            var qs = Bank.Where(q => skills.Any(s => q.Skill.Equals(s, StringComparison.OrdinalIgnoreCase))).ToList();
             if (qs.Count == 0) return 0;
             var correct = 0;
             foreach (var q in qs)
@@ -125,14 +124,14 @@ public sealed class CandidateService : ICandidateService
                 if (CorrectAnswers.TryGetValue(q.Id, out var right) && sel == right)
                     correct++;
             }
-            // ۰–۱۰
             return Math.Round(10m * correct / qs.Count, 1, MidpointRounding.AwayFromZero);
         }
 
-        var listening = ScoreSkill("Listening");
-        var reading = ScoreSkill("Reading");
-        var writing = ScoreSkill("Writing");
-        var vocabulary = ScoreSkill("Vocabulary");
+        var listening = ScoreSkills("Listening");
+        var reading = ScoreSkills("Reading");
+        // نوشتاری + گفتاری → یک نمره Writing
+        var writing = ScoreSkills("Writing", "Speaking");
+        var vocabulary = ScoreSkills("Vocabulary");
 
         var (total, average, level) = PlacementScoreCalculator.Compute(listening, reading, writing, vocabulary);
 
@@ -178,7 +177,6 @@ public sealed class CandidateService : ICandidateService
             .ToListAsync(ct);
     }
 
-    /// <summary>نرمال‌سازی شماره ایران: فقط ارقام، تبدیل +98 / 0098 / 98 به 0</summary>
     public static string? NormalizePhone(string? raw)
     {
         if (string.IsNullOrWhiteSpace(raw)) return null;
