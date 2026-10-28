@@ -33,7 +33,7 @@
     .tch-class b { color: #0A2B51; }
     .tch-class span { display: block; font-size: 11px; color: #6B7787; margin-top: 2px; }
     .tch-empty { padding: 28px 18px; text-align: center; color: #6B7787; font-size: 13.5px; }
-    @@media (max-width: 900px) { .tch-kpis { grid-template-columns: 1fr; } .tch-table { display: block; overflow-x: auto; } }
+    @@media (max-width: 900px) { .tch-kpis { grid-template-columns: 1fr; } }
 </style>
 
 <section class="tch">
@@ -70,7 +70,7 @@
                     @foreach (var r in _rows)
                     {
                         <tr>
-                            <td>
+                            <td data-label="مدرس">
                                 <div class="tch-who">
                                     <span class="tch-av">@Initials(r.Username)</span>
                                     <div>
@@ -79,13 +79,13 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="سطوح مجاز">
                                 <div class="tch-levels">
                                     @if (r.Levels.Count == 0) { <span class="tch-pill">—</span> }
                                     else { @foreach (var lv in r.Levels) { <span class="tch-pill gold">@lv</span> } }
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="کلاس‌های فعال">
                                 @if (r.Classes.Count == 0) { <span style="color:#6B7787;font-size:12.5px">بدون کلاس</span> }
                                 else
                                 {
@@ -98,7 +98,7 @@
                                     }
                                 }
                             </td>
-                            <td><span class="tch-pill @(r.IsActive ? "ok" : "bad")">@(r.IsActive ? "فعال" : "غیرفعال")</span></td>
+                            <td data-label="وضعیت"><span class="tch-pill @(r.IsActive ? "ok" : "bad")">@(r.IsActive ? "فعال" : "غیرفعال")</span></td>
                         </tr>
                     }
                 </tbody>

@@ -194,16 +194,16 @@
                         @foreach (var c in _items)
                         {
                             <tr>
-                                <td><span class="cls-code">@c.Code</span></td>
-                                <td>@c.Title</td>
-                                <td>@SubjectLabel(c.Subject)</td>
-                                <td><span class="cls-pill">@c.Level</span></td>
-                                <td>@(c.TeacherUsername ?? "—")</td>
-                                <td>@string.Join("، ", c.Days.Select(d => d.DayNameFa))</td>
-                                <td>@Fmt(c.StartTime) – @Fmt(c.EndTime)</td>
-                                <td>@c.EnrolledCount / @c.Capacity</td>
-                                <td><span class="cls-pill @StatusClass(c.Status)">@StatusLabel(c.Status)</span></td>
-                                <td>
+                                <td data-label="کد"><span class="cls-code">@c.Code</span></td>
+                                <td data-label="عنوان">@c.Title</td>
+                                <td data-label="موضوع">@SubjectLabel(c.Subject)</td>
+                                <td data-label="سطح"><span class="cls-pill">@c.Level</span></td>
+                                <td data-label="مدرس">@(c.TeacherUsername ?? "—")</td>
+                                <td data-label="روزها">@string.Join("، ", c.Days.Select(d => d.DayNameFa))</td>
+                                <td data-label="ساعت">@Fmt(c.StartTime) – @Fmt(c.EndTime)</td>
+                                <td data-label="ظرفیت">@c.EnrolledCount / @c.Capacity</td>
+                                <td data-label="وضعیت"><span class="cls-pill @StatusClass(c.Status)">@StatusLabel(c.Status)</span></td>
+                                <td data-label="عملیات">
                                     <div class="cls-acts">
                                         <button class="btn btn-sm btn-ghost" type="button" @onclick="() => StartEdit(c)">ویرایش</button>
                                         <button class="btn btn-sm btn-outline" type="button" @onclick="() => DeactivateAsync(c.Id)">حذف</button>

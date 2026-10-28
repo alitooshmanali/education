@@ -32,11 +32,11 @@
                     else foreach (var q in _items)
                     {
                         <tr>
-                            <td><b>@q.Title</b></td>
+                            <td data-label="عنوان"><b>@q.Title</b></td>
                             <td>@(q.Type == QuizType.Grammar ? "گرامر" : "جامع / تعیین سطح")</td>
-                            <td class="num">@q.TimeLimitMinutes</td>
+                            <td class="num" data-label="نوع">@q.TimeLimitMinutes</td>
                             <td class="num">@q.TotalScore</td>
-                            <td class="num">@q.QuestionCount</td>
+                            <td class="num" data-label="زمان">@q.QuestionCount</td>
                         </tr>
                     }
                 </tbody>

@@ -25,9 +25,9 @@
                     else foreach (var s in _items)
                     {
                         <tr>
-                            <td><b>@s.Title</b></td>
+                            <td data-label="عنوان"><b>@s.Title</b></td>
                             <td>@s.FolderName</td>
-                            <td>@(s.HasImage ? "دارد" : "—")</td>
+                            <td data-label="پوشه">@(s.HasImage ? "دارد" : "—")</td>
                             <td>@(s.HasVoice ? "دارد" : "—")</td>
                         </tr>
                     }

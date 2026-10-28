@@ -337,80 +337,362 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 
 /* safe area (notch phones) */
 @supports (padding:max(0px)){
-  .brand-ribbon{top:0}
+  .brand-ribbon{top:max(0px, env(safe-area-inset-top))}
   .site-player{bottom:max(10px, env(safe-area-inset-bottom))}
   .footer{padding-bottom:max(28px, env(safe-area-inset-bottom))}
 }
 
-/* —— placement CTA & modal —— */
-.place-cta{
-  margin:8px 0 28px;padding:22px 20px;border-radius:20px;
-  background:linear-gradient(135deg,#0A2B51 0%,#1a4a7a 60%,#D1AB7B 160%);
-  color:#fff;text-align:center;box-shadow:0 14px 36px rgba(10,43,81,.22)
+
+/* ==================================================
+   ASATIR-E AYANDE
+   Cinematic Entrance + Premium Gold Logo Animation
+   ================================================== */
+
+/* 1. ورود سینمایی نشان */
+#site-brand-ribbon {
+  transform-origin: top center;
+  animation:
+    logo-attention 5s ease-in-out 1.6s infinite;
+  will-change: transform;
 }
-.place-cta h2{margin:0 0 6px;font-size:clamp(18px,3vw,24px);font-weight:900}
-.place-cta p{margin:0 0 14px;font-size:13.5px;opacity:.92;font-weight:600}
-.place-cta__btn{
-  display:inline-flex;align-items:center;gap:8px;
-  background:var(--sand);color:var(--navy);font-weight:900;font-size:14px;
-  padding:12px 22px;border-radius:999px;border:0;cursor:pointer;
-  box-shadow:0 6px 18px rgba(0,0,0,.18)
+
+/* قاب اصلی لوگو */
+#site-brand-ribbon .brand-ribbon__flag {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  box-shadow:
+    0 12px 30px rgba(6, 29, 56, 0.28),
+    0 0 0 1px rgba(209, 171, 123, 0.30),
+    0 0 18px rgba(209, 171, 123, 0.15);
+
+  /* ورود و سپس تپش نور */
+  animation:
+    logo-entrance 1.35s cubic-bezier(.16, 1, .3, 1) both,
+    gold-aura 3s ease-in-out 1.35s infinite;
 }
-.place-cta__btn:hover{filter:brightness(1.05)}
-.place-sticky{
-  position:fixed;bottom:18px;inset-inline-end:16px;z-index:90;
-  background:var(--navy);color:#fff;font-weight:800;font-size:13px;
-  padding:12px 18px;border-radius:999px;border:0;cursor:pointer;
-  box-shadow:0 10px 28px rgba(10,43,81,.35);display:none
+
+/* 2. نور اولیه هنگام ورود */
+#site-brand-ribbon .brand-ribbon__flag::before {
+  content: "";
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+
+  background: radial-gradient(
+    ellipse at 50% 35%,
+    rgba(255, 224, 157, 0.65),
+    rgba(209, 171, 123, 0.18) 35%,
+    transparent 72%
+  );
+
+  opacity: 0;
+  animation: entrance-flash 1.6s ease-out both;
 }
-@media(max-width:720px){ .place-sticky{display:inline-flex} }
-.place-modal{
-  position:fixed;inset:0;z-index:200;background:rgba(10,43,81,.55);
-  display:none;align-items:center;justify-content:center;padding:16px
+
+/* 3. عبور بازتاب طلایی از روی نشان */
+#site-brand-ribbon .brand-ribbon__flag::after {
+  content: "";
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  bottom: 0;
+  left: -110%;
+  width: 65%;
+  pointer-events: none;
+
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 25%,
+    rgba(255, 255, 255, 0.90) 48%,
+    rgba(232, 190, 116, 0.50) 62%,
+    transparent 100%
+  );
+
+  transform: skewX(-22deg);
+  animation: gold-shine 4.5s ease-in-out 1.1s infinite;
 }
-.place-modal.is-open{display:flex}
-.place-modal__card{
-  width:min(420px,100%);background:#fff;border-radius:18px;padding:22px 20px;
-  box-shadow:0 20px 50px rgba(0,0,0,.25);direction:rtl
+
+/* 4. ورود از بالا با محوشدگی و بزرگ‌شدن نرم */
+@keyframes logo-entrance {
+  0% {
+    opacity: 0;
+    transform: translateY(-65px) scale(0.82);
+    filter: blur(7px);
+  }
+
+  65% {
+    opacity: 1;
+    transform: translateY(5px) scale(1.035);
+    filter: blur(0);
+  }
+
+  82% {
+    transform: translateY(-3px) scale(0.99);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
 }
-.place-modal__card h3{margin:0 0 6px;font-size:18px;color:var(--navy);font-weight:900}
-.place-modal__card p{margin:0 0 14px;font-size:13px;color:var(--muted)}
-.place-modal__card input{
-  width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;
-  padding:12px 14px;font:inherit;margin-bottom:12px;direction:ltr;text-align:left
+
+/* 5. درخشش اولیه هنگام ظاهرشدن */
+@keyframes entrance-flash {
+  0% {
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
-.place-modal__actions{display:flex;gap:8px;justify-content:flex-end}
-.place-modal__actions button{
-  padding:10px 16px;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer;border:0
+
+/* 6. حرکت ظریف دوره‌ای برای جلب توجه */
+@keyframes logo-attention {
+  0%, 72%, 100% {
+    transform: translateY(0) rotate(0);
+  }
+
+  76% {
+    transform: translateY(-5px) rotate(-3deg);
+  }
+
+  80% {
+    transform: translateY(0) rotate(3deg);
+  }
+
+  84% {
+    transform: translateY(-3px) rotate(-2deg);
+  }
+
+  88% {
+    transform: translateY(0) rotate(0);
+  }
 }
-.place-modal__ok{background:var(--navy);color:#fff}
-.place-modal__cancel{background:#eef1f5;color:var(--ink)}
-.place-err{color:#8f2b21;font-size:12.5px;margin:-6px 0 10px;font-weight:700}
-.place-page{max-width:720px;margin:0 auto;padding:24px 16px 48px}
-.place-page h1{font-size:clamp(20px,4vw,28px);color:var(--navy);font-weight:900;margin:0 0 8px}
-.place-progress{height:8px;background:#e8e4da;border-radius:999px;margin:12px 0 20px;overflow:hidden}
-.place-progress > span{display:block;height:100%;background:var(--sand);border-radius:999px;transition:width .25s}
-.place-q{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:14px}
-.place-q__skill{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:6px}
-.place-q__text{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:12px;line-height:1.6}
-.place-opt{
-  display:block;width:100%;text-align:start;padding:10px 12px;margin:6px 0;
-  border:1px solid var(--line);border-radius:12px;background:#fbfaf7;font-weight:600;font-size:13.5px;cursor:pointer
+
+/* 7. تپش هاله طلایی */
+@keyframes gold-aura {
+  0%, 100% {
+    box-shadow:
+      0 12px 30px rgba(6, 29, 56, 0.28),
+      0 0 0 1px rgba(209, 171, 123, 0.30),
+      0 0 18px rgba(209, 171, 123, 0.15);
+  }
+
+  50% {
+    box-shadow:
+      0 15px 38px rgba(6, 29, 56, 0.36),
+      0 0 0 2px rgba(232, 190, 116, 0.75),
+      0 0 32px rgba(232, 190, 116, 0.58);
+  }
 }
-.place-opt.is-on{border-color:var(--navy);background:#eef3fa;color:var(--navy)}
-.place-nav{display:flex;gap:8px;justify-content:space-between;margin-top:16px}
-.place-nav button{padding:11px 18px;border-radius:12px;font-weight:800;font-size:13px;cursor:pointer;border:0}
-.place-nav .next{background:var(--navy);color:#fff}
-.place-nav .prev{background:#eef1f5;color:var(--ink)}
-.place-result{
-  background:#fff;border:1px solid var(--line);border-radius:20px;padding:28px 22px;text-align:center
+
+/* 8. عبور نور در بازه‌های زمانی */
+@keyframes gold-shine {
+  0%, 28% {
+    left: -110%;
+  }
+
+  65%, 100% {
+    left: 160%;
+  }
 }
-.place-result__level{font-size:clamp(28px,6vw,42px);font-weight:900;color:var(--navy);margin:8px 0}
-.place-result__label{font-size:15px;font-weight:700;color:var(--sand);margin-bottom:16px}
-.place-scores{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:18px 0;text-align:start}
-.place-scores div{background:#fbfaf7;border:1px solid var(--line);border-radius:12px;padding:12px}
-.place-scores b{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
-.place-scores span{font-size:18px;font-weight:900;color:var(--navy)}
+
+/* 9. واکنش به ماوس */
+#site-brand-ribbon:hover .brand-ribbon__flag {
+  box-shadow:
+    0 18px 42px rgba(6, 29, 56, 0.40),
+    0 0 0 2px rgba(232, 190, 116, 0.85),
+    0 0 36px rgba(232, 190, 116, 0.70);
+}
+
+#site-brand-ribbon:hover img {
+  transform: scale(1.08);
+}
+
+#site-brand-ribbon img {
+  transition: transform 0.4s ease;
+}
+
+/* 10. رعایت تنظیمات کاهش حرکت */
+@media (prefers-reduced-motion: reduce) {
+  #site-brand-ribbon,
+  #site-brand-ribbon .brand-ribbon__flag,
+  #site-brand-ribbon .brand-ribbon__flag::before,
+  #site-brand-ribbon .brand-ribbon__flag::after {
+    animation: none !important;
+    filter: none;
+  }
+
+  #site-brand-ribbon img {
+    transition: none;
+  }
+}
+
+
+/* =========================================
+   ENGLISH VIDEOS — RECTANGULAR VIDEO CARDS
+   Thumbnail + 5-second hover preview
+   ========================================= */
+
+   #app .circles:has(a.circle-wrap[data-video]) {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 26px 20px !important;
+  align-items: start !important;
+  width: 100% !important;
+}
+
+/* کارت */
+#app .circles:has(a.circle-wrap[data-video]) > .circle-wrap {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  aspect-ratio: auto !important;
+  overflow: visible !important;
+  border-radius: 14px !important;
+  background: transparent !important;
+  transform: none;
+  transition: transform .3s ease;
+}
+
+/* قاب مشترک تصویر و پیش‌نمایش */
+#app .circles:has(a.circle-wrap[data-video]) .circle-stage {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  aspect-ratio: 16 / 9 !important;
+  flex: none !important;
+  overflow: hidden !important;
+  border-radius: 14px !important;
+  clip-path: inset(0 round 14px) !important;
+  background: #061d38 !important;
+}
+
+/* حذف تزئینات دایره‌ای */
+#app .circles:has(a.circle-wrap[data-video]) .circle-ring {
+  display: none !important;
+}
+
+/* لایه تصویر */
+#app .circles:has(a.circle-wrap[data-video]) .circle,
+#app .circles:has(a.circle-wrap[data-video]) .circle:has(video) {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  background: #061d38 !important;
+  box-shadow: none !important;
+  clip-path: inset(0) !important;
+}
+
+/* تصویر بندانگشتی */
+#app .circles:has(a.circle-wrap[data-video]) .circle img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover !important;
+  border-radius: 0 !important;
+}
+
+/* خود ویدئوی پیش‌نمایش ۵ ثانیه‌ای */
+#app .circles:has(a.circle-wrap[data-video]) .circle-stage video,
+#app .circles:has(a.circle-wrap[data-video]) .circle video,
+#app .circles:has(a.circle-wrap[data-video]) video {
+  position: absolute !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  object-fit: cover !important;
+  clip-path: inset(0) !important;
+  background: #061d38 !important;
+}
+
+/* عنوان */
+#app .circles:has(a.circle-wrap[data-video]) .circle__label {
+  position: absolute !important;
+  inset-inline: 0 !important;
+  bottom: 0 !important;
+  z-index: 5 !important;
+  width: 100% !important;
+  padding: 28px 12px 10px !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  line-height: 1.8 !important;
+  text-align: start !important;
+  white-space: normal !important;
+  background: linear-gradient(
+    to top,
+    rgba(5, 20, 38, .92),
+    rgba(5, 20, 38, .35) 70%,
+    transparent
+  ) !important;
+}
+
+/* هاور */
+#app .circles:has(a.circle-wrap[data-video]) > .circle-wrap:hover {
+  transform: translateY(-4px);
+}
+
+#app .circles:has(a.circle-wrap[data-video]) .circle-stage {
+  box-shadow: 0 4px 14px rgba(6, 29, 56, .12);
+  transition: box-shadow .3s ease;
+}
+
+#app .circles:has(a.circle-wrap[data-video])
+  > .circle-wrap:hover .circle-stage {
+  box-shadow: 0 12px 28px rgba(6, 29, 56, .24);
+}
+
+/* تبلت */
+@media (max-width: 900px) {
+  #app .circles:has(a.circle-wrap[data-video]) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* موبایل */
+@media (max-width: 560px) {
+  #app .circles:has(a.circle-wrap[data-video]) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+
 
 </style>
 </head>
@@ -437,20 +719,6 @@ button{font:inherit;cursor:pointer;border:0;background:none}
     آموزشگاه زبان و مهارت
     · <a href="/login">ورود به پلتفرم</a>
   </footer>
-
-  <button type="button" class="place-sticky" id="place-sticky" onclick="openPlacementModal()">تعیین سطح</button>
-  <div class="place-modal" id="place-modal" role="dialog" aria-modal="true">
-    <div class="place-modal__card">
-      <h3>تعیین سطح رایگان</h3>
-      <p>شماره موبایل‌ات را وارد کن تا نتیجه ذخیره شود و برای مشاوره باهات تماس بگیریم.</p>
-      <input id="place-phone" type="tel" inputmode="numeric" placeholder="09121234567" maxlength="15" />
-      <div class="place-err" id="place-phone-err" hidden></div>
-      <div class="place-modal__actions">
-        <button type="button" class="place-modal__cancel" onclick="closePlacementModal()">انصراف</button>
-        <button type="button" class="place-modal__ok" id="place-start-btn" onclick="startPlacement()">شروع آزمون</button>
-      </div>
-    </div>
-  </div>
 </div>
 <script>
 /* —— image assets (Unsplash, thematic) —— */
@@ -1114,192 +1382,6 @@ function wirePlayClicks(root){
 function bindVideoWatchClicks(root){
   wirePlayClicks(root);
   bindVideoSideInfinite(root);
-}
-
-
-
-/* —— Placement test —— */
-let _placeCandidateId = null;
-let _placeQuestions = [];
-let _placeAnswers = {};
-let _placeIdx = 0;
-
-function openPlacementModal(){
-  const m = document.getElementById('place-modal');
-  if(!m) return;
-  m.classList.add('is-open');
-  const err = document.getElementById('place-phone-err');
-  if(err){ err.hidden = true; err.textContent = ''; }
-  const inp = document.getElementById('place-phone');
-  if(inp) setTimeout(()=>inp.focus(), 50);
-}
-function closePlacementModal(){
-  const m = document.getElementById('place-modal');
-  if(m) m.classList.remove('is-open');
-}
-document.getElementById('place-modal')?.addEventListener('click', e=>{
-  if(e.target.id === 'place-modal') closePlacementModal();
-});
-
-async function startPlacement(){
-  const inp = document.getElementById('place-phone');
-  const err = document.getElementById('place-phone-err');
-  const btn = document.getElementById('place-start-btn');
-  const phone = (inp?.value || '').trim();
-  if(err){ err.hidden = true; }
-  if(!phone){
-    if(err){ err.textContent = 'شماره موبایل را وارد کنید.'; err.hidden = false; }
-    return;
-  }
-  try{
-    if(btn) btn.disabled = true;
-    const res = await fetch('/api/placement/start', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ phone })
-    });
-    const data = await res.json().catch(()=>({}));
-    if(!res.ok){
-      if(err){ err.textContent = data.error || 'خطا در ثبت شماره'; err.hidden = false; }
-      return;
-    }
-    _placeCandidateId = data.candidateId;
-    closePlacementModal();
-    location.hash = '#/placement';
-  } catch(ex){
-    if(err){ err.textContent = 'ارتباط با سرور برقرار نشد.'; err.hidden = false; }
-  } finally {
-    if(btn) btn.disabled = false;
-  }
-}
-
-async function loadPlacementQuestions(){
-  const res = await fetch('/api/placement/questions');
-  if(!res.ok) throw new Error('questions');
-  return await res.json();
-}
-
-function renderPlacementQuestion(){
-  const q = _placeQuestions[_placeIdx];
-  if(!q) return '';
-  const total = _placeQuestions.length;
-  const pct = Math.round(((_placeIdx) / total) * 100);
-  const skillFa = {Vocabulary:'واژگان',Listening:'شنیداری',Reading:'خواندن',Writing:'نوشتاری'}[q.skill] || q.skill;
-  const opts = (q.options || []).map((o,i)=>{
-    const on = _placeAnswers[q.id] === i ? ' is-on' : '';
-    return `<button type="button" class="place-opt${on}" data-qi="${_placeIdx}" data-oi="${i}">${o}</button>`;
-  }).join('');
-  return `
-    <div class="place-page">
-      <h1>آزمون تعیین سطح</h1>
-      <p style="color:var(--muted);font-size:13px;margin:0 0 4px">سؤال ${_placeIdx+1} از ${total}</p>
-      <div class="place-progress"><span style="width:${pct}%"></span></div>
-      <div class="place-q">
-        <div class="place-q__skill">${skillFa}</div>
-        <div class="place-q__text">${q.text}</div>
-        ${opts}
-      </div>
-      <div class="place-nav">
-        <button type="button" class="prev" id="place-prev" ${_placeIdx===0?'disabled':''}>قبلی</button>
-        <button type="button" class="next" id="place-next">${_placeIdx===total-1?'پایان و نتیجه':'بعدی'}</button>
-      </div>
-    </div>`;
-}
-
-function wirePlacement(){
-  app.querySelectorAll('.place-opt').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const qi = +btn.getAttribute('data-qi');
-      const oi = +btn.getAttribute('data-oi');
-      const q = _placeQuestions[qi];
-      if(!q) return;
-      _placeAnswers[q.id] = oi;
-      app.querySelectorAll('.place-opt').forEach(b=>b.classList.remove('is-on'));
-      btn.classList.add('is-on');
-    });
-  });
-  document.getElementById('place-prev')?.addEventListener('click', ()=>{
-    if(_placeIdx>0){ _placeIdx--; paintPlacement(); }
-  });
-  document.getElementById('place-next')?.addEventListener('click', async ()=>{
-    const q = _placeQuestions[_placeIdx];
-    if(q && _placeAnswers[q.id] === undefined){
-      alert('لطفاً یک گزینه را انتخاب کنید.');
-      return;
-    }
-    if(_placeIdx < _placeQuestions.length - 1){
-      _placeIdx++;
-      paintPlacement();
-      return;
-    }
-    await submitPlacement();
-  });
-}
-
-function paintPlacement(){
-  app.innerHTML = renderPlacementQuestion();
-  wirePlacement();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-async function submitPlacement(){
-  if(!_placeCandidateId){ location.hash = '#/'; return; }
-  const answers = Object.keys(_placeAnswers).map(id => ({
-    questionId: id,
-    selectedIndex: _placeAnswers[id]
-  }));
-  app.innerHTML = `<div class="place-page"><p style="text-align:center;color:var(--muted)">در حال محاسبه نتیجه…</p></div>`;
-  try{
-    const res = await fetch('/api/placement/submit', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ candidateId: _placeCandidateId, answers })
-    });
-    const data = await res.json().catch(()=>({}));
-    if(!res.ok){
-      app.innerHTML = `<div class="place-page"><p style="color:#8f2b21">${data.error||'خطا در ثبت نتیجه'}</p>
-        <div style="text-align:center;margin-top:16px"><a class="back" href="#/">← صفحه اصلی</a></div></div>`;
-      return;
-    }
-    app.innerHTML = `
-      <div class="place-page">
-        <div class="place-result">
-          <div style="font-size:13px;font-weight:700;color:var(--muted)">سطح پیشنهادی شما</div>
-          <div class="place-result__level">${data.suggestionLevel}</div>
-          <div class="place-result__label">${data.suggestionLabel||''}</div>
-          <div class="place-scores">
-            <div><b>شنیداری</b><span>${data.listeningScore}</span></div>
-            <div><b>خواندن</b><span>${data.readingScore}</span></div>
-            <div><b>نوشتاری</b><span>${data.writingScore}</span></div>
-            <div><b>واژگان</b><span>${data.vocabularyScore}</span></div>
-          </div>
-          <p style="font-size:13px;color:var(--muted);margin:0 0 16px">جمع نمره: <b>${data.totalScore}</b> از ۴۰ · میانگین: <b>${data.averageScore}</b></p>
-          <p style="font-size:13px;color:var(--ink);font-weight:600;margin-bottom:18px">برای شروع کلاس در این سطح، از طریق پلتفرم ثبت‌نام کنید یا با آموزشگاه تماس بگیرید.</p>
-          <a class="place-cta__btn" href="/login" style="display:inline-flex">ورود / ثبت‌نام پلتفرم</a>
-          <div style="margin-top:14px"><a class="back" href="#/">← صفحه اصلی</a></div>
-        </div>
-      </div>`;
-  } catch(ex){
-    app.innerHTML = `<div class="place-page"><p style="color:#8f2b21">ارتباط با سرور برقرار نشد.</p>
-      <div style="text-align:center;margin-top:16px"><a class="back" href="#/">← صفحه اصلی</a></div></div>`;
-  }
-}
-
-async function renderPlacementPage(){
-  if(!_placeCandidateId){
-    openPlacementModal();
-    location.hash = '#/';
-    return;
-  }
-  try{
-    _placeQuestions = await loadPlacementQuestions();
-    _placeAnswers = {};
-    _placeIdx = 0;
-    paintPlacement();
-  } catch(ex){
-    app.innerHTML = `<div class="place-page"><p style="color:#8f2b21">بارگذاری سؤالات ناموفق بود.</p>
-      <div style="text-align:center"><a class="back" href="#/">← صفحه اصلی</a></div></div>`;
-  }
 }
 
 

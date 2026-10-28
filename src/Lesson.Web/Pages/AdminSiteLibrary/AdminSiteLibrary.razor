@@ -17,6 +17,10 @@
         width:100%; box-sizing:border-box; border:1px solid #E6E1D6; border-radius:10px; padding:9px 12px; font:inherit;
     }
     .sl-field.full { grid-column:1/-1; }
+    .sl-related { display:flex; flex-wrap:wrap; gap:8px 14px; padding:10px 12px; border:1px solid #E6E1D6; border-radius:12px; background:#fbfaf7; max-height:180px; overflow:auto; }
+    .sl-check { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#0A2B51; cursor:pointer; }
+    .sl-check input { width:auto; }
+    .sl-hint { margin:6px 0 0; font-size:12px; color:#6B7787; }
     .sl-card { background:#fff; border:1px solid #E6E1D6; border-radius:16px; overflow:hidden; }
     .sl-table { width:100%; border-collapse:collapse; font-size:13px; }
     .sl-table th { text-align:start; font-size:11px; font-weight:800; color:#6B7787; padding:12px 14px; background:#fbfaf7; border-bottom:1px solid #E6E1D6; }
@@ -69,21 +73,97 @@
                         <p style="margin-top:6px;font-size:12px;color:#6B7787">تصویر ذخیره شد · <a href="/api/site/media/@ic" target="_blank">پیش‌نمایش</a></p>
                     }
                 </div>
-                <div class="sl-field full">
-                    <label>آپلود فایل صوت</label>
-                    <InputFile OnChange="OnAudioFile" accept="audio/*,.mp3,.m4a,.wav,.ogg" />
-                    @if (_audioId is long aid)
-                    {
-                        <p style="margin-top:6px;font-size:12px;color:#6B7787">صوت ذخیره شد · <a href="/api/site/media/@aid" target="_blank">پخش آزمایشی</a></p>
-                    }
-                </div>
-                <div class="sl-field">
-                    <label>نوع نمایش</label>
-                    <select @bind="_voiceOnlyStr">
-                        <option value="true">فقط صوت + عکس (پخش در همین صفحه)</option>
-                        <option value="false">صوت + متن (صفحه جزئیات)</option>
-                    </select>
-                </div>
+                @if (_category != SiteLibraryCategory.Video)
+                {
+                    <div class="sl-field full">
+                        <label>آپلود فایل صوت</label>
+                        <InputFile OnChange="OnAudioFile" accept="audio/*,.mp3,.m4a,.wav,.ogg" />
+                        @if (_audioId is long aid)
+                        {
+                            <p style="margin-top:6px;font-size:12px;color:#6B7787">صوت ذخیره شد · <a href="/api/site/media/@aid" target="_blank">پخش آزمایشی</a></p>
+                        }
+                    </div>
+                    <div class="sl-field">
+                        <label>نوع نمایش</label>
+                        <select @bind="_voiceOnlyStr">
+                            <option value="true">فقط صوت + عکس (پخش در همین صفحه)</option>
+                            <option value="false">صوت + متن (صفحه جزئیات)</option>
+                        </select>
+                    </div>
+                }
+                else
+                {
+                    <div class="sl-field full">
+                        <label>آپلود فایل ویدیو</label>
+                        <InputFile OnChange="OnVideoFile" accept="video/*,.mp4,.webm,.mov" />
+                        @if (_videoId is long vid)
+                        {
+                            <p style="margin-top:6px;font-size:12px;color:#6B7787">ویدیو ذخیره شد · <a href="/api/site/media/@vid" target="_blank">پخش آزمایشی</a></p>
+                        }
+                    </div>
+                    <div class="sl-field">
+                        <label>فیلم قبلی (باید قبل دیده شود)</label>
+                        <select @bind="_prevIdStr">
+                            <option value="">— ندارد —</option>
+                            @foreach (var v in VideoOptions())
+                            {
+                                <option value="@v.Id">@v.Title</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="sl-field">
+                        <label>فیلم بعدی</label>
+                        <select @bind="_nextIdStr">
+                            <option value="">— ندارد —</option>
+                            @foreach (var v in VideoOptions())
+                            {
+                                <option value="@v.Id">@v.Title</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="sl-field full">
+                        <label>فیلم‌های مرتبط (چندتایی)</label>
+                        <div class="sl-related">
+                            @if (!VideoOptions().Any())
+                            {
+                                <p class="sl-hint">هنوز فیلم دیگری ثبت نشده.</p>
+                            }
+                            else
+                            {
+                                @foreach (var v in VideoOptions())
+                                {
+                                    <label class="sl-check">
+                                        <input type="checkbox" checked="@_relatedIds.Contains(v.Id)"
+                                               @onchange="(ChangeEventArgs e) => ToggleRelated(v.Id, e.Value)" />
+                                        <span>@v.Title</span>
+                                    </label>
+                                }
+                            }
+                        </div>
+                        <p class="sl-hint">چند مورد را می‌توانید هم‌زمان تیک بزنید.</p>
+                    </div>
+                    <div class="sl-field full">
+                        <label>فیلم‌های پیشنهادی (چندتایی)</label>
+                        <div class="sl-related">
+                            @if (!VideoOptions().Any())
+                            {
+                                <p class="sl-hint">هنوز فیلم دیگری ثبت نشده.</p>
+                            }
+                            else
+                            {
+                                @foreach (var v in VideoOptions())
+                                {
+                                    <label class="sl-check">
+                                        <input type="checkbox" checked="@_suggestedIds.Contains(v.Id)"
+                                               @onchange="(ChangeEventArgs e) => ToggleSuggested(v.Id, e.Value)" />
+                                        <span>@v.Title</span>
+                                    </label>
+                                }
+                            }
+                        </div>
+                        <p class="sl-hint">پیشنهادهای انتهای فیلم یا سایدبار — چندتایی.</p>
+                    </div>
+                }
                 <div class="sl-field full">
                     <label>خلاصه</label>
                     <input @bind="_summary" />
@@ -106,7 +186,7 @@
                 <tr>
                     <th>عنوان</th>
                     <th>دسته</th>
-                    <th>صوت‌تنها</th>
+                    <th>جزئیات</th>
                     <th>وضعیت</th>
                     <th></th>
                 </tr>
@@ -121,11 +201,11 @@
                     @foreach (var it in _items)
                     {
                         <tr>
-                            <td><b>@it.Title</b></td>
-                            <td><span class="sl-pill">@CatLabel(it.Category)</span></td>
-                            <td>@(it.IsVoiceOnly ? "بله" : "خیر")</td>
-                            <td>@(it.IsActive ? "فعال" : "غیرفعال")</td>
-                            <td style="text-align:end">
+                            <td data-label="عنوان"><b>@it.Title</b></td>
+                            <td data-label="دسته"><span class="sl-pill">@CatLabel(it.Category)</span></td>
+                            <td data-label="جزئیات">@DetailCell(it)</td>
+                            <td data-label="وضعیت">@(it.IsActive ? "فعال" : "غیرفعال")</td>
+                            <td data-label="عملیات" style="text-align:end">
                                 <button class="btn btn-sm btn-ghost" type="button" @onclick="() => StartEdit(it)">ویرایش</button>
                                 <button class="btn btn-sm btn-outline" type="button" @onclick="() => DeleteAsync(it.Id)">حذف</button>
                             </td>
@@ -145,7 +225,10 @@
     private string? _error, _ok;
     private SiteLibraryCategory _category = SiteLibraryCategory.Podcast;
     private int _sort;
-    private long? _audioId, _imageContentId;
+    private long? _audioId, _imageContentId, _videoId;
+    private string _prevIdStr = "", _nextIdStr = "";
+    private HashSet<long> _relatedIds = new();
+    private HashSet<long> _suggestedIds = new();
 
     protected override async Task OnInitializedAsync() => await Reload();
 
@@ -157,7 +240,10 @@
     private void StartCreate()
     {
         _editId = null; _title = ""; _summary = ""; _body = ""; _imagePath = "";
-        _category = SiteLibraryCategory.Podcast; _sort = 0; _audioId = null; _imageContentId = null;
+        _category = SiteLibraryCategory.Podcast; _sort = 0;
+        _audioId = null; _imageContentId = null; _videoId = null;
+        _prevIdStr = ""; _nextIdStr = "";
+        _relatedIds = new(); _suggestedIds = new();
         _voiceOnlyStr = "false"; _showForm = true; _error = _ok = null;
     }
 
@@ -167,7 +253,11 @@
         _imagePath = (it.ImageUrl is not null && !it.ImageUrl.StartsWith("/api/")) ? it.ImageUrl : "";
         _category = it.Category; _sort = it.SortOrder;
         _voiceOnlyStr = it.IsVoiceOnly ? "true" : "false";
-        _audioId = it.AudioContentId; _imageContentId = it.ImageContentId;
+        _audioId = it.AudioContentId; _imageContentId = it.ImageContentId; _videoId = it.VideoContentId;
+        _prevIdStr = it.PreviousItemId?.ToString() ?? "";
+        _nextIdStr = it.NextItemId?.ToString() ?? "";
+        _relatedIds = ParseIdSet(it.RelatedItemIds);
+        _suggestedIds = ParseIdSet(it.SuggestedItemIds);
         _showForm = true; _error = _ok = null;
     }
 
@@ -178,14 +268,18 @@
         _busy = true;
         try
         {
+            long? prevId = long.TryParse(_prevIdStr, out var p) ? p : null;
+            long? nextId = long.TryParse(_nextIdStr, out var n) ? n : null;
+            var related = _relatedIds.Count == 0 ? null : string.Join(",", _relatedIds.OrderBy(x => x));
+            var suggested = _suggestedIds.Count == 0 ? null : string.Join(",", _suggestedIds.OrderBy(x => x));
             await Library.UpsertAsync(
                 _editId, _title, _summary, _body, _category,
                 string.IsNullOrWhiteSpace(_imagePath) ? null : _imagePath,
                 _imageContentId is 0 ? null : _imageContentId,
                 _audioId is 0 ? null : _audioId,
-                null,
+                _videoId is 0 ? null : _videoId,
                 _voiceOnlyStr == "true",
-                null, null, null, null,
+                prevId, nextId, related, suggested,
                 _sort, true);
             _ok = "ذخیره شد.";
             _showForm = false;
@@ -200,8 +294,6 @@
         await Library.SoftDeleteAsync(id);
         await Reload();
     }
-
-
 
     private async Task OnAudioFile(InputFileChangeEventArgs e)
     {
@@ -244,6 +336,7 @@
             {
                 SiteLibraryCategory.Story => Lesson.Domain.SystemFolders.PageStories,
                 SiteLibraryCategory.Podcast => Lesson.Domain.SystemFolders.PagePodcast,
+                SiteLibraryCategory.Video => Lesson.Domain.SystemFolders.PageVideos,
                 _ => Lesson.Domain.SystemFolders.PageSiteImages
             };
             var folder = await Folders.GetSystemFolderAsync(folderName);
@@ -260,12 +353,75 @@
         finally { _busy = false; }
     }
 
+    private async Task OnVideoFile(InputFileChangeEventArgs e)
+    {
+        _error = _ok = null;
+        var file = e.File;
+        if (file is null) return;
+        if (file.Size > 200 * 1024 * 1024) { _error = "حداکثر حجم ویدیو ۲۰۰ مگابایت."; return; }
+        try
+        {
+            _busy = true;
+            var folder = await Folders.GetSystemFolderAsync(Lesson.Domain.SystemFolders.PageVideos);
+            await using var stream = file.OpenReadStream(maxAllowedSize: 200 * 1024 * 1024);
+            await using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            ms.Position = 0;
+            var req = new UploadContentRequest(
+                folder.Id, file.Name, file.Name, ms, ms.Length,
+                new[] { LanguageLevel.A1 }, ContentType.Video);
+            var entity = await Contents.UploadAsync(req, Current.UserId, isAdmin: true);
+            _videoId = entity.Id;
+            _ok = "ویدیو در پوشهٔ _PageVideos ذخیره شد.";
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private IEnumerable<SiteLibraryItemDto> VideoOptions() =>
+        _items.Where(x => x.Category == SiteLibraryCategory.Video && x.Id != (_editId ?? 0));
+
+    private void ToggleRelated(long id, object? value)
+    {
+        if (IsChecked(value)) _relatedIds.Add(id);
+        else _relatedIds.Remove(id);
+    }
+
+    private void ToggleSuggested(long id, object? value)
+    {
+        if (IsChecked(value)) _suggestedIds.Add(id);
+        else _suggestedIds.Remove(id);
+    }
+
+    private static bool IsChecked(object? value) => value switch
+    {
+        bool b => b,
+        string s when bool.TryParse(s, out var bb) => bb,
+        _ => false
+    };
+
+    private static HashSet<long> ParseIdSet(string? raw)
+    {
+        var set = new HashSet<long>();
+        if (string.IsNullOrWhiteSpace(raw)) return set;
+        foreach (var part in raw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            if (long.TryParse(part, out var id) && id > 0) set.Add(id);
+        return set;
+    }
+
+    private static string DetailCell(SiteLibraryItemDto it) => it.Category switch
+    {
+        SiteLibraryCategory.Video => it.VideoContentId is null ? "بدون ویدیو" : "ویدیو ✓",
+        _ => it.IsVoiceOnly ? "فقط صوت" : "با متن"
+    };
+
     private static string CatLabel(SiteLibraryCategory c) => c switch
     {
         SiteLibraryCategory.Podcast => "پادکست",
         SiteLibraryCategory.Story => "داستان",
         SiteLibraryCategory.Music => "موسیقی",
         SiteLibraryCategory.Book => "کتاب",
+        SiteLibraryCategory.Video => "فیلم آموزشی",
         _ => c.ToString()
     };
 }
