@@ -11,14 +11,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bba0822f-46d9-4d97-aa9a-2857b4f57e21" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lesson/.idea/dataSources/data_sources_history.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lesson/.idea/dataSources/data_sources_history.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lesson/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lesson/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Abstractions/ICandidateService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Abstractions/ICandidateService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Services/CandidateService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Services/CandidateService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/site-index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/site-index.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-admin.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-admin.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-student.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-student.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-teacher.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-teacher.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,23 +49,23 @@
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.4762032531274332" />
-      <entry key="MS500" value="3.2675004338875278" />
-      <entry key="S2" value="6.14195736206127" />
-      <entry key="S5" value="8.927898261445925" />
-      <entry key="S10" value="10.840468976728449" />
-      <entry key="S30" value="12.750822762924907" />
-      <entry key="S60" value="13.345948020868935" />
-      <entry key="M2" value="13.66516757690423" />
-      <entry key="M5" value="13.86413377176699" />
-      <entry key="M10" value="13.931739554445796" />
-      <entry key="M15" value="13.95441991128601" />
-      <entry key="M30" value="13.977173296447218" />
-      <entry key="H1" value="13.98857746524652" />
-      <entry key="H2" value="13.994286434602442" />
-      <entry key="H4" value="13.997142642511186" />
-      <entry key="D1" value="13.999523693895727" />
-      <entry key="W1" value="13.999931954314844" />
+      <entry key="MS100" value="1.0006223440563082" />
+      <entry key="MS500" value="1.2284578625573501" />
+      <entry key="S2" value="1.6913556673643972" />
+      <entry key="S5" value="1.862741344542656" />
+      <entry key="S10" value="1.928838707495901" />
+      <entry key="S30" value="1.9756935581846906" />
+      <entry key="S60" value="1.9880524415278042" />
+      <entry key="M2" value="2.0565069797772813" />
+      <entry key="M5" value="3.605915596344168" />
+      <entry key="M10" value="6.743947202974541" />
+      <entry key="M15" value="8.804937877286742" />
+      <entry key="M30" value="11.7607559998041" />
+      <entry key="H1" value="13.689800779435902" />
+      <entry key="H2" value="14.792866441140442" />
+      <entry key="H4" value="15.382831769212402" />
+      <entry key="D1" value="15.895197003440215" />
+      <entry key="W1" value="15.984979892942151" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -91,23 +87,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="1.4280193123038598" />
-      <entry key="MS500" value="3.2376634157945277" />
-      <entry key="S2" value="6.128550300495193" />
-      <entry key="S5" value="8.920257088722254" />
-      <entry key="S10" value="10.83586340793002" />
-      <entry key="S30" value="12.749027777716742" />
-      <entry key="S60" value="13.345010242149385" />
-      <entry key="M2" value="13.664687900136716" />
-      <entry key="M5" value="13.863939213955545" />
-      <entry key="M10" value="13.93164181922492" />
-      <entry key="M15" value="13.954354652431181" />
-      <entry key="M30" value="13.977140615838932" />
-      <entry key="H1" value="13.988561112116981" />
-      <entry key="H2" value="13.994278254827549" />
-      <entry key="H4" value="13.997138551820735" />
-      <entry key="D1" value="13.999523012002417" />
-      <entry key="W1" value="13.999931856898783" />
+      <entry key="MS100" value="0.9665333212479374" />
+      <entry key="MS500" value="1.2196579800038696" />
+      <entry key="S2" value="1.6881881599690751" />
+      <entry key="S5" value="1.8613311278185614" />
+      <entry key="S10" value="1.9281059811128023" />
+      <entry key="S30" value="1.9754427898545628" />
+      <entry key="S60" value="1.987926196460367" />
+      <entry key="M2" value="2.0564414560553432" />
+      <entry key="M5" value="3.605867644597627" />
+      <entry key="M10" value="6.743901215039037" />
+      <entry key="M15" value="8.804897581675803" />
+      <entry key="M30" value="11.76072894186963" />
+      <entry key="H1" value="13.689784995704182" />
+      <entry key="H2" value="14.792857904630083" />
+      <entry key="H4" value="15.382827328567886" />
+      <entry key="D1" value="15.895196238380574" />
+      <entry key="W1" value="15.98497978302329" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -131,7 +127,10 @@
     "cidr.known.project.marker": "true",
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "git-widget-placeholder": "improve/add__publich__quize",
-    "node.js.selected.package.tslint": "(autodetect)"
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm"
   }
 }]]></component>
   <component name="RunManager">
@@ -169,6 +168,8 @@
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+    <MESSAGE value="part 1" />
+    <option name="LAST_COMMIT_MESSAGE" value="part 1" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

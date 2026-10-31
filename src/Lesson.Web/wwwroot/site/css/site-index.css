@@ -425,8 +425,42 @@ body.is-placement .place-sticky{display:none!important}
 .place-scores b{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
 .place-scores span{font-size:18px;font-weight:900;color:var(--navy)}
 
+to{transform:translateY(0);opacity:1}}
+
+/* —— brand ribbon: drop in, then every 10s spin LEFT→RIGHT around vertical axis —— */
 @keyframes brandDrop{
   from{transform:translateY(-120%);opacity:0}
   to{transform:translateY(0);opacity:1}
 }
-.brand-ribbon{animation:brandDrop .55s cubic-bezier(.2,.8,.2,1) both}
+/* rotateY: چرخش دور محور عمودی = از چپ به راست (نه بالا به پایین) */
+@keyframes brandAttention{
+  0%, 70%{
+    transform: perspective(700px) translateY(0) scale(1) rotateY(0deg);
+  }
+  76%{
+    transform: perspective(700px) translateY(0) scale(1.1) rotateY(0deg);
+  }
+  94%{
+    transform: perspective(700px) translateY(0) scale(1.06) rotateY(1800deg); /* 5 دور */
+  }
+  100%{
+    transform: perspective(700px) translateY(0) scale(1) rotateY(1800deg);
+  }
+}
+.brand-ribbon{
+  transform-origin: center center;
+  transform-style: preserve-3d;
+  animation:
+    brandDrop .55s cubic-bezier(.2,.8,.2,1) both,
+    brandAttention 10s ease-in-out 2s infinite;
+  will-change: transform;
+}
+.brand-ribbon__flag{
+  transform-style: preserve-3d;
+  backface-visibility: visible;
+}
+@media (prefers-reduced-motion: reduce){
+  .brand-ribbon{
+    animation: brandDrop .4s ease both;
+  }
+}
