@@ -1,5 +1,6 @@
 @page "/admin/site-courses"
 @attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@using Lesson.Domain
 @inject ISiteCourseService Courses
 @inject IContentService Contents
 @inject IFolderService Folders
@@ -19,11 +20,14 @@
     .sc-card { background:#fff; border:1px solid #E6E1D6; border-radius:16px; overflow:hidden; }
     .sc-table { width:100%; border-collapse:collapse; font-size:13px; }
     .sc-table th { text-align:start; font-size:11px; font-weight:800; color:#6B7787; padding:12px 14px; background:#fbfaf7; border-bottom:1px solid #E6E1D6; }
-    .sc-table td { padding:12px 14px; border-bottom:1px solid #eef1f5; vertical-align:top; }
+    .sc-table td { padding:12px 14px; border-bottom:1px solid #eef1f5; vertical-align:middle; }
     .sc-pill { display:inline-flex; font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; background:#eef3fa; color:#0A2B51; }
     .sc-alert { padding:10px 12px; border-radius:10px; margin-bottom:12px; font-size:13px; }
     .sc-alert.err { background:#fdecec; color:#8f2b21; }
     .sc-alert.ok { background:#e6f6f0; color:#0c5c41; }
+    .sc-hint { font-size:11px; color:#6B7787; margin-top:4px; }
+    .sc-preview { width:120px; height:72px; object-fit:cover; border-radius:10px; border:1px solid #E6E1D6; margin-top:8px; display:block; background:#0A2B51; }
+    .sc-actions { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
     @@media (max-width:800px){ .sc-grid { grid-template-columns:1fr; } }
 </style>
 
@@ -33,7 +37,10 @@
             <h1 class="sc__title">دوره‌های سایت</h1>
             <p style="margin:4px 0 0;color:#6B7787;font-size:13px">کارت‌های دوره روی صفحه زبان انگلیسی</p>
         </div>
-        <button class="btn btn-primary" type="button" @onclick="StartCreate">دوره جدید</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost" type="button" disabled="@_busy" @onclick="ReactivateAllAsync">فعال‌سازی همه برای سایت</button>
+            <button class="btn btn-primary" type="button" @onclick="StartCreate">دوره جدید</button>
+        </div>
     </div>
 
     @if (!string.IsNullOrEmpty(_error)) { <div class="sc-alert err">@_error</div> }
@@ -49,10 +56,10 @@
                 </div>
                 <div class="sc-field">
                     <label>سطح</label>
-                    <select @bind="_level">
+                    <select value="@_level.ToString()" @onchange="OnLevelChange">
                         @foreach (var lv in Enum.GetValues<CourseOfferLevel>())
                         {
-                            <option value="@lv">@LevelFa(lv)</option>
+                            <option value="@lv.ToString()">@LevelFa(lv)</option>
                         }
                     </select>
                 </div>
@@ -69,6 +76,15 @@
                     <input type="number" @bind="_duration" min="0" />
                 </div>
                 <div class="sc-field">
+                    <label>تاریخ شروع (جلالی)</label>
+                    <input @bind="_jalaliDate" placeholder="1403/08/15" dir="ltr" />
+                    <div class="sc-hint">مثال: 1403/08/15</div>
+                </div>
+                <div class="sc-field">
+                    <label>ساعت شروع</label>
+                    <input @bind="_jalaliTime" placeholder="18:30" dir="ltr" />
+                </div>
+                <div class="sc-field">
                     <label>ترتیب نمایش</label>
                     <input type="number" @bind="_sort" />
                 </div>
@@ -79,13 +95,15 @@
                 <div class="sc-field full">
                     <label>تصویر کارت</label>
                     <InputFile OnChange="OnImageFile" accept="image/*" />
+                    <div class="sc-hint">بعد از انتخاب، تصویر بلافاصله ذخیره می‌شود.</div>
                     @if (_imageId is long iid)
                     {
-                        <p style="margin-top:6px;font-size:12px;color:#6B7787">تصویر ✓ · <a href="/api/site/media/@iid" target="_blank">پیش‌نمایش</a></p>
+                        <img class="sc-preview" src="/api/site/media/@iid" alt="preview" />
+                        <p style="margin-top:6px;font-size:12px;color:#6B7787">شناسه تصویر: @iid</p>
                     }
                 </div>
                 <div class="sc-field full">
-                    <label>ویدیوی کوتاه (اختیاری — پخش داخل کارت)</label>
+                    <label>ویدیوی کوتاه (اختیاری)</label>
                     <InputFile OnChange="OnVideoFile" accept="video/*,.mp4,.webm" />
                     @if (_videoId is long vid)
                     {
@@ -94,8 +112,8 @@
                 </div>
             </div>
             <div style="display:flex;gap:8px;margin-top:12px">
-                <button class="btn btn-primary" type="button" disabled="@_busy" @onclick="SaveAsync">ذخیره</button>
-                <button class="btn btn-ghost" type="button" @onclick="() => _showForm = false">لغو</button>
+                <button class="btn btn-primary" type="button" disabled="@_busy" @onclick="SaveAsync">ذخیره مشخصات</button>
+                <button class="btn btn-ghost" type="button" @onclick="CancelForm">لغو</button>
             </div>
         </div>
     }
@@ -104,32 +122,45 @@
         <table class="sc-table">
             <thead>
                 <tr>
+                    <th>تصویر</th>
                     <th>عنوان</th>
                     <th>سطح</th>
+                    <th>شروع</th>
                     <th>شهریه</th>
                     <th>جلسات</th>
-                    <th>وضعیت</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
                 @if (_items.Count == 0)
                 {
-                    <tr><td colspan="6" style="padding:24px;text-align:center;color:#6B7787">دوره‌ای ثبت نشده.</td></tr>
+                    <tr><td colspan="7" style="padding:24px;text-align:center;color:#6B7787">دوره‌ای ثبت نشده.</td></tr>
                 }
                 else
                 {
                     @foreach (var it in _items)
                     {
                         <tr>
-                            <td><b>@it.Title</b></td>
+                            <td>
+                                @if (it.ImageContentId is long img)
+                                {
+                                    <img class="sc-preview" src="/api/site/media/@img" alt="" style="width:72px;height:44px;margin:0" />
+                                }
+                                else
+                                {
+                                    <span style="color:#6B7787;font-size:12px">بدون تصویر</span>
+                                }
+                            </td>
+                            <td><b>@it.Title</b>@if (!it.IsActive){ <span class="sc-pill" style="background:#fdecec;color:#8f2b21">غیرفعال</span> }</td>
                             <td><span class="sc-pill">@it.LevelLabel</span></td>
+                            <td>@(it.StartsAtPersian ?? "—")</td>
                             <td>@it.TuitionAmount.ToString("N0") تومان</td>
                             <td>@it.SessionCount جلسه</td>
-                            <td>@(it.IsActive ? "فعال" : "غیرفعال")</td>
-                            <td style="text-align:end">
-                                <button class="btn btn-sm btn-ghost" type="button" @onclick="() => StartEdit(it)">ویرایش</button>
-                                <button class="btn btn-sm btn-outline" type="button" @onclick="() => DeleteAsync(it.Id)">حذف</button>
+                            <td>
+                                <div class="sc-actions">
+                                    <button class="btn btn-sm btn-ghost" type="button" @onclick="() => StartEdit(it)">ویرایش</button>
+                                    <button class="btn btn-sm btn-outline" type="button" disabled="@_busy" @onclick="() => DeleteAsync(it)">حذف</button>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -143,7 +174,7 @@
     private List<SiteCourseDto> _items = new();
     private bool _showForm, _busy;
     private long? _editId, _imageId, _videoId;
-    private string _title = "", _desc = "";
+    private string _title = "", _desc = "", _jalaliDate = "", _jalaliTime = "18:00";
     private string? _error, _ok;
     private CourseOfferLevel _level = CourseOfferLevel.A1;
     private decimal _tuition;
@@ -151,12 +182,22 @@
 
     protected override async Task OnInitializedAsync() => await Reload();
 
-    private async Task Reload() => _items = (await Courses.GetAllAdminAsync()).ToList();
+    private async Task Reload()
+    {
+        _items = (await Courses.GetAllAdminAsync()).ToList();
+    }
+
+    private void CancelForm()
+    {
+        _showForm = false;
+        _error = _ok = null;
+    }
 
     private void StartCreate()
     {
         _editId = null; _title = ""; _desc = ""; _level = CourseOfferLevel.A1;
         _tuition = 0; _sessions = 12; _duration = 90; _sort = 0;
+        _jalaliDate = ""; _jalaliTime = "18:00";
         _imageId = null; _videoId = null;
         _showForm = true; _error = _ok = null;
     }
@@ -167,49 +208,100 @@
         _level = it.Level; _tuition = it.TuitionAmount; _sessions = it.SessionCount;
         _duration = it.SessionDurationMinutes ?? 90; _sort = it.SortOrder;
         _imageId = it.ImageContentId; _videoId = it.VideoContentId;
+        if (it.StartsAt is { } st)
+        {
+            var local = PersianDate.ToIran(st);
+            var (jy, jm, jd) = PersianDate.ToJalali(local.Year, local.Month, local.Day);
+            _jalaliDate = $"{jy}/{jm:00}/{jd:00}";
+            _jalaliTime = $"{local.Hour:00}:{local.Minute:00}";
+        }
+        else { _jalaliDate = ""; _jalaliTime = "18:00"; }
         _showForm = true; _error = _ok = null;
+    }
+
+    private void OnLevelChange(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<CourseOfferLevel>(e.Value?.ToString(), out var lv))
+            _level = lv;
+    }
+
+    private DateTimeOffset? ParseStarts()
+    {
+        if (string.IsNullOrWhiteSpace(_jalaliDate)) return null;
+        return PersianDate.ParseJalaliToUtc(_jalaliDate, _jalaliTime);
     }
 
     private async Task SaveAsync()
     {
         _error = _ok = null;
         if (string.IsNullOrWhiteSpace(_title)) { _error = "عنوان لازم است."; return; }
+        DateTimeOffset? starts = null;
+        if (!string.IsNullOrWhiteSpace(_jalaliDate))
+        {
+            starts = ParseStarts();
+            if (starts is null) { _error = "تاریخ جلالی نامعتبر است. مثال: 1403/08/15"; return; }
+        }
         _busy = true;
         try
         {
             await Courses.UpsertAsync(
-                _editId, _title, _desc, _level, _tuition, _sessions,
+                _editId, _title.Trim(), _desc, _level, _tuition, _sessions,
                 _duration > 0 ? _duration : null,
+                starts,
                 _imageId, _videoId, _sort, true);
             _ok = "ذخیره شد.";
             _showForm = false;
             await Reload();
         }
-        catch (Exception ex) { _error = ex.Message; }
+        catch (Exception ex) { _error = "خطا در ذخیره: " + ex.Message; }
         finally { _busy = false; }
     }
 
-    private async Task DeleteAsync(long id)
+    private async Task DeleteAsync(SiteCourseDto it)
     {
-        await Courses.SoftDeleteAsync(id);
-        await Reload();
+        _error = _ok = null;
+        _busy = true;
+        try
+        {
+            await Courses.HardDeleteAsync(it.Id);
+            if (_editId == it.Id) { _showForm = false; _editId = null; }
+            _ok = $"دوره «{it.Title}» حذف شد.";
+            await Reload();
+        }
+        catch (Exception ex) { _error = "خطا در حذف: " + ex.Message; }
+        finally { _busy = false; }
     }
 
-    private async Task OnImageFile(InputFileChangeEventArgs e) =>
-        await UploadAsync(e, ContentType.Image, 8 * 1024 * 1024, id => _imageId = id);
+    private async Task OnImageFile(InputFileChangeEventArgs e)
+        => await UploadAndAttachAsync(e, ContentType.Image, 12 * 1024 * 1024, isImage: true);
 
-    private async Task OnVideoFile(InputFileChangeEventArgs e) =>
-        await UploadAsync(e, ContentType.Video, 200 * 1024 * 1024, id => _videoId = id);
+    private async Task OnVideoFile(InputFileChangeEventArgs e)
+        => await UploadAndAttachAsync(e, ContentType.Video, 200 * 1024 * 1024, isImage: false);
 
-    private async Task UploadAsync(InputFileChangeEventArgs e, ContentType type, long max, Action<long> setId)
+    private async Task UploadAndAttachAsync(InputFileChangeEventArgs e, ContentType type, long max, bool isImage)
     {
         _error = _ok = null;
         var file = e.File;
         if (file is null) return;
+        if (file.Size <= 0) { _error = "فایل خالی است."; return; }
         if (file.Size > max) { _error = "حجم فایل زیاد است."; return; }
+
+        _busy = true;
         try
         {
-            _busy = true;
+            // اگر هنوز دوره ذخیره نشده، اول یک پیش‌نویس بساز
+            if (_editId is null)
+            {
+                if (string.IsNullOrWhiteSpace(_title))
+                    _title = "دوره جدید";
+                var created = await Courses.UpsertAsync(
+                    null, _title.Trim(), _desc, _level, _tuition, _sessions,
+                    _duration > 0 ? _duration : null,
+                    ParseStarts(),
+                    _imageId, _videoId, _sort, true);
+                _editId = created.Id;
+            }
+
             var folder = await Folders.GetSystemFolderAsync(Lesson.Domain.SystemFolders.PageSiteImages);
             await using var stream = file.OpenReadStream(maxAllowedSize: max);
             await using var ms = new MemoryStream();
@@ -217,8 +309,47 @@
             ms.Position = 0;
             var req = new UploadContentRequest(folder.Id, file.Name, file.Name, ms, ms.Length, new[] { LanguageLevel.A1 }, type);
             var entity = await Contents.UploadAsync(req, Current.UserId, isAdmin: true);
-            setId(entity.Id);
-            _ok = "فایل ذخیره شد.";
+
+            if (isImage) _imageId = entity.Id;
+            else _videoId = entity.Id;
+
+            // بلافاصله به دوره وصل کن
+            await Courses.UpsertAsync(
+                _editId, _title.Trim(), _desc, _level, _tuition, _sessions,
+                _duration > 0 ? _duration : null,
+                ParseStarts(),
+                _imageId, _videoId, _sort, true);
+
+            _ok = isImage ? "تصویر ذخیره و به دوره متصل شد." : "ویدیو ذخیره و به دوره متصل شد.";
+            await Reload();
+        }
+        catch (Exception ex) { _error = "خطا در آپلود: " + ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private async Task ReactivateAllAsync()
+    {
+        _error = _ok = null;
+        _busy = true;
+        try
+        {
+            var n = 0;
+            foreach (var it in _items.Where(x => !x.IsActive).ToList())
+            {
+                await Courses.UpsertAsync(
+                    it.Id, it.Title, it.Description, it.Level, it.TuitionAmount, it.SessionCount,
+                    it.SessionDurationMinutes, it.StartsAt, it.ImageContentId, it.VideoContentId, it.SortOrder, isActive: true);
+                n++;
+            }
+            // even if already active, re-save actives to ensure flag
+            foreach (var it in _items.Where(x => x.IsActive).ToList())
+            {
+                await Courses.UpsertAsync(
+                    it.Id, it.Title, it.Description, it.Level, it.TuitionAmount, it.SessionCount,
+                    it.SessionDurationMinutes, it.StartsAt, it.ImageContentId, it.VideoContentId, it.SortOrder, isActive: true);
+            }
+            _ok = n > 0 ? $"{n} دوره فعال شد." : "همه دوره‌ها فعال هستند. لیست سایت را Hard Refresh کنید.";
+            await Reload();
         }
         catch (Exception ex) { _error = ex.Message; }
         finally { _busy = false; }
@@ -226,13 +357,9 @@
 
     private static string LevelFa(CourseOfferLevel l) => l switch
     {
-        CourseOfferLevel.A1 => "A1",
-        CourseOfferLevel.A2 => "A2",
-        CourseOfferLevel.B1 => "B1",
-        CourseOfferLevel.B2 => "B2",
-        CourseOfferLevel.C1 => "C1",
-        CourseOfferLevel.C2 => "C2",
-        CourseOfferLevel.IELTS => "IELTS",
-        _ => l.ToString()
+        CourseOfferLevel.A1 => "A1", CourseOfferLevel.A2 => "A2",
+        CourseOfferLevel.B1 => "B1", CourseOfferLevel.B2 => "B2",
+        CourseOfferLevel.C1 => "C1", CourseOfferLevel.C2 => "C2",
+        CourseOfferLevel.IELTS => "IELTS", _ => l.ToString()
     };
 }

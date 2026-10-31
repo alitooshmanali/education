@@ -722,10 +722,14 @@ let _coursePlaying = null;
 async function fetchCourses(level){
   const q = level ? ('?level=' + encodeURIComponent(level)) : '';
   try{
-    const res = await fetch('/api/site/courses' + q);
-    if(!res.ok) return [];
-    return await res.json();
-  }catch(_){ return []; }
+    const res = await fetch('/api/site/courses' + q, { cache: 'no-store' });
+    if(!res.ok){ console.warn('courses API', res.status); return []; }
+    const data = await res.json();
+    if(Array.isArray(data)) return data;
+    if(data && Array.isArray(data.items)) return data.items;
+    console.warn('courses unexpected payload', data);
+    return [];
+  }catch(ex){ console.warn('courses fetch', ex); return []; }
 }
 
 function formatToman(n){
@@ -737,27 +741,35 @@ function courseCardsHtml(list){
     return '<div class="course-empty">به‌زودی دوره‌ها از پنل ادمین اضافه می‌شوند.</div>';
   }
   return '<div class="course-grid">' + list.map(c => {
-    const hasVideo = !!c.videoUrl;
-    const img = c.imageUrl || '/site/img/circle-english.svg';
-    const sessions = c.sessionCount ? (c.sessionCount + ' جلسه') : '';
-    const dur = c.sessionDurationMinutes ? (' · ' + c.sessionDurationMinutes + ' دقیقه') : '';
+    const hasVideo = !!(c.videoUrl || c.VideoUrl);
+    const img = c.imageUrl || c.ImageUrl || (c.imageContentId || c.ImageContentId ? ('/api/site/media/' + (c.imageContentId || c.ImageContentId)) : null) || '/site/img/circle-english.svg';
+    const videoUrl = c.videoUrl || c.VideoUrl || '';
+    const sessions = (c.sessionCount ?? c.SessionCount) ? ((c.sessionCount ?? c.SessionCount) + ' جلسه') : '';
+    const durMin = c.sessionDurationMinutes ?? c.SessionDurationMinutes;
+    const dur = durMin ? (' · ' + durMin + ' دقیقه') : '';
+    const when = c.startsAtPersian || c.StartsAtPersian || '';
+    const title = c.title || c.Title || '';
+    const badge = c.levelLabel || c.LevelLabel || c.level || c.Level || '';
+    const price = c.tuitionAmount ?? c.TuitionAmount ?? 0;
+    const id = c.id ?? c.Id;
     const media = hasVideo
-      ? `<div class="course-card__media" data-course-id="${c.id}">
-           <img src="${img}" alt="${c.title}" id="course-poster-${c.id}">
-           <video id="course-vid-${c.id}" playsinline preload="none" style="display:none" src="${c.videoUrl}"></video>
-           <button type="button" class="course-card__play" data-play-course="${c.id}" aria-label="پخش"><span>▶</span></button>
-           <span class="course-card__badge">${c.levelLabel || c.level}</span>
+      ? `<div class="course-card__media" data-course-id="${id}">
+           <img src="${img}" alt="${title}" id="course-poster-${id}" onerror="this.style.opacity=.3">
+           <video id="course-vid-${id}" playsinline preload="none" style="display:none" src="${videoUrl}"></video>
+           <button type="button" class="course-card__play" data-play-course="${id}" aria-label="پخش"><span>▶</span></button>
+           <span class="course-card__badge">${badge}</span>
          </div>`
       : `<div class="course-card__media">
-           <img src="${img}" alt="${c.title}">
-           <span class="course-card__badge">${c.levelLabel || c.level}</span>
+           <img src="${img}" alt="${title}" onerror="this.style.opacity=.3">
+           <span class="course-card__badge">${badge}</span>
          </div>`;
     return `<article class="course-card">
       ${media}
       <div class="course-card__body">
-        <h3>${c.title}</h3>
+        <h3>${title}</h3>
         <div class="course-card__meta">${sessions}${dur}</div>
-        <div class="course-card__price">${formatToman(c.tuitionAmount)}</div>
+        ${when ? `<div class="course-card__meta">🗓 ${when}</div>` : ''}
+        <div class="course-card__price">${formatToman(price)}</div>
       </div>
     </article>`;
   }).join('') + '</div>';

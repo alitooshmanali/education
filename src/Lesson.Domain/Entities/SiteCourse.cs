@@ -19,6 +19,9 @@ public sealed class SiteCourse : BaseEntity
     /// <summary>مدت هر جلسه به دقیقه (اختیاری).</summary>
     public int? SessionDurationMinutes { get; set; }
 
+    /// <summary>شروع دوره — UTC در دیتابیس؛ نمایش جلالی در UI.</summary>
+    public DateTimeOffset? StartsAt { get; set; }
+
     public long? ImageContentId { get; set; }
     public LessonContent? ImageContent { get; set; }
 

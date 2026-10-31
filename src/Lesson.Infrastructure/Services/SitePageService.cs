@@ -72,8 +72,16 @@ public sealed class SitePageService(IApplicationDbContext db) : ISitePageService
     {
         var inSlot = await db.SitePageSlots.AnyAsync(x => x.IsActive && x.ImageContentId == contentId, cancellationToken);
         if (inSlot) return true;
-        return await db.SiteLibraryItems.AnyAsync(x =>
-            x.IsActive && (x.ImageContentId == contentId || x.AudioContentId == contentId || x.VideoContentId == contentId), cancellationToken);
+
+        var inLibrary = await db.SiteLibraryItems.AnyAsync(x =>
+            x.IsActive && (x.ImageContentId == contentId || x.AudioContentId == contentId || x.VideoContentId == contentId),
+            cancellationToken);
+        if (inLibrary) return true;
+
+        // تصاویر / ویدیوی کارت دوره‌های سایت
+        return await db.SiteCourses.AnyAsync(x =>
+            x.IsActive && (x.ImageContentId == contentId || x.VideoContentId == contentId),
+            cancellationToken);
     }
 
     private static string Normalize(string key) => key.Trim().ToLowerInvariant();

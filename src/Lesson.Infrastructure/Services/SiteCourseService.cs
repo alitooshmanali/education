@@ -1,3 +1,4 @@
+using Lesson.Domain;
 using Lesson.Domain.Entities;
 using Lesson.Domain.Enums;
 using Lesson.Infrastructure.Abstractions;
@@ -9,6 +10,7 @@ public sealed class SiteCourseService(IApplicationDbContext db) : ISiteCourseSer
 {
     public async Task<IReadOnlyList<SiteCourseDto>> GetPublicAsync(CourseOfferLevel? level = null, CancellationToken ct = default)
     {
+        // فقط دوره‌های فعال — حذف فقط HardDelete است
         var q = db.SiteCourses.AsNoTracking().Where(x => x.IsActive);
         if (level is { } lv) q = q.Where(x => x.Level == lv);
         var list = await q.OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToListAsync(ct);
@@ -17,8 +19,10 @@ public sealed class SiteCourseService(IApplicationDbContext db) : ISiteCourseSer
 
     public async Task<IReadOnlyList<SiteCourseDto>> GetAllAdminAsync(CancellationToken ct = default)
     {
+        // ادمین همه را می‌بیند (حتی غیرفعال‌های قدیمی)
         var list = await db.SiteCourses.AsNoTracking()
-            .OrderBy(x => x.SortOrder).ThenBy(x => x.Id)
+            .OrderByDescending(x => x.IsActive)
+            .ThenBy(x => x.SortOrder).ThenBy(x => x.Id)
             .ToListAsync(ct);
         return list.Select(Map).ToList();
     }
@@ -37,6 +41,7 @@ public sealed class SiteCourseService(IApplicationDbContext db) : ISiteCourseSer
         decimal tuitionAmount,
         int sessionCount,
         int? sessionDurationMinutes,
+        DateTimeOffset? startsAt,
         long? imageContentId,
         long? videoContentId,
         int sortOrder,
@@ -61,6 +66,7 @@ public sealed class SiteCourseService(IApplicationDbContext db) : ISiteCourseSer
         entity.TuitionAmount = tuitionAmount < 0 ? 0 : tuitionAmount;
         entity.SessionCount = sessionCount < 0 ? 0 : sessionCount;
         entity.SessionDurationMinutes = sessionDurationMinutes is > 0 ? sessionDurationMinutes : null;
+        entity.StartsAt = startsAt;
         entity.ImageContentId = imageContentId is 0 ? null : imageContentId;
         entity.VideoContentId = videoContentId is 0 ? null : videoContentId;
         entity.SortOrder = sortOrder;
@@ -80,6 +86,14 @@ public sealed class SiteCourseService(IApplicationDbContext db) : ISiteCourseSer
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task HardDeleteAsync(long id, CancellationToken ct = default)
+    {
+        var entity = await db.SiteCourses.FirstOrDefaultAsync(x => x.Id == id, ct)
+            ?? throw new InvalidOperationException("دوره یافت نشد.");
+        db.SiteCourses.Remove(entity);
+        await db.SaveChangesAsync(ct);
+    }
+
     private static SiteCourseDto Map(SiteCourse x) => new(
         x.Id,
         x.Title,
@@ -89,6 +103,9 @@ public sealed class SiteCourseService(IApplicationDbContext db) : ISiteCourseSer
         x.TuitionAmount,
         x.SessionCount,
         x.SessionDurationMinutes,
+        x.StartsAt,
+        x.StartsAt is null ? null : PersianDate.FormatFull(x.StartsAt),
+        x.StartsAt is null ? null : PersianDate.FormatDayName(x.StartsAt),
         x.ImageContentId is { } iid ? $"/api/site/media/{iid}" : null,
         x.VideoContentId is { } vid ? $"/api/site/media/{vid}" : null,
         x.ImageContentId,

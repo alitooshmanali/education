@@ -11,6 +11,9 @@ public sealed record SiteCourseDto(
     decimal TuitionAmount,
     int SessionCount,
     int? SessionDurationMinutes,
+    DateTimeOffset? StartsAt,
+    string? StartsAtPersian,
+    string? StartsDayName,
     string? ImageUrl,
     string? VideoUrl,
     long? ImageContentId,
@@ -31,10 +34,12 @@ public interface ISiteCourseService
         decimal tuitionAmount,
         int sessionCount,
         int? sessionDurationMinutes,
+        DateTimeOffset? startsAt,
         long? imageContentId,
         long? videoContentId,
         int sortOrder,
         bool isActive,
         CancellationToken ct = default);
     Task SoftDeleteAsync(long id, CancellationToken ct = default);
+    Task HardDeleteAsync(long id, CancellationToken ct = default);
 }
