@@ -714,6 +714,128 @@ function bindVideoWatchClicks(root){
 
 
 
+
+/* —— Site courses —— */
+let _courseFilter = null;
+let _coursePlaying = null;
+
+async function fetchCourses(level){
+  const q = level ? ('?level=' + encodeURIComponent(level)) : '';
+  try{
+    const res = await fetch('/api/site/courses' + q);
+    if(!res.ok) return [];
+    return await res.json();
+  }catch(_){ return []; }
+}
+
+function formatToman(n){
+  try{ return Number(n).toLocaleString('fa-IR') + ' تومان'; }catch(_){ return n + ' تومان'; }
+}
+
+function courseCardsHtml(list){
+  if(!list || !list.length){
+    return '<div class="course-empty">به‌زودی دوره‌ها از پنل ادمین اضافه می‌شوند.</div>';
+  }
+  return '<div class="course-grid">' + list.map(c => {
+    const hasVideo = !!c.videoUrl;
+    const img = c.imageUrl || '/site/img/circle-english.svg';
+    const sessions = c.sessionCount ? (c.sessionCount + ' جلسه') : '';
+    const dur = c.sessionDurationMinutes ? (' · ' + c.sessionDurationMinutes + ' دقیقه') : '';
+    const media = hasVideo
+      ? `<div class="course-card__media" data-course-id="${c.id}">
+           <img src="${img}" alt="${c.title}" id="course-poster-${c.id}">
+           <video id="course-vid-${c.id}" playsinline preload="none" style="display:none" src="${c.videoUrl}"></video>
+           <button type="button" class="course-card__play" data-play-course="${c.id}" aria-label="پخش"><span>▶</span></button>
+           <span class="course-card__badge">${c.levelLabel || c.level}</span>
+         </div>`
+      : `<div class="course-card__media">
+           <img src="${img}" alt="${c.title}">
+           <span class="course-card__badge">${c.levelLabel || c.level}</span>
+         </div>`;
+    return `<article class="course-card">
+      ${media}
+      <div class="course-card__body">
+        <h3>${c.title}</h3>
+        <div class="course-card__meta">${sessions}${dur}</div>
+        <div class="course-card__price">${formatToman(c.tuitionAmount)}</div>
+      </div>
+    </article>`;
+  }).join('') + '</div>';
+}
+
+function courseFiltersHtml(active){
+  const levels = [null,'A1','A2','B1','B2','C1','C2','IELTS'];
+  return '<div class="course-filters">' + levels.map(l => {
+    const on = (active === l) || (active==null && l==null) ? ' is-on' : '';
+    const label = l || 'همه';
+    const val = l || '';
+    return `<button type="button" class="${on.trim()}" data-course-filter="${val}">${label}</button>`;
+  }).join('') + '</div>';
+}
+
+function wireCourseCards(root){
+  root.querySelectorAll('[data-course-filter]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const v = btn.getAttribute('data-course-filter') || null;
+      _courseFilter = v || null;
+      const list = await fetchCourses(_courseFilter);
+      const host = root.querySelector('#course-cards-host');
+      if(host) host.innerHTML = courseCardsHtml(list);
+      root.querySelectorAll('[data-course-filter]').forEach(b=>{
+        const bv = b.getAttribute('data-course-filter') || null;
+        b.classList.toggle('is-on', (bv||null) === (_courseFilter||null) || (!_courseFilter && !bv));
+      });
+      wireCoursePlay(root);
+    });
+  });
+  wireCoursePlay(root);
+}
+
+function wireCoursePlay(root){
+  root.querySelectorAll('[data-play-course]').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      e.preventDefault();
+      e.stopPropagation();
+      const id = btn.getAttribute('data-play-course');
+      const vid = document.getElementById('course-vid-' + id);
+      const poster = document.getElementById('course-poster-' + id);
+      if(!vid) return;
+      // pause other
+      if(_coursePlaying && _coursePlaying !== vid){
+        try{ _coursePlaying.pause(); }catch(_){}
+        const op = document.getElementById('course-poster-' + _coursePlaying.id.replace('course-vid-',''));
+        if(op) op.style.display = '';
+        _coursePlaying.style.display = 'none';
+        const ob = document.querySelector('[data-play-course="'+_coursePlaying.id.replace('course-vid-','')+'"]');
+        if(ob) ob.style.display = '';
+      }
+      if(poster) poster.style.display = 'none';
+      vid.style.display = 'block';
+      btn.style.display = 'none';
+      vid.play().catch(()=>{});
+      _coursePlaying = vid;
+      vid.onended = ()=>{
+        vid.style.display = 'none';
+        if(poster) poster.style.display = '';
+        btn.style.display = '';
+        _coursePlaying = null;
+      };
+    });
+  });
+}
+
+async function renderCoursesSection(){
+  const list = await fetchCourses(_courseFilter);
+  return `
+    <section class="course-sec">
+      <div class="course-sec__head">
+        <h2>دوره‌های آموزشی</h2>
+        ${courseFiltersHtml(_courseFilter)}
+      </div>
+      <div id="course-cards-host">${courseCardsHtml(list)}</div>
+    </section>`;
+}
+
 /* —— Placement test —— */
 let _placeCandidateId = null;
 let _placeQuestions = [];
@@ -1025,8 +1147,10 @@ async function route(){
           <button type="button" class="place-cta__btn" onclick="openPlacementModal()">شروع تعیین سطح</button>
         </div>
         ${circlesHtml(circles)}
+        ${await renderCoursesSection()}
         <div style="text-align:center"><a class="back" href="#/">← صفحه اصلی</a></div>
       </div>`;
+    wireCourseCards(app);
     return;
   }
 

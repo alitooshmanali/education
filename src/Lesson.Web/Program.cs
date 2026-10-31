@@ -60,6 +60,7 @@ builder.Services.AddScoped<ISiteLibraryService, SiteLibraryService>();
 builder.Services.AddScoped<ISitePageService, SitePageService>();
 builder.Services.AddScoped<ITeacherWorkspaceService, TeacherWorkspaceService>();
 builder.Services.AddScoped<ICandidateService, CandidateService>();
+builder.Services.AddScoped<ISiteCourseService, SiteCourseService>();
 builder.Services.AddScoped<TeacherSessionState>();
 
 builder.Services.AddHttpContextAccessor();
@@ -114,6 +115,16 @@ app.MapGet("/api/site/media/{contentId:long}", async (HttpContext context, long 
     var result = await streaming.OpenAsync(contentId, 0, string.Empty, string.Empty, isAdmin: true);
     if (result is null) return Results.NotFound();
     return Results.Stream(result.Stream, result.ContentType, enableRangeProcessing: result.Stream.CanSeek, fileDownloadName: result.FileName);
+});
+
+
+app.MapGet("/api/site/courses", async (CourseOfferLevel? level, ISiteCourseService courses) =>
+    Results.Ok(await courses.GetPublicAsync(level)));
+
+app.MapGet("/api/site/courses/{id:long}", async (long id, ISiteCourseService courses) =>
+{
+    var item = await courses.GetByIdAsync(id);
+    return item is null ? Results.NotFound() : Results.Ok(item);
 });
 
 app.MapGet("/api/site/library/{id:long}", async (long id, ISiteLibraryService lib) =>

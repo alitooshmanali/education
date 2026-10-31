@@ -464,3 +464,44 @@ to{transform:translateY(0);opacity:1}}
     animation: brandDrop .4s ease both;
   }
 }
+
+/* —— course cards (english page) —— */
+.course-sec{margin:8px 0 36px}
+.course-sec__head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:16px}
+.course-sec__head h2{margin:0;font-size:clamp(18px,3vw,24px);font-weight:900;color:var(--navy)}
+.course-filters{display:flex;flex-wrap:wrap;gap:8px}
+.course-filters button{
+  padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;
+  font-size:12px;font-weight:800;color:var(--muted);cursor:pointer
+}
+.course-filters button.is-on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+.course-card{
+  background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;
+  box-shadow:0 10px 28px rgba(10,43,81,.06);display:flex;flex-direction:column
+}
+.course-card__media{
+  position:relative;aspect-ratio:16/10;background:#0A2B51;overflow:hidden
+}
+.course-card__media img,.course-card__media video{
+  width:100%;height:100%;object-fit:cover;display:block
+}
+.course-card__play{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(10,43,81,.25);border:0;cursor:pointer
+}
+.course-card__play span{
+  width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.95);
+  display:grid;place-items:center;font-size:18px;color:var(--navy);
+  box-shadow:0 8px 20px rgba(0,0,0,.25)
+}
+.course-card__badge{
+  position:absolute;top:10px;inset-inline-start:10px;
+  background:var(--sand);color:var(--navy);font-size:11px;font-weight:900;
+  padding:4px 10px;border-radius:999px
+}
+.course-card__body{padding:14px 14px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.course-card__body h3{margin:0;font-size:16px;font-weight:900;color:var(--navy)}
+.course-card__meta{font-size:12.5px;color:var(--muted);font-weight:600}
+.course-card__price{margin-top:auto;padding-top:8px;font-size:15px;font-weight:900;color:var(--navy)}
+.course-empty{text-align:center;color:var(--muted);padding:24px;font-size:13px}

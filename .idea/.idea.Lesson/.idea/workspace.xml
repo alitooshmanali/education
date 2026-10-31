@@ -11,8 +11,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bba0822f-46d9-4d97-aa9a-2857b4f57e21" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lesson/.idea/dataSources/data_sources_history.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lesson/.idea/dataSources/data_sources_history.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Lesson/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lesson/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Abstractions/IApplicationDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Abstractions/IApplicationDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Migrations/LessonDbContextModelSnapshot.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Migrations/LessonDbContextModelSnapshot.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Persistence/LessonDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Persistence/LessonDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Layout/MainLayout.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Layout/MainLayout.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Program.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/site-index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/site-index.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/index.html" afterDir="false" />
     </list>
@@ -49,23 +53,23 @@
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0006223440563082" />
-      <entry key="MS500" value="1.2284578625573501" />
-      <entry key="S2" value="1.6913556673643972" />
-      <entry key="S5" value="1.862741344542656" />
-      <entry key="S10" value="1.928838707495901" />
-      <entry key="S30" value="1.9756935581846906" />
-      <entry key="S60" value="1.9880524415278042" />
-      <entry key="M2" value="2.0565069797772813" />
-      <entry key="M5" value="3.605915596344168" />
-      <entry key="M10" value="6.743947202974541" />
-      <entry key="M15" value="8.804937877286742" />
-      <entry key="M30" value="11.7607559998041" />
-      <entry key="H1" value="13.689800779435902" />
-      <entry key="H2" value="14.792866441140442" />
-      <entry key="H4" value="15.382831769212402" />
-      <entry key="D1" value="15.895197003440215" />
-      <entry key="W1" value="15.984979892942151" />
+      <entry key="MS100" value="1.0022592686090754" />
+      <entry key="MS500" value="1.3409281805854756" />
+      <entry key="S2" value="3.115109465054512" />
+      <entry key="S5" value="6.011879199785339" />
+      <entry key="S10" value="8.258033330836092" />
+      <entry key="S30" value="10.527917920937396" />
+      <entry key="S60" value="11.231321672493117" />
+      <entry key="M2" value="11.666118662221598" />
+      <entry key="M5" value="13.41327267936715" />
+      <entry key="M10" value="16.61212633619352" />
+      <entry key="M15" value="18.701536934333156" />
+      <entry key="M30" value="21.697921943071012" />
+      <entry key="H1" value="23.65474870397843" />
+      <entry key="H2" value="24.774300734650677" />
+      <entry key="H4" value="25.373270831999765" />
+      <entry key="D1" value="25.89356325769232" />
+      <entry key="W1" value="25.984745492882645" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -87,23 +91,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9665333212479374" />
-      <entry key="MS500" value="1.2196579800038696" />
-      <entry key="S2" value="1.6881881599690751" />
-      <entry key="S5" value="1.8613311278185614" />
-      <entry key="S10" value="1.9281059811128023" />
-      <entry key="S30" value="1.9754427898545628" />
-      <entry key="S60" value="1.987926196460367" />
-      <entry key="M2" value="2.0564414560553432" />
-      <entry key="M5" value="3.605867644597627" />
-      <entry key="M10" value="6.743901215039037" />
-      <entry key="M15" value="8.804897581675803" />
-      <entry key="M30" value="11.76072894186963" />
-      <entry key="H1" value="13.689784995704182" />
-      <entry key="H2" value="14.792857904630083" />
-      <entry key="H4" value="15.382827328567886" />
-      <entry key="D1" value="15.895196238380574" />
-      <entry key="W1" value="15.98497978302329" />
+      <entry key="MS100" value="0.9748524354499515" />
+      <entry key="MS500" value="1.3334519146752672" />
+      <entry key="S2" value="3.1103467179158133" />
+      <entry key="S5" value="6.007831487321548" />
+      <entry key="S10" value="8.25512475900983" />
+      <entry key="S30" value="10.526641540820188" />
+      <entry key="S60" value="11.230635281320376" />
+      <entry key="M2" value="11.665760466549624" />
+      <entry key="M5" value="13.413104939817575" />
+      <entry key="M10" value="16.61202003643254" />
+      <entry key="M15" value="18.7014562998324" />
+      <entry key="M30" value="21.69787462177963" />
+      <entry key="H1" value="23.654722756323423" />
+      <entry key="H2" value="24.77428710660045" />
+      <entry key="H4" value="25.373263842968193" />
+      <entry key="D1" value="25.8935620675174" />
+      <entry key="W1" value="25.98474532222334" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -114,25 +118,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    ".NET Launch Settings Profile.Lesson.Web.executor": "Debug",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "cidr.known.project.marker": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "improve/add__publich__quize",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;.NET Launch Settings Profile.Lesson.Web.executor&quot;: &quot;Debug&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;improve/add__publich__quize&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="Lesson.Web" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/src/Lesson.Web/Lesson.Web.csproj" />
@@ -169,7 +173,8 @@
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="part 1" />
-    <option name="LAST_COMMIT_MESSAGE" value="part 1" />
+    <MESSAGE value="fixing logo animitions" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixing logo animitions" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

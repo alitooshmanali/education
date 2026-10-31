@@ -35,6 +35,7 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
     public DbSet<SiteLibraryItem> SiteLibraryItems => Set<SiteLibraryItem>();
     public DbSet<SitePageSlot> SitePageSlots => Set<SitePageSlot>();
     public DbSet<CandidateUser> CandidateUsers => Set<CandidateUser>();
+    public DbSet<SiteCourse> SiteCourses => Set<SiteCourse>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -60,6 +61,16 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
             entity.Property(x => x.LinkHref).HasMaxLength(300);
             entity.HasIndex(x => new { x.PageKey, x.SlotType, x.SortOrder });
             entity.HasOne(x => x.ImageContent).WithMany().HasForeignKey(x => x.ImageContentId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        
+        modelBuilder.Entity<SiteCourse>(entity =>
+        {
+            entity.Property(x => x.Title).HasMaxLength(300).IsRequired();
+            entity.Property(x => x.Description).HasMaxLength(2000);
+            entity.Property(x => x.TuitionAmount).HasPrecision(18, 0);
+            entity.HasOne(x => x.ImageContent).WithMany().HasForeignKey(x => x.ImageContentId).OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne(x => x.VideoContent).WithMany().HasForeignKey(x => x.VideoContentId).OnDelete(DeleteBehavior.NoAction);
         });
 
         base.OnModelCreating(modelBuilder);
