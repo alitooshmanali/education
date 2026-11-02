@@ -1,0 +1,176 @@
+@page "/admin/candidates"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@using Lesson.Domain
+@inject ICandidateService Candidates
+
+<style>
+    .cand { max-width: 1200px; width: 100%; }
+    .cand__head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; margin-bottom:18px; align-items:flex-start; }
+    .cand__title { margin:0; font-size:24px; font-weight:900; color:#0A2B51; }
+    .cand__sub { margin:4px 0 0; color:#6B7787; font-size:13px; }
+    .cand-card { background:#fff; border:1px solid #E6E1D6; border-radius:16px; overflow:hidden; }
+    .cand-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .cand-table th {
+        text-align:start; font-size:11px; font-weight:800; color:#6B7787;
+        padding:12px 14px; background:#fbfaf7; border-bottom:1px solid #E6E1D6; white-space:nowrap;
+    }
+    .cand-table td { padding:12px 14px; border-bottom:1px solid #eef1f5; vertical-align:middle; }
+    .cand-phone {
+        display:inline-flex; align-items:center; gap:8px;
+        font-weight:800; color:#0A2B51; text-decoration:none; direction:ltr;
+    }
+    .cand-phone:hover { color:#D1AB7B; }
+    .cand-call {
+        display:inline-flex; align-items:center; justify-content:center;
+        padding:6px 12px; border-radius:999px; background:#0A2B51; color:#fff;
+        font-size:12px; font-weight:800; text-decoration:none; white-space:nowrap;
+    }
+    .cand-call:hover { filter:brightness(1.08); color:#fff; }
+    .cand-pill {
+        display:inline-flex; font-size:11px; font-weight:800; padding:3px 10px;
+        border-radius:999px; background:#eef3fa; color:#0A2B51;
+    }
+    .cand-pill.done { background:#e6f6f0; color:#0c5c41; }
+    .cand-pill.started { background:#fff6e8; color:#8a5a12; }
+    .cand-score { font-weight:800; color:#0A2B51; font-variant-numeric:tabular-nums; }
+    .cand-empty { padding:28px; text-align:center; color:#6B7787; }
+    .cand-tools { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+    .cand-tools input {
+        border:1px solid #E6E1D6; border-radius:10px; padding:9px 12px; font:inherit; min-width:200px;
+    }
+    .cand-tools select {
+        border:1px solid #E6E1D6; border-radius:10px; padding:9px 12px; font:inherit;
+    }
+    @@media (max-width:900px) {
+        .cand-table thead { display:none; }
+        .cand-table tr { display:block; border-bottom:1px solid #E6E1D6; padding:12px 14px; }
+        .cand-table td { display:flex; justify-content:space-between; gap:12px; border:0; padding:6px 0; }
+        .cand-table td::before { content:attr(data-label); font-weight:700; color:#6B7787; font-size:11px; }
+    }
+</style>
+
+<section class="cand">
+    <div class="cand__head">
+        <div>
+            <h1 class="cand__title">داوطلبان تعیین سطح</h1>
+            <p class="cand__sub">شماره تماس و نمرات آزمون — برای پیگیری و تماس</p>
+        </div>
+        <button class="btn btn-ghost" type="button" disabled="@_busy" @onclick="Reload">بروزرسانی</button>
+    </div>
+
+    <div class="cand-tools">
+        <input placeholder="جستجوی شماره..." @bind="_q" @bind:event="oninput" />
+        <select @bind="_statusFilter">
+            <option value="">همه وضعیت‌ها</option>
+            <option value="Completed">تکمیل‌شده</option>
+            <option value="Started">شروع‌شده</option>
+        </select>
+    </div>
+
+    <div class="cand-card">
+        @if (_busy && _items.Count == 0)
+        {
+            <div class="cand-empty">در حال بارگذاری…</div>
+        }
+        else if (Filtered.Count == 0)
+        {
+            <div class="cand-empty">موردی یافت نشد.</div>
+        }
+        else
+        {
+            <table class="cand-table">
+                <thead>
+                    <tr>
+                        <th>تماس</th>
+                        <th>سطح پیشنهادی</th>
+                        <th>شنیداری</th>
+                        <th>خواندن</th>
+                        <th>نوشتاری/گفتاری</th>
+                        <th>واژگان</th>
+                        <th>جمع</th>
+                        <th>وضعیت</th>
+                        <th>تاریخ</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Filtered)
+                    {
+                        <tr>
+                            <td data-label="تماس">
+                                <a class="cand-phone" href="tel:@c.PhoneNumber" dir="ltr">@c.PhoneNumber</a>
+                            </td>
+                            <td data-label="سطح"><span class="cand-pill">@(c.SuggestionLevel ?? "—")</span></td>
+                            <td data-label="شنیداری" class="cand-score">@Fmt(c.ListeningScore)</td>
+                            <td data-label="خواندن" class="cand-score">@Fmt(c.ReadingScore)</td>
+                            <td data-label="نوشتاری" class="cand-score">@Fmt(c.WritingScore)</td>
+                            <td data-label="واژگان" class="cand-score">@Fmt(c.VocabularyScore)</td>
+                            <td data-label="جمع" class="cand-score">@Fmt(c.TotalScore)</td>
+                            <td data-label="وضعیت">
+                                <span class="cand-pill @StatusClass(c.Status)">@StatusFa(c.Status)</span>
+                            </td>
+                            <td data-label="تاریخ" style="white-space:nowrap;font-size:12px;color:#6B7787">
+                                @PersianDate.Format(c.CreatedAt)
+                                @if (c.CompletedAt is { } done)
+                                {
+                                    <div>اتمام: @PersianDate.Format(done)</div>
+                                }
+                            </td>
+                            <td data-label="">
+                                <a class="cand-call" href="tel:@c.PhoneNumber">تماس</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</section>
+
+@code {
+    private List<CandidateUserAdminDto> _items = new();
+    private bool _busy;
+    private string _q = "";
+    private string _statusFilter = "";
+
+    private IReadOnlyList<CandidateUserAdminDto> Filtered
+    {
+        get
+        {
+            IEnumerable<CandidateUserAdminDto> q = _items;
+            if (!string.IsNullOrWhiteSpace(_q))
+            {
+                var s = _q.Trim();
+                q = q.Where(x => x.PhoneNumber.Contains(s, StringComparison.OrdinalIgnoreCase));
+            }
+            if (!string.IsNullOrWhiteSpace(_statusFilter))
+                q = q.Where(x => string.Equals(x.Status, _statusFilter, StringComparison.OrdinalIgnoreCase));
+            return q.ToList();
+        }
+    }
+
+    protected override async Task OnInitializedAsync() => await Reload();
+
+    private async Task Reload()
+    {
+        _busy = true;
+        try { _items = (await Candidates.GetAllAdminAsync()).ToList(); }
+        finally { _busy = false; }
+    }
+
+    private static string Fmt(decimal? v) => v is null ? "—" : v.Value.ToString("0.#");
+
+    private static string StatusFa(string? s) => s switch
+    {
+        "Completed" => "تکمیل‌شده",
+        "Started" => "شروع‌شده",
+        _ => s ?? "—"
+    };
+
+    private static string StatusClass(string? s) => s switch
+    {
+        "Completed" => "done",
+        "Started" => "started",
+        _ => ""
+    };
+}

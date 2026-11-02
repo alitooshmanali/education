@@ -34,6 +34,8 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
     public DbSet<ContentStudentAccess> ContentStudentAccesses => Set<ContentStudentAccess>();
     public DbSet<SiteLibraryItem> SiteLibraryItems => Set<SiteLibraryItem>();
     public DbSet<SitePageSlot> SitePageSlots => Set<SitePageSlot>();
+    public DbSet<CandidateUser> CandidateUsers => Set<CandidateUser>();
+    public DbSet<SiteCourse> SiteCourses => Set<SiteCourse>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -61,8 +63,36 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
             entity.HasOne(x => x.ImageContent).WithMany().HasForeignKey(x => x.ImageContentId).OnDelete(DeleteBehavior.NoAction);
         });
 
+        
+        modelBuilder.Entity<SiteCourse>(entity =>
+        {
+            entity.Property(x => x.Title).HasMaxLength(300).IsRequired();
+            entity.Property(x => x.Description).HasMaxLength(2000);
+            entity.Property(x => x.TuitionAmount).HasPrecision(18, 0);
+            entity.HasOne(x => x.ImageContent).WithMany().HasForeignKey(x => x.ImageContentId).OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne(x => x.VideoContent).WithMany().HasForeignKey(x => x.VideoContentId).OnDelete(DeleteBehavior.NoAction);
+        });
+
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(LessonDbContext).Assembly);
+
+        // ---- CandidateUser (placement test guests) ----
+        modelBuilder.Entity<CandidateUser>(b =>
+        {
+            b.ToTable("CandidateUsers");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.PhoneNumber).HasMaxLength(20).IsRequired();
+            b.HasIndex(x => x.PhoneNumber);
+            b.Property(x => x.ListeningScore).HasPrecision(4, 1);
+            b.Property(x => x.ReadingScore).HasPrecision(4, 1);
+            b.Property(x => x.WritingScore).HasPrecision(4, 1);
+            b.Property(x => x.VocabularyScore).HasPrecision(4, 1);
+            b.Property(x => x.TotalScore).HasPrecision(5, 1);
+            b.Property(x => x.SuggestionLevel).HasConversion<int?>();
+            b.Property(x => x.Status).HasConversion<int>();
+            b.Property(x => x.Notes).HasMaxLength(1000);
+        });
+
 
         // ---- User ----
         modelBuilder.Entity<User>(b =>

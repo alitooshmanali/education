@@ -111,6 +111,68 @@ namespace Lesson.Infrastructure.Migrations
                     b.ToTable("AuthenticationSessions", (string)null);
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.CandidateUser", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal?>("ListeningScore")
+                        .HasPrecision(4, 1)
+                        .HasColumnType("decimal(4,1)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<decimal?>("ReadingScore")
+                        .HasPrecision(4, 1)
+                        .HasColumnType("decimal(4,1)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SuggestionLevel")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("TotalScore")
+                        .HasPrecision(5, 1)
+                        .HasColumnType("decimal(5,1)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal?>("VocabularyScore")
+                        .HasPrecision(4, 1)
+                        .HasColumnType("decimal(4,1)");
+
+                    b.Property<decimal?>("WritingScore")
+                        .HasPrecision(4, 1)
+                        .HasColumnType("decimal(4,1)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PhoneNumber");
+
+                    b.ToTable("CandidateUsers", (string)null);
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.ClassRoom", b =>
                 {
                     b.Property<long>("Id")
@@ -802,6 +864,66 @@ namespace Lesson.Infrastructure.Migrations
                     b.ToTable("QuizRetakeGrants", (string)null);
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.SiteCourse", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<long?>("ImageContentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SessionCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SessionDurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("StartsAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<decimal>("TuitionAmount")
+                        .HasPrecision(18)
+                        .HasColumnType("decimal(18,0)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("VideoContentId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImageContentId");
+
+                    b.HasIndex("VideoContentId");
+
+                    b.ToTable("SiteCourses");
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.SiteLibraryItem", b =>
                 {
                     b.Property<long>("Id")
@@ -1448,6 +1570,23 @@ namespace Lesson.Infrastructure.Migrations
                     b.Navigation("Quiz");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.SiteCourse", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.LessonContent", "ImageContent")
+                        .WithMany()
+                        .HasForeignKey("ImageContentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Lesson.Domain.Entities.LessonContent", "VideoContent")
+                        .WithMany()
+                        .HasForeignKey("VideoContentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("ImageContent");
+
+                    b.Navigation("VideoContent");
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.SiteLibraryItem", b =>

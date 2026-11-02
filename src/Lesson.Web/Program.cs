@@ -59,6 +59,8 @@ builder.Services.AddScoped<IClassService, ClassService>();
 builder.Services.AddScoped<ISiteLibraryService, SiteLibraryService>();
 builder.Services.AddScoped<ISitePageService, SitePageService>();
 builder.Services.AddScoped<ITeacherWorkspaceService, TeacherWorkspaceService>();
+builder.Services.AddScoped<ICandidateService, CandidateService>();
+builder.Services.AddScoped<ISiteCourseService, SiteCourseService>();
 builder.Services.AddScoped<TeacherSessionState>();
 
 builder.Services.AddHttpContextAccessor();
@@ -115,6 +117,16 @@ app.MapGet("/api/site/media/{contentId:long}", async (HttpContext context, long 
     return Results.Stream(result.Stream, result.ContentType, enableRangeProcessing: result.Stream.CanSeek, fileDownloadName: result.FileName);
 });
 
+
+app.MapGet("/api/site/courses", async (CourseOfferLevel? level, ISiteCourseService courses) =>
+    Results.Ok(await courses.GetPublicAsync(level)));
+
+app.MapGet("/api/site/courses/{id:long}", async (long id, ISiteCourseService courses) =>
+{
+    var item = await courses.GetByIdAsync(id);
+    return item is null ? Results.NotFound() : Results.Ok(item);
+});
+
 app.MapGet("/api/site/library/{id:long}", async (long id, ISiteLibraryService lib) =>
 {
     var item = await lib.GetByIdAsync(id);
@@ -123,6 +135,40 @@ app.MapGet("/api/site/library/{id:long}", async (long id, ISiteLibraryService li
 
 
 // ---------- Auth ----------
+
+// Placement test (public, guests)
+app.MapPost("/api/placement/start", async (PlacementStartBody body, ICandidateService svc) =>
+{
+    try
+    {
+        var r = await svc.StartAsync(body.Phone ?? "");
+        return Results.Ok(r);
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+app.MapGet("/api/placement/questions", (ICandidateService svc) =>
+    Results.Ok(svc.GetQuestions()));
+
+app.MapPost("/api/placement/submit", async (PlacementSubmitRequest body, ICandidateService svc) =>
+{
+    try
+    {
+        var r = await svc.SubmitAsync(body.CandidateId, body.Answers ?? Array.Empty<PlacementAnswerDto>());
+        return Results.Ok(r);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+app.MapGet("/api/admin/candidates", async (ICandidateService svc) =>
+    Results.Ok(await svc.GetAllAdminAsync())).RequireAuthorization("AdminOnly");
+
 app.MapPost("/api/auth/login", async (HttpContext context, Lesson.Infrastructure.Abstractions.IAuthenticationService auth) =>
 {
     var form = await context.Request.ReadFormAsync();
@@ -252,3 +298,5 @@ public sealed class CurrentUserContext : ICurrentUserContext
     public string? DeviceIdentifier => _http.HttpContext?.User.FindFirstValue("lesson.device");
     public string? SessionKey => _http.HttpContext?.User.FindFirstValue("lesson.session");
 }
+
+public sealed record PlacementStartBody(string? Phone);
