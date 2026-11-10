@@ -10,6 +10,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using System.Security.Claims;
 
+public record GameScoreRequest(
+    long CandidateId,
+    decimal ListeningScore,
+    decimal ReadingScore,
+    decimal WritingScore,
+    decimal VocabularyScore,
+    string? SuggestionLevel);
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.UseUrls("http://0.0.0.0:5070");
@@ -118,8 +126,8 @@ app.MapGet("/api/site/media/{contentId:long}", async (HttpContext context, long 
 });
 
 
-app.MapGet("/api/site/courses", async (CourseOfferLevel? level, ISiteCourseService courses) =>
-    Results.Ok(await courses.GetPublicAsync(level)));
+app.MapGet("/api/site/courses", async (SubjectArea? subject, CourseOfferLevel? level, ISiteCourseService courses) =>
+    Results.Ok(await courses.GetPublicAsync(subject, level)));
 
 app.MapGet("/api/site/courses/{id:long}", async (long id, ISiteCourseService courses) =>
 {
@@ -163,6 +171,30 @@ app.MapPost("/api/placement/submit", async (PlacementSubmitRequest body, ICandid
     catch (InvalidOperationException ex)
     {
         return Results.BadRequest(new { error = ex.Message });
+
+app.MapPost("/api/placement/submit-game", async (GameScoreRequest body, ICandidateService candidates) =>
+{
+    if (body.CandidateId <= 0) return Results.BadRequest(new { error = "candidateId invalid" });
+    try
+    {
+        var result = await candidates.SubmitGameAsync(
+            body.CandidateId,
+            body.ListeningScore,
+            body.ReadingScore,
+            body.WritingScore,
+            body.VocabularyScore,
+            body.SuggestionLevel);
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+app.MapGet("/api/placement/game-bank", (ICandidateService candidates) => Results.Ok(candidates.GetGameBank()));
+
+
     }
 });
 

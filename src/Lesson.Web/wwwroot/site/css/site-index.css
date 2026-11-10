@@ -35,7 +35,7 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 
 /* —— carousel —— */
 .carousel{
-  position:relative;width:100%;height:min(52vw,480px);min-height:280px;
+  position:relative;width:100%;aspect-ratio:3/1;height:auto;min-height:0;
   overflow:hidden;background:#061d38;direction:ltr
 }
 .carousel__track{
@@ -80,7 +80,7 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 .carousel__arrow--next{right:10px}
 
 /* —— circles —— */
-.circles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px;margin:40px 0 24px;justify-items:center}
+.circles{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:28px;margin:40px auto 24px;width:100%;max-width:960px}
 .circle{
   width:min(180px,22vw);aspect-ratio:1;border-radius:50%;overflow:hidden;position:relative;
   border:3px solid #fff;box-shadow:0 12px 36px rgba(10,43,81,.14);
@@ -147,7 +147,7 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 .detail{max-width:720px;margin:0 auto 48px;padding:0 16px}
 .detail__hero{
   width:100vw;margin-right:calc(50% - 50vw);margin-left:calc(50% - 50vw);
-  height:min(42vw,360px);min-height:220px;overflow:hidden;background:var(--navy)
+  aspect-ratio:3/1;height:auto;min-height:0;overflow:hidden;background:var(--navy)
 }
 .detail__hero img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
 .detail__title{
@@ -211,7 +211,7 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 .back:hover{background:#eef3fa}
 
 /* —— hero image only (no carousel) —— */
-.hero-still{width:100%;height:min(36vw,300px);min-height:180px;overflow:hidden;background:var(--navy)}
+.hero-still{width:100%;aspect-ratio:3/1;height:auto;min-height:0;overflow:hidden;background:var(--navy)}
 .hero-still img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
 
 /* —— footer —— */
@@ -226,7 +226,7 @@ button{font:inherit;cursor:pointer;border:0;background:none}
 
 /* —— tablet —— */
 @media (max-width:900px){
-  .carousel{height:min(56vw,360px);min-height:220px}
+  .carousel{aspect-ratio:3/1;height:auto;min-height:0}
   .brand-ribbon{inset-inline-start:10px}
   .brand-ribbon__flag{min-width:88px;padding:10px 12px 10px}
   .brand-ribbon__flag img{width:72px;height:72px}
@@ -234,21 +234,14 @@ button{font:inherit;cursor:pointer;border:0;background:none}
   .brand-ribbon__name span{font-size:8.5px}
   .main{padding:0 14px 40px}
   .detail{padding:0 12px}
-  .detail__hero{height:min(48vw,280px);min-height:180px}
-}
-
-/* —— mobile —— */
-@media (max-width:720px){
-  .brand-ribbon{inset-inline-start:8px}
-  .brand-ribbon__flag{
-    min-width:72px;padding:8px 10px 8px;border-radius:0 0 14px 14px;
+  .detail__hero{aspect-ratio:3/1;height:auto;min-height:0;padding:8px 10px 8px;border-radius:0 0 14px 14px;
     box-shadow:0 8px 22px rgba(6,29,56,.28)
   }
   .brand-ribbon__flag img{width:56px;height:56px}
   .brand-ribbon__name{font-size:9px;margin-top:4px}
   .brand-ribbon__name span{font-size:7.5px;letter-spacing:0}
 
-  .carousel{height:min(62vw,300px);min-height:200px}
+  .carousel{aspect-ratio:3/1;height:auto;min-height:0}
   .carousel__caption{padding:28px 14px 36px}
   .carousel__caption h2{font-size:clamp(18px,5.5vw,26px)}
   .carousel__caption p{font-size:12px}
@@ -257,15 +250,14 @@ button{font:inherit;cursor:pointer;border:0;background:none}
   .carousel__arrow--prev{left:6px}
   .carousel__arrow--next{right:6px}
 
-  .hero-still{height:min(48vw,240px);min-height:160px}
+  .hero-still{aspect-ratio:3/1;height:auto;min-height:0}
 
   .main{padding:0 12px 36px}
   .sec-title{margin:20px 0 6px}
   .sec-title h1{font-size:clamp(18px,5vw,26px)}
   .sec-title p{font-size:12.5px}
 
-  .circles{
-    grid-template-columns:repeat(2,minmax(0,1fr));
+  .circles{justify-content:center;
     gap:16px 12px;margin:20px 0;justify-items:center
   }
   .circle{width:min(148px,42vw)}
@@ -274,8 +266,7 @@ button{font:inherit;cursor:pointer;border:0;background:none}
   .circle-time{font-size:10.5px}
 
   .detail{padding:0 10px 32px;margin-bottom:32px}
-  .detail__hero{height:min(52vw,260px);min-height:160px}
-  .detail__title{font-size:clamp(18px,5vw,26px);margin:16px 0 4px}
+  .detail__hero{aspect-ratio:3/1;height:auto;min-height:0;margin:16px 0 4px}
   .detail__summary{font-size:12.5px;margin-bottom:12px}
   .detail__player{padding:10px 12px;border-radius:12px;margin-bottom:14px}
   .detail__body-card{padding:16px 14px;border-radius:12px}
@@ -505,3 +496,130 @@ to{transform:translateY(0);opacity:1}}
 .course-card__meta{font-size:12.5px;color:var(--muted);font-weight:600}
 .course-card__price{margin-top:auto;padding-top:8px;font-size:15px;font-weight:900;color:var(--navy)}
 .course-empty{text-align:center;color:var(--muted);padding:24px;font-size:13px}
+
+/* —— ALL site banners: fixed 3:1 aspect (width:height) —— */
+.carousel,
+.hero-still,
+.detail__hero{
+  width:100%;
+  aspect-ratio:3 / 1;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none;
+  overflow:hidden;
+}
+.carousel__slide,
+.carousel__slide img,
+.hero-still img,
+.detail__hero img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  display:block;
+}
+.carousel__track,
+.carousel__slide{
+  height:100%;
+}
+
+/* circles always centered (any count) */
+.circles{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  justify-content:center !important;
+  align-items:flex-start !important;
+  gap:28px;
+  margin-left:auto;
+  margin-right:auto;
+}
+.circle-wrap, a.circle-wrap{
+  flex:0 0 auto;
+  width:120px;
+}
+
+/* —— Placement Game —— */
+.pg{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+.pg__title{text-align:center;margin:8px 0 6px;font-size:clamp(20px,4vw,28px);font-weight:900;color:var(--navy)}
+.pg__sub{text-align:center;color:var(--muted);font-size:13px;margin:0 0 22px}
+.pg-cubes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;max-width:420px;margin:0 auto;perspective:900px}
+.pg-cube{
+  position:relative;aspect-ratio:1;border-radius:18px;border:0;cursor:pointer;
+  background:linear-gradient(145deg,#0A2B51,#163a66);color:#fff;
+  box-shadow:0 14px 34px rgba(10,43,81,.22);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  font-weight:900;font-size:15px;transition:transform .35s ease,filter .2s,opacity .2s;
+  transform-style:preserve-3d
+}
+.pg-cube span{font-size:28px}
+.pg-cube:hover:not(:disabled){transform:translateY(-4px) scale(1.03)}
+.pg-cube:disabled,.pg-cube.is-done{opacity:.45;cursor:not-allowed;filter:grayscale(.4)}
+.pg-cube.is-done::after{content:"✓";position:absolute;top:10px;inset-inline-end:12px;font-size:18px;color:#7dffa8}
+.pg-cube.is-pick{animation:pgSpin .9s ease}
+@keyframes pgSpin{0%{transform:rotateY(0) scale(1)}40%{transform:rotateY(180deg) scale(1.08)}100%{transform:rotateY(360deg) scale(1.15)}}
+.pg-hud{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;font-size:13px;font-weight:800;color:var(--muted)}
+.pg-hud b{color:var(--navy)}
+.pg-q{
+  background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px 18px;
+  box-shadow:0 12px 32px rgba(10,43,81,.07);text-align:center
+}
+.pg-q__text{font-size:clamp(16px,3.5vw,20px);font-weight:800;color:var(--navy);line-height:1.55;margin:0 0 18px}
+.pg-opts{display:grid;gap:10px}
+.pg-opt{
+  border:1.5px solid var(--line);background:#fbfaf7;border-radius:14px;padding:12px 14px;
+  font:inherit;font-weight:700;cursor:pointer;text-align:start;transition:background .2s,border-color .2s,color .2s
+}
+.pg-opt:disabled{cursor:default}
+.pg-opt.is-correct{background:#e6f6f0;border-color:#1a9a6a;color:#0c5c41}
+.pg-opt.is-wrong{background:#fdecec;border-color:#c44;color:#8f2b21}
+.pg-countdown{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(10,43,81,.35);z-index:80;pointer-events:none
+}
+.pg-countdown b{
+  width:88px;height:88px;border-radius:50%;background:#fff;color:var(--navy);
+  display:grid;place-items:center;font-size:36px;font-weight:900;
+  box-shadow:0 16px 40px rgba(0,0,0,.25);animation:pgPop .35s ease
+}
+@keyframes pgPop{from{transform:scale(.6);opacity:.4}to{transform:scale(1);opacity:1}}
+.pg-vocab{display:flex;flex-direction:column;gap:16px;align-items:center;direction:ltr}
+.pg-slots,.pg-letters{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;min-height:48px;direction:ltr}
+.pg-slot,.pg-letter{
+  width:42px;height:48px;border-radius:10px;display:grid;place-items:center;
+  font-weight:900;font-size:18px;user-select:none
+}
+.pg-slot{border:2px dashed #c9c3b6;background:#fff}
+.pg-slot.filled{border-style:solid;border-color:var(--navy);color:var(--navy)}
+.pg-slot.drag-over{border-color:#D1AB7B;background:#fff8ef}
+.pg-letter.dragging{opacity:.7;transform:scale(1.08)}
+.pg-slot.is-ok{border-color:#1a9a6a;background:#e6f6f0;color:#0c5c41}
+.pg-slot.is-bad{border-color:#c44;background:#fdecec;color:#8f2b21}
+.pg-letter{border:0;background:var(--navy);color:#fff;cursor:grab;box-shadow:0 6px 14px rgba(10,43,81,.2)}
+.pg-letter:active{cursor:grabbing}
+.pg-letter.used{opacity:.25;pointer-events:none}
+.pg-btn{
+  border:0;border-radius:999px;padding:12px 22px;font:inherit;font-weight:900;cursor:pointer;
+  background:var(--navy);color:#fff
+}
+.pg-btn:disabled{opacity:.5;cursor:default}
+.pg-btn--ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
+.pg-listen-line{font-size:18px;font-weight:800;color:var(--navy);margin:8px 0;direction:ltr}
+.pg-input{
+  width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:12px;
+  padding:12px 14px;font:inherit;font-weight:700;direction:ltr;text-align:left
+}
+.pg-input.is-ok{border-color:#1a9a6a;background:#e6f6f0}
+.pg-input.is-bad{border-color:#c44;background:#fdecec}
+.pg-story{
+  direction:ltr;text-align:left;line-height:1.7;font-size:15px;font-weight:600;
+  background:#fbfaf7;border-radius:14px;padding:14px;border:1px solid var(--line);color:#1a2433
+}
+.pg-result{text-align:center;padding:24px 12px}
+.pg-result h2{color:var(--navy);font-size:26px;margin:0 0 8px}
+.pg-result .lvl{display:inline-flex;padding:8px 16px;border-radius:999px;background:var(--sand);color:var(--navy);font-weight:900;margin:10px 0}
+@media (max-width:520px){
+  .pg-cubes{gap:12px;max-width:340px}
+  .pg-cube{font-size:13px;border-radius:14px}
+  .pg-cube span{font-size:22px}
+}
+

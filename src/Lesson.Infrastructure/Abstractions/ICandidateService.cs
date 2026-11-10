@@ -49,4 +49,13 @@ public interface ICandidateService
     IReadOnlyList<PlacementQuestionDto> GetQuestions();
     Task<PlacementResultDto> SubmitAsync(long candidateId, IReadOnlyList<PlacementAnswerDto> answers, CancellationToken ct = default);
     Task<IReadOnlyList<CandidateUserAdminDto>> GetAllAdminAsync(CancellationToken ct = default);
+    Task<PlacementResultDto> SubmitGameAsync(
+        long candidateId,
+        decimal listeningScore,
+        decimal readingScore,
+        decimal writingScore,
+        decimal vocabularyScore,
+        string? suggestionLevel,
+        CancellationToken ct = default);
+    object GetGameBank();
 }

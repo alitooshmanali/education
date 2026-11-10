@@ -719,8 +719,11 @@ function bindVideoWatchClicks(root){
 let _courseFilter = null;
 let _coursePlaying = null;
 
-async function fetchCourses(level){
-  const q = level ? ('?level=' + encodeURIComponent(level)) : '';
+async function fetchCourses(level, subject){
+  const params = new URLSearchParams();
+  if(level) params.set('level', level);
+  if(subject) params.set('subject', subject);
+  const q = params.toString() ? ('?' + params.toString()) : '';
   try{
     const res = await fetch('/api/site/courses' + q, { cache: 'no-store' });
     if(!res.ok){ console.warn('courses API', res.status); return []; }
@@ -790,7 +793,7 @@ function wireCourseCards(root){
     btn.addEventListener('click', async ()=>{
       const v = btn.getAttribute('data-course-filter') || null;
       _courseFilter = v || null;
-      const list = await fetchCourses(_courseFilter);
+      const list = await fetchCourses(_courseFilter, window.__courseSubject || 'English');
       const host = root.querySelector('#course-cards-host');
       if(host) host.innerHTML = courseCardsHtml(list);
       root.querySelectorAll('[data-course-filter]').forEach(b=>{
@@ -836,13 +839,16 @@ function wireCoursePlay(root){
   });
 }
 
-async function renderCoursesSection(){
-  const list = await fetchCourses(_courseFilter);
+async function renderCoursesSection(subject){
+  const sub = subject || 'English';
+  window.__courseSubject = sub;
+  const list = await fetchCourses(_courseFilter, sub);
+  const showLevelFilters = sub === 'English';
   return `
     <section class="course-sec">
       <div class="course-sec__head">
         <h2>دوره‌های آموزشی</h2>
-        ${courseFiltersHtml(_courseFilter)}
+        ${showLevelFilters ? courseFiltersHtml(_courseFilter) : ''}
       </div>
       <div id="course-cards-host">${courseCardsHtml(list)}</div>
     </section>`;
@@ -894,6 +900,8 @@ window.startPlacement = async function startPlacement(){
       return;
     }
     _placeCandidateId = data.candidateId;
+    _pg = pgNewState(data.candidateId);
+    await loadGameBankFromServer();
     closePlacementModal();
     location.hash = '#/placement';
   } catch(ex){
@@ -903,213 +911,572 @@ window.startPlacement = async function startPlacement(){
   }
 }
 
-async function loadPlacementQuestions(){
-  const res = await fetch('/api/placement/questions');
-  if(!res.ok) throw new Error('questions');
-  return await res.json();
+
+/* ========== Placement GAME ========== */
+const PG_BANK = {
+  grammar: [
+    {id:'g1',level:'A1',q:'She ___ a teacher.',opts:['is','are','am','be'],ans:0},
+    {id:'g2',level:'A1',q:'I ___ from Iran.',opts:['am','is','are','be'],ans:0},
+    {id:'g3',level:'A1',q:'They ___ students.',opts:['is','are','am','be'],ans:1},
+    {id:'g4',level:'A2',q:'He ___ to school every day.',opts:['go','goes','going','gone'],ans:1},
+    {id:'g5',level:'A2',q:'There ___ many books on the table.',opts:['is','are','be','was'],ans:1},
+    {id:'g6',level:'A2',q:'I ___ already finished my homework.',opts:['have','has','had','am'],ans:0},
+    {id:'g7',level:'B1',q:'If it rains, we ___ at home.',opts:['stay','stays','stayed','staying'],ans:0},
+    {id:'g8',level:'B1',q:'She has been living here ___ 2019.',opts:['for','since','from','by'],ans:1},
+    {id:'g9',level:'B1',q:'The film was ___ than I expected.',opts:['good','better','best','well'],ans:1},
+    {id:'g10',level:'B2',q:'I wish I ___ more time.',opts:['have','had','has','having'],ans:1},
+    {id:'g11',level:'B2',q:'The report ___ by the manager yesterday.',opts:['wrote','was written','written','writes'],ans:1},
+    {id:'g12',level:'B2',q:'Not only ___ late, but he also forgot the files.',opts:['he was','was he','he is','is he'],ans:1},
+    {id:'g13',level:'C1',q:'Had I known, I ___ differently.',opts:['act','would have acted','acted','will act'],ans:1},
+    {id:'g14',level:'C1',q:'She suggested that he ___ early.',opts:['leave','leaves','left','leaving'],ans:0},
+    {id:'g15',level:'C1',q:'Rarely ___ such a performance.',opts:['we see','do we see','we saw','did see we'],ans:1},
+    {id:'g16',level:'C2',q:'___ the weather, the match continued.',opts:['Despite','Although','However','Whereas'],ans:0},
+    {id:'g17',level:'C2',q:'The committee insisted that the rule ___.',opts:['be changed','is changed','was changing','changes'],ans:0},
+    {id:'g18',level:'C2',q:'Little ___ that the decision would matter.',opts:['he knew','did he know','he knows','knows he'],ans:1}
+  ],
+  vocab: [
+    {id:'v1',level:'A1',word:'APPLE'},
+    {id:'v2',level:'A1',word:'HOUSE'},
+    {id:'v3',level:'A2',word:'TRAVEL'},
+    {id:'v4',level:'A2',word:'FRIEND'},
+    {id:'v5',level:'B1',word:'NATURE'},
+    {id:'v6',level:'B2',word:'COURAGE'},
+    {id:'v7',level:'C1',word:'WISDOM'},
+    {id:'v8',level:'IELTS',word:'ANALYZE'}
+  ],
+  listening: [
+    {id:'l1',line1:'Yesterday all my troubles seemed so far away',line2:'Now it looks as though they are here to stay',hint:'The Beatles — Yesterday',audioUrl:''},
+    {id:'l2',line1:'Is this the real life?',line2:'Is this just fantasy?',hint:'Queen — Bohemian Rhapsody',audioUrl:''},
+    {id:'l3',line1:'You are the dancing queen',line2:'Young and sweet only seventeen',hint:'ABBA — Dancing Queen',audioUrl:''}
+  ],
+  speaking: [
+    {id:'s1',level:'A1',text:'Hello, my name is Alex.',story:'سطح A1 — جمله را واضح تکرار کن.'},
+    {id:'s2',level:'A2',text:'I go to school every morning.',story:'سطح A2 — با صدای رسا تکرار کن.'},
+    {id:'s3',level:'B1',text:'I have been learning English for two years.',story:'سطح B1 — استرس کلمات را رعایت کن.'},
+    {id:'s4',level:'B2',text:'If I had more free time, I would travel more often.',story:'سطح B2 — طبیعی و روان بگو.'},
+    {id:'s5',level:'C1',text:'Despite the challenges, she managed to achieve her goals.',story:'سطح C1 — آهنگ جمله را حفظ کن.'},
+    {id:'s6',level:'C2',text:'Had the committee known the consequences, they might have decided otherwise.',story:'سطح C2 — دقیق و واضح تکرار کن.'},
+    {id:'s7',level:'IELTS',text:'In my opinion, education plays a crucial role in personal development.',story:'سطح IELTS — مثل آزمون شفاهی بگو.'}
+  ]
+};
+
+
+async function loadGameBankFromServer(){
+  try{
+    const res = await fetch('/api/placement/game-bank', {cache:'no-store'});
+    if(!res.ok) return;
+    const data = await res.json();
+    if(data.grammar && data.grammar.length) PG_BANK.grammar = data.grammar;
+    if(data.vocab && data.vocab.length) PG_BANK.vocab = data.vocab;
+    if(data.listening && data.listening.length) PG_BANK.listening = data.listening;
+    if(data.speaking && data.speaking.length) PG_BANK.speaking = data.speaking;
+    if(PG_BANK.grammar) _pg && (_pg.max.grammar = PG_BANK.grammar.length);
+    if(PG_BANK.vocab) _pg && (_pg.max.vocab = PG_BANK.vocab.length);
+    if(PG_BANK.listening) _pg && (_pg.max.listening = PG_BANK.listening.length);
+    if(PG_BANK.speaking) _pg && (_pg.max.speaking = PG_BANK.speaking.length);
+  }catch(_){}
 }
 
-function renderPlacementQuestion(){
-  const q = _placeQuestions[_placeIdx];
-  if(!q) return '';
-  const total = _placeQuestions.length;
-  const pct = Math.round(((_placeIdx) / total) * 100);
-  const skillFa = {Vocabulary:'واژگان',Listening:'شنیداری',Reading:'خواندن',Writing:'نوشتاری',Speaking:'گفتاری'}[q.skill] || q.skill;
-  const isSpeak = (q.skill||'').toLowerCase()==='speaking';
-  const listenText = q.listenText || q.ListenText || '';
-  const speakText = q.speakText || q.SpeakText || '';
-  let extra = '';
-  if(listenText){
-    extra += `<div class="place-listen"><button type="button" id="place-play-audio">▶ پخش صوت</button>
-      <p style="margin:8px 0 0;font-size:12px;color:var(--muted)">می‌توانید چند بار گوش دهید</p></div>`;
-  }
-  if(isSpeak){
-    const answered = _placeAnswers[q.id] !== undefined;
-    const st = answered ? (_placeAnswers[q.id]===0 ? 'ok' : 'bad') : '';
-    const stMsg = answered ? (_placeAnswers[q.id]===0 ? 'تلفظ تأیید شد ✓' : 'دوباره تلاش کنید') : 'روی دکمه بزنید و با صدای واضح بگویید';
-    extra += `<div class="place-speak">
-      <div class="place-speak__word">${speakText || '—'}</div>
-      <button type="button" id="place-mic-btn">🎙 شروع ضبط / تلفظ</button>
-      <div class="place-speak__status ${st}" id="place-speak-status">${stMsg}</div>
-    </div>`;
-  }
-  const opts = isSpeak ? '' : (q.options || []).map((o,i)=>{
-    const on = _placeAnswers[q.id] === i ? ' is-on' : '';
-    return `<button type="button" class="place-opt${on}" data-qi="${_placeIdx}" data-oi="${i}">${o}</button>`;
-  }).join('');
-  return `
-    <div class="place-page">
-      <h1>آزمون تعیین سطح</h1>
-      <p style="color:var(--muted);font-size:13px;margin:0 0 4px">سؤال ${_placeIdx+1} از ${total}</p>
-      <div class="place-progress"><span style="width:${pct}%"></span></div>
-      <div class="place-q">
-        <div class="place-q__skill">${skillFa}</div>
-        <div class="place-q__text">${q.text}</div>
-        ${extra}
-        ${opts}
-      </div>
-      <div class="place-nav">
-        <button type="button" class="prev" id="place-prev" ${_placeIdx===0?'disabled':''}>قبلی</button>
-        <button type="button" class="next" id="place-next">${_placeIdx===total-1?'پایان و نتیجه':'بعدی'}</button>
-      </div>
-    </div>`;
+let _pg = null;
+
+function pgNewState(candidateId){
+  return {
+    candidateId,
+    done: { grammar:false, vocab:false, listening:false, speaking:false },
+    scores: { grammar:0, vocab:0, listening:0, speaking:0 },
+    max: { grammar:18, vocab:8, listening:3, speaking:7 },
+    mode: 'hub',
+    idx: 0,
+    locked: false,
+    vocabSlots: [],
+    vocabPool: [],
+    vocabUsed: []
+  };
 }
 
-function normalizeSpeak(s){
+function pgScore10(got, max){
+  if(max<=0) return 0;
+  return Math.round((got / max) * 100) / 10;
+}
+
+function pgAllDone(){
+  return _pg && _pg.done.grammar && _pg.done.vocab && _pg.done.listening && _pg.done.speaking;
+}
+
+function scramble(word){
+  const a = word.split('');
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    const t = a[i]; a[i]=a[j]; a[j]=t;
+  }
+  if(a.join('')===word && word.length>1) return scramble(word);
+  return a;
+}
+
+function normalizeLyric(s){
   return (s||'').toLowerCase().replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,' ').trim();
 }
 
-function playPlacementListen(text){
-  if(!text || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'en-US';
-  u.rate = 0.9;
-  window.speechSynthesis.speak(u);
+async function pgFinishAndSubmit(){
+  const listening = pgScore10(_pg.scores.listening, _pg.max.listening);
+  const reading = pgScore10(_pg.scores.speaking, _pg.max.speaking);
+  const writing = pgScore10(_pg.scores.grammar, _pg.max.grammar);
+  const vocabulary = pgScore10(_pg.scores.vocab, _pg.max.vocab);
+  const avg = (listening+reading+writing+vocabulary)/4;
+  let level = 'A1';
+  if(avg>=9) level='C2';
+  else if(avg>=7.5) level='C1';
+  else if(avg>=6) level='B2';
+  else if(avg>=4.5) level='B1';
+  else if(avg>=3) level='A2';
+
+  try{
+    await fetch('/api/placement/submit-game', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        candidateId: _pg.candidateId,
+        listeningScore: listening,
+        readingScore: reading,
+        writingScore: writing,
+        vocabularyScore: vocabulary,
+        suggestionLevel: level
+      })
+    });
+  }catch(_){}
+
+  _pg.mode = 'result';
+  _pg.result = { listening, reading, writing, vocabulary, avg, level };
+  paintPlacementGame();
 }
 
-function startPlacementSpeak(expected){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const status = document.getElementById('place-speak-status');
-  const btn = document.getElementById('place-mic-btn');
-  const q = _placeQuestions[_placeIdx];
-  if(!SR){
-    if(status){ status.textContent = 'مرورگر شما تشخیص گفتار ندارد (Chrome پیشنهاد می‌شود).'; status.className='place-speak__status bad'; }
+function renderPlacementHub(){
+  const labels = {
+    grammar:['📝','گرامر'],
+    vocab:['🔤','واژگان'],
+    listening:['🎧','شنیداری'],
+    speaking:['🎙','مکالمه']
+  };
+  const keys = ['grammar','vocab','listening','speaking'];
+  const cubes = keys.map(k=>{
+    const done = _pg.done[k];
+    return `<button type="button" class="pg-cube${done?' is-done':''}" data-pg="${k}" ${done?'disabled':''}>
+      <span>${labels[k][0]}</span>${labels[k][1]}
+    </button>`;
+  }).join('');
+  const finished = keys.filter(k=>_pg.done[k]).length;
+  return `<div class="pg">
+    <h1 class="pg__title">بازی تعیین سطح</h1>
+    <p class="pg__sub">یک مهارت را انتخاب کن · ${finished} از ۴ انجام شده</p>
+    <div class="pg-cubes">${cubes}</div>
+  </div>`;
+}
+
+function renderGrammarRound(){
+  const list = PG_BANK.grammar;
+  const item = list[_pg.idx];
+  if(!item) return '';
+  const opts = item.opts.map((o,i)=>
+    `<button type="button" class="pg-opt" data-oi="${i}">${o}</button>`
+  ).join('');
+  return `<div class="pg">
+    <div class="pg-hud"><span>گرامر · ${item.level}</span><b>${_pg.idx+1} / ${list.length}</b></div>
+    <div class="pg-q"><p class="pg-q__text" dir="ltr">${item.q}</p><div class="pg-opts">${opts}</div></div>
+  </div>`;
+}
+
+function renderVocabRound(){
+  const list = PG_BANK.vocab;
+  const item = list[_pg.idx];
+  if(!item) return '';
+  if(!_pg.vocabPool || !_pg.vocabPool.length){
+    _pg.vocabPool = scramble(item.word);
+    _pg.vocabSlots = Array(item.word.length).fill('');
+    _pg.vocabUsed = _pg.vocabPool.map(()=>false);
+  }
+  const slots = _pg.vocabSlots.map((ch,i)=>
+    `<button type="button" class="pg-slot${ch?' filled':''}" data-slot="${i}">${ch||''}</button>`
+  ).join('');
+  const letters = _pg.vocabPool.map((ch,i)=>
+    `<button type="button" class="pg-letter${_pg.vocabUsed[i]?' used':''}" data-li="${i}" draggable="${_pg.vocabUsed[i]?'false':'true'}">${ch}</button>`
+  ).join('');
+  return `<div class="pg">
+    <div class="pg-hud"><span>واژگان · ${item.level}</span><b>${_pg.idx+1} / ${list.length}</b></div>
+    <div class="pg-q">
+      <p class="pg-q__text">حروف را بچین تا کلمه ساخته شود</p>
+      <div class="pg-vocab">
+        <div class="pg-slots">${slots}</div>
+        <div class="pg-letters">${letters}</div>
+        <button type="button" class="pg-btn" id="pg-vocab-check">تأیید</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderListeningRound(){
+  const list = PG_BANK.listening;
+  const item = list[_pg.idx];
+  if(!item) return '';
+  return `<div class="pg">
+    <div class="pg-hud"><span>شنیداری</span><b>${_pg.idx+1} / ${list.length}</b></div>
+    <div class="pg-q">
+      <p class="pg-q__text">بیت اول را بخوان؛ بیت دوم را بشنو و همان را بنویس</p>
+      <div class="pg-listen-line">${item.line1}</div>
+      <button type="button" class="pg-btn pg-btn--ghost" id="pg-listen-play">▶ پخش بیت دوم (برای نوشتن)</button>
+      <p style="margin:12px 0 6px;font-size:12px;color:var(--muted)">${item.hint||''}</p>
+      <input class="pg-input" id="pg-listen-input" placeholder="Write what you hear..." autocomplete="off" />
+      <div style="margin-top:12px"><button type="button" class="pg-btn" id="pg-listen-check">تأیید</button></div>
+    </div>
+  </div>`;
+}
+
+function renderSpeakingRound(){
+  const list = PG_BANK.speaking;
+  const item = list[_pg.idx];
+  if(!item) return '';
+  return `<div class="pg">
+    <div class="pg-hud"><span>مکالمه / Shadow · ${item.level||''}</span><b>${_pg.idx+1} / ${list.length}</b></div>
+    <div class="pg-q">
+      <p class="pg-q__text">${item.story}</p>
+      <div class="pg-story">${item.text}</div>
+      <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button type="button" class="pg-btn pg-btn--ghost" id="pg-speak-hear">▶ بشنو</button>
+        <button type="button" class="pg-btn" id="pg-speak-mic">🎙 من می‌گویم</button>
+      </div>
+      <p id="pg-speak-status" style="margin-top:12px;font-size:13px;font-weight:700;color:var(--muted)">جمله را واضح تکرار کن</p>
+    </div>
+  </div>`;
+}
+
+function renderPlacementGameResult(){
+  const r = _pg.result || {};
+  return `<div class="pg"><div class="pg-result">
+    <h2>نتیجه بازی تعیین سطح</h2>
+    <div class="lvl">${r.level||'—'}</div>
+    <p style="color:var(--muted);font-size:13px">به زودی همکاران ما با شما تماس خواهند گرفت برای فرایند ثبت نام</p>
+    <div style="margin-top:16px;text-align:start;max-width:320px;margin-inline:auto;font-size:14px;font-weight:700;color:var(--navy)">
+      <div>گرامر: ${r.writing ?? '—'}</div>
+      <div>واژگان: ${r.vocabulary ?? '—'}</div>
+      <div>شنیداری: ${r.listening ?? '—'}</div>
+      <div>مکالمه: ${r.reading ?? '—'}</div>
+    </div>
+    <div style="margin-top:20px"><a class="back" href="#/english">← بازگشت</a></div>
+  </div></div>`;
+}
+
+function paintPlacementGame(){
+  if(!_pg){ location.hash='#/english'; return; }
+  if(_pg.mode==='result'){ app.innerHTML = renderPlacementGameResult(); return; }
+  if(pgAllDone() && _pg.mode==='hub'){ pgFinishAndSubmit(); return; }
+  if(!_pg.mode || _pg.mode==='hub'){
+    app.innerHTML = renderPlacementHub();
+    wirePlacementHub();
     return;
   }
-  const rec = new SR();
-  rec.lang = 'en-US';
-  rec.interimResults = false;
-  rec.maxAlternatives = 3;
-  if(btn) btn.disabled = true;
-  if(status){ status.textContent = 'در حال گوش دادن…'; status.className='place-speak__status'; }
-  rec.onresult = (ev)=>{
-    let said = '';
-    try { said = ev.results[0][0].transcript || ''; } catch(_){}
-    const ok = normalizeSpeak(said) === normalizeSpeak(expected)
-      || normalizeSpeak(said).includes(normalizeSpeak(expected));
-    _placeAnswers[q.id] = ok ? 0 : 1;
-    if(status){
-      status.textContent = ok ? ('تلفظ تأیید شد ✓  («'+said+'»)') : ('تشخیص: «'+said+'» — دوباره تلاش کنید');
-      status.className = 'place-speak__status ' + (ok?'ok':'bad');
-    }
-    if(btn) btn.disabled = false;
-  };
-  rec.onerror = ()=>{
-    if(status){ status.textContent = 'خطا در تشخیص. مجوز میکروفون را بررسی کنید.'; status.className='place-speak__status bad'; }
-    if(btn) btn.disabled = false;
-  };
-  rec.onend = ()=>{ if(btn) btn.disabled = false; };
-  try { rec.start(); } catch(ex){
-    if(status){ status.textContent = 'نتوانست میکروفون را شروع کند.'; status.className='place-speak__status bad'; }
-    if(btn) btn.disabled = false;
-  }
+  if(_pg.mode==='grammar'){ app.innerHTML = renderGrammarRound(); wireGrammar(); return; }
+  if(_pg.mode==='vocab'){ app.innerHTML = renderVocabRound(); wireVocab(); return; }
+  if(_pg.mode==='listening'){ app.innerHTML = renderListeningRound(); wireListening(); return; }
+  if(_pg.mode==='speaking'){ app.innerHTML = renderSpeakingRound(); wireSpeaking(); return; }
 }
 
-function wirePlacement(){
-  app.querySelectorAll('.place-opt').forEach(btn=>{
+function wirePlacementHub(){
+  app.querySelectorAll('.pg-cube').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      const qi = +btn.getAttribute('data-qi');
+      if(btn.disabled) return;
+      const mode = btn.getAttribute('data-pg');
+      btn.classList.add('is-pick');
+      setTimeout(()=>{
+        _pg.mode = mode;
+        _pg.idx = 0;
+        _pg.locked = false;
+        _pg.vocabPool = [];
+        _pg.vocabSlots = [];
+        _pg.vocabUsed = [];
+        paintPlacementGame();
+      }, 700);
+    });
+  });
+}
+
+function pgShowCountdown(sec, done){
+  const overlay = document.createElement('div');
+  overlay.className = 'pg-countdown';
+  overlay.innerHTML = `<b>${sec}</b>`;
+  document.body.appendChild(overlay);
+  let left = sec;
+  const t = setInterval(()=>{
+    left--;
+    if(left<=0){
+      clearInterval(t);
+      overlay.remove();
+      if(done) done();
+    } else {
+      overlay.innerHTML = `<b>${left}</b>`;
+    }
+  }, 1000);
+}
+
+function wireGrammar(){
+  app.querySelectorAll('.pg-opt').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(_pg.locked) return;
+      _pg.locked = true;
       const oi = +btn.getAttribute('data-oi');
-      const q = _placeQuestions[qi];
-      if(!q) return;
-      _placeAnswers[q.id] = oi;
-      app.querySelectorAll('.place-opt').forEach(b=>b.classList.remove('is-on'));
-      btn.classList.add('is-on');
+      const item = PG_BANK.grammar[_pg.idx];
+      const correct = item.ans;
+      pgShowCountdown(4, ()=>{
+        app.querySelectorAll('.pg-opt').forEach(b=>{
+          const i = +b.getAttribute('data-oi');
+          b.disabled = true;
+          if(i===correct) b.classList.add('is-correct');
+          if(i===oi && oi!==correct) b.classList.add('is-wrong');
+        });
+        if(oi===correct) _pg.scores.grammar++;
+        setTimeout(()=>{
+          _pg.idx++;
+          _pg.locked = false;
+          if(_pg.idx >= PG_BANK.grammar.length){
+            _pg.done.grammar = true;
+            _pg.mode = 'hub';
+          }
+          paintPlacementGame();
+        }, 900);
+      });
     });
-  });
-  document.getElementById('place-play-audio')?.addEventListener('click', ()=>{
-    const q = _placeQuestions[_placeIdx];
-    const text = q && (q.listenText || q.ListenText);
-    if(text) playPlacementListen(text);
-  });
-  document.getElementById('place-mic-btn')?.addEventListener('click', ()=>{
-    const q = _placeQuestions[_placeIdx];
-    const text = q && (q.speakText || q.SpeakText);
-    if(text) startPlacementSpeak(text);
-  });
-  document.getElementById('place-prev')?.addEventListener('click', ()=>{
-    if(_placeIdx>0){ _placeIdx--; paintPlacement(); }
-  });
-  document.getElementById('place-next')?.addEventListener('click', async ()=>{
-    const q = _placeQuestions[_placeIdx];
-    if(q && _placeAnswers[q.id] === undefined){
-      const isSpeak = (q.skill||'').toLowerCase()==='speaking';
-      alert(isSpeak ? 'لطفاً تلفظ را انجام دهید.' : 'لطفاً یک گزینه را انتخاب کنید.');
-      return;
-    }
-    if(_placeIdx < _placeQuestions.length - 1){
-      _placeIdx++;
-      paintPlacement();
-      return;
-    }
-    await submitPlacement();
   });
 }
 
-function paintPlacement(){
-  app.innerHTML = renderPlacementQuestion();
-  wirePlacement();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-async function submitPlacement(){
-  if(!_placeCandidateId){ location.hash = '#/'; return; }
-  const answers = Object.keys(_placeAnswers).map(id => ({
-    questionId: id,
-    selectedIndex: _placeAnswers[id]
-  }));
-  app.innerHTML = `<div class="place-page"><p style="text-align:center;color:var(--muted)">در حال محاسبه نتیجه…</p></div>`;
-  try{
-    const res = await fetch('/api/placement/submit', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ candidateId: _placeCandidateId, answers })
-    });
-    const data = await res.json().catch(()=>({}));
-    if(!res.ok){
-      app.innerHTML = `<div class="place-page"><p style="color:#8f2b21">${data.error||'خطا در ثبت نتیجه'}</p>
-        <div style="text-align:center;margin-top:16px"><a class="back" href="#/english">← زبان انگلیسی</a></div></div>`;
-      return;
-    }
-    app.innerHTML = `
-      <div class="place-page">
-        <div class="place-result">
-          <div style="font-size:13px;font-weight:700;color:var(--muted)">سطح پیشنهادی شما</div>
-          <div class="place-result__level">${data.suggestionLevel}</div>
-          <div class="place-result__label">${data.suggestionLabel||''}</div>
-          <div class="place-scores">
-            <div><b>شنیداری</b><span>${data.listeningScore}</span></div>
-            <div><b>خواندن</b><span>${data.readingScore}</span></div>
-            <div><b>نوشتاری / گفتاری</b><span>${data.writingScore}</span></div>
-            <div><b>واژگان</b><span>${data.vocabularyScore}</span></div>
-          </div>
-          <p style="font-size:13px;color:var(--muted);margin:0 0 16px">جمع نمره: <b>${data.totalScore}</b> از ۴۰ · میانگین: <b>${data.averageScore}</b></p>
-          <p style="font-size:14px;color:var(--navy);font-weight:700;margin-bottom:18px;line-height:1.7">به زودی همکاران ما با شما تماس خواهند گرفت برای فرایند ثبت نام.</p>
-          <div style="margin-top:14px"><a class="back" href="#/english">← زبان انگلیسی</a></div>
-        </div>
-      </div>`;
-  } catch(ex){
-    app.innerHTML = `<div class="place-page"><p style="color:#8f2b21">ارتباط با سرور برقرار نشد.</p>
-      <div style="text-align:center;margin-top:16px"><a class="back" href="#/english">← زبان انگلیسی</a></div></div>`;
+function wireVocab(){
+  function refreshVocabDom(){
+    paintPlacementGame();
   }
+  function placeLetter(li){
+    if(_pg.locked || _pg.vocabUsed[li]) return;
+    const empty = _pg.vocabSlots.findIndex(x=>!x);
+    if(empty<0) return;
+    _pg.vocabSlots[empty] = _pg.vocabPool[li];
+    _pg.vocabUsed[li] = true;
+    refreshVocabDom();
+  }
+  function clearSlot(si){
+    if(_pg.locked) return;
+    const ch = _pg.vocabSlots[si];
+    if(!ch) return;
+    const li = _pg.vocabUsed.findIndex((u,idx)=>u && _pg.vocabPool[idx]===ch);
+    // find exact used index matching this slot char - prefer first used matching
+    let found = -1;
+    for(let i=0;i<_pg.vocabPool.length;i++){
+      if(_pg.vocabUsed[i] && _pg.vocabPool[i]===ch){
+        // check not still needed by another slot to the left... simple: free one
+        found = i; break;
+      }
+    }
+    // Better: track letter index in slot - store as {ch,li}
+    if(found>=0) _pg.vocabUsed[found]=false;
+    _pg.vocabSlots[si]='';
+    refreshVocabDom();
+  }
+
+  app.querySelectorAll('.pg-letter').forEach(btn=>{
+    const li = +btn.getAttribute('data-li');
+    btn.addEventListener('click', ()=> placeLetter(li));
+    btn.addEventListener('dragstart', (e)=>{
+      if(_pg.vocabUsed[li]) { e.preventDefault(); return; }
+      e.dataTransfer.setData('text/plain', String(li));
+      e.dataTransfer.effectAllowed = 'move';
+      btn.classList.add('dragging');
+    });
+    btn.addEventListener('dragend', ()=> btn.classList.remove('dragging'));
+    // touch drag
+    let touchId = null;
+    btn.addEventListener('touchstart', (e)=>{
+      if(_pg.vocabUsed[li] || _pg.locked) return;
+      touchId = li;
+      btn.classList.add('dragging');
+    }, {passive:true});
+    btn.addEventListener('touchend', (e)=>{
+      btn.classList.remove('dragging');
+      if(touchId===null) return;
+      const t = e.changedTouches[0];
+      const el = document.elementFromPoint(t.clientX, t.clientY);
+      const slot = el && el.closest ? el.closest('.pg-slot') : null;
+      if(slot){
+        const si = +slot.getAttribute('data-slot');
+        if(!_pg.vocabSlots[si]){
+          _pg.vocabSlots[si] = _pg.vocabPool[touchId];
+          _pg.vocabUsed[touchId] = true;
+          refreshVocabDom();
+        }
+      } else {
+        // tap place sequential
+        placeLetter(touchId);
+      }
+      touchId = null;
+    });
+  });
+
+  app.querySelectorAll('.pg-slot').forEach(slot=>{
+    const si = +slot.getAttribute('data-slot');
+    slot.addEventListener('click', ()=> clearSlot(si));
+    slot.addEventListener('dragover', (e)=>{ e.preventDefault(); slot.classList.add('drag-over'); });
+    slot.addEventListener('dragleave', ()=> slot.classList.remove('drag-over'));
+    slot.addEventListener('drop', (e)=>{
+      e.preventDefault();
+      slot.classList.remove('drag-over');
+      const li = +e.dataTransfer.getData('text/plain');
+      if(Number.isNaN(li) || _pg.vocabUsed[li]) return;
+      if(_pg.vocabSlots[si]) return;
+      _pg.vocabSlots[si] = _pg.vocabPool[li];
+      _pg.vocabUsed[li] = true;
+      refreshVocabDom();
+    });
+  });
+
+  document.getElementById('pg-vocab-check')?.addEventListener('click', ()=>{
+    if(_pg.locked) return;
+    const item = PG_BANK.vocab[_pg.idx];
+    const formed = (_pg.vocabSlots||[]).join('');
+    const ok = formed === item.word;
+    _pg.locked = true;
+    app.querySelectorAll('.pg-slot').forEach(s=> s.classList.add(ok?'is-ok':'is-bad'));
+    if(ok) _pg.scores.vocab++;
+    setTimeout(()=>{
+      _pg.idx++;
+      _pg.locked=false;
+      _pg.vocabPool=[]; _pg.vocabSlots=[]; _pg.vocabUsed=[];
+      if(_pg.idx >= PG_BANK.vocab.length){ _pg.done.vocab=true; _pg.mode='hub'; }
+      paintPlacementGame();
+    }, 1000);
+  });
+}
+
+function wireListening(){
+  document.getElementById('pg-listen-play')?.addEventListener('click', ()=>{
+    const item = PG_BANK.listening[_pg.idx];
+    if(!item) return;
+    // آهنگ واقعی اگر audioUrl باشد
+    if(item.audioUrl){
+      try{
+        if(window.__pgAudio){ window.__pgAudio.pause(); }
+        window.__pgAudio = new Audio(item.audioUrl);
+        window.__pgAudio.play().catch(()=>{});
+        return;
+      }catch(_){}
+    }
+    try{
+      const u = new SpeechSynthesisUtterance(item.line2);
+      u.lang='en-US';
+      u.rate = 0.9;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    }catch(_){}
+  });
+  document.getElementById('pg-listen-check')?.addEventListener('click', ()=>{
+    if(_pg.locked) return;
+    const item = PG_BANK.listening[_pg.idx];
+    const inp = document.getElementById('pg-listen-input');
+    const val = inp?.value || '';
+    const ok = normalizeLyric(val) === normalizeLyric(item.line2)
+      || (normalizeLyric(val).length>10 && normalizeLyric(item.line2).includes(normalizeLyric(val)));
+    _pg.locked = true;
+    if(inp){ inp.classList.add(ok?'is-ok':'is-bad'); inp.disabled=true; }
+    if(ok) _pg.scores.listening++;
+    setTimeout(()=>{
+      _pg.idx++; _pg.locked=false;
+      if(_pg.idx >= PG_BANK.listening.length){ _pg.done.listening=true; _pg.mode='hub'; }
+      paintPlacementGame();
+    }, 1100);
+  });
+}
+
+function wireSpeaking(){
+  const roundId = _pg.idx;
+  let advanced = false;
+  function advanceOnce(ok){
+    if(advanced || _pg.idx !== roundId) return;
+    advanced = true;
+    _pg.locked = true;
+    if(ok) _pg.scores.speaking++;
+    setTimeout(()=>{
+      if(_pg.idx !== roundId) return; // already moved
+      _pg.idx = roundId + 1;
+      _pg.locked = false;
+      if(_pg.idx >= PG_BANK.speaking.length){
+        _pg.done.speaking = true;
+        _pg.mode = 'hub';
+      }
+      paintPlacementGame();
+    }, 1100);
+  }
+
+  document.getElementById('pg-speak-hear')?.addEventListener('click', ()=>{
+    const item = PG_BANK.speaking[_pg.idx];
+    if(!item) return;
+    try{
+      const u = new SpeechSynthesisUtterance(item.text);
+      u.lang='en-US'; speechSynthesis.cancel(); speechSynthesis.speak(u);
+    }catch(_){}
+  });
+
+  document.getElementById('pg-speak-mic')?.addEventListener('click', ()=>{
+    if(_pg.locked || advanced) return;
+    const item = PG_BANK.speaking[_pg.idx];
+    const status = document.getElementById('pg-speak-status');
+    const micBtn = document.getElementById('pg-speak-mic');
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){ if(status) status.textContent='مرورگر از تشخیص گفتار پشتیبانی نمی‌کند.'; return; }
+    if(micBtn) micBtn.disabled = true;
+    const rec = new SR();
+    rec.lang='en-US';
+    rec.interimResults=false;
+    rec.continuous=false;
+    rec.maxAlternatives=1;
+    if(status) status.textContent='در حال شنیدن...';
+    let handled = false;
+    rec.onresult = (ev)=>{
+      if(handled) return;
+      handled = true;
+      let said='';
+      try{ said = ev.results[0][0].transcript||''; }catch(_){}
+      const target = normalizeLyric(item.text);
+      const got = normalizeLyric(said);
+      const ok = got === target || (got.length>3 && (target.includes(got) || got.includes(target.split(' ').slice(0,3).join(' '))));
+      if(status){
+        status.textContent = ok ? ('عالی ✓ «'+said+'»') : ('تشخیص: «'+said+'»');
+        status.style.color = ok ? '#0c5c41' : '#8f2b21';
+      }
+      advanceOnce(ok);
+    };
+    rec.onerror = ()=>{
+      if(handled) return;
+      handled = true;
+      if(status) status.textContent='خطای میکروفون — مرحله بعد';
+      if(micBtn) micBtn.disabled = false;
+      advanceOnce(false);
+    };
+    rec.onend = ()=>{
+      if(micBtn) micBtn.disabled = false;
+      // اگر نتیجه‌ای نیامد، یک‌بار فرصت بده نه پرش خودکار
+      if(!handled){
+        if(status) status.textContent='چیزی شنیده نشد. دوباره تلاش کن.';
+      }
+    };
+    try{ rec.start(); }catch(_){
+      if(status) status.textContent='شروع میکروفون ممکن نشد';
+      if(micBtn) micBtn.disabled = false;
+    }
+  });
 }
 
 async function renderPlacementPage(){
-  if(!_placeCandidateId){
+  document.body.classList.add('is-placement');
+  if(!_pg || !_pg.candidateId){
     openPlacementModal();
-    location.hash = '#/english';
+    app.innerHTML = `<div class="pg"><p class="pg__sub">ابتدا شماره موبایل را وارد کنید.</p>
+      <div style="text-align:center"><button type="button" class="pg-btn" onclick="openPlacementModal()">ورود شماره</button></div></div>`;
     return;
   }
-  try{
-    _placeQuestions = await loadPlacementQuestions();
-    _placeAnswers = {};
-    _placeIdx = 0;
-    paintPlacement();
-  } catch(ex){
-    app.innerHTML = `<div class="place-page"><p style="color:#8f2b21">بارگذاری سؤالات ناموفق بود.</p>
-      <div style="text-align:center"><a class="back" href="#/english">← زبان انگلیسی</a></div></div>`;
-  }
+  if(!_pg.mode) _pg.mode = 'hub';
+  paintPlacementGame();
 }
 
 
@@ -1159,7 +1526,7 @@ async function route(){
           <button type="button" class="place-cta__btn" onclick="openPlacementModal()">شروع تعیین سطح</button>
         </div>
         ${circlesHtml(circles)}
-        ${await renderCoursesSection()}
+        ${await renderCoursesSection('English')}
         <div style="text-align:center"><a class="back" href="#/">← صفحه اصلی</a></div>
       </div>`;
     wireCourseCards(app);
@@ -1205,20 +1572,27 @@ async function route(){
     return;
   }
 
-  /* other skills — placeholder same structure */
+  /* other skills — same course-card pattern as English */
   if(['painting','computer','music-skill'].includes(parts[0])){
     const map = {
-      painting:{title:'نقاشی', img:IMG.paint},
-      computer:{title:'کامپیوتر', img:IMG.code},
-      'music-skill':{title:'موسیقی', img:IMG.music}
+      painting:{title:'نقاشی', img:IMG.paint, subject:'Painting', pageKey:'painting'},
+      computer:{title:'کامپیوتر', img:IMG.code, subject:'Computer', pageKey:'computer'},
+      'music-skill':{title:'موسیقی', img:IMG.music, subject:'Music', pageKey:'music'}
     };
     const m = map[parts[0]];
+    const page = await fetchPage(m.pageKey);
+    const heroImg = (page && page.hero && page.hero.imageUrl) || m.img;
+    const title = (page && page.hero && page.hero.title) || m.title;
+    const subtitle = (page && page.hero && page.hero.subtitle) || 'دوره‌ها و مسیر یادگیری';
+    _courseFilter = null;
     app.innerHTML = `
-      <div class="hero-still"><img src="${m.img}" alt="${m.title}"></div>
+      <div class="hero-still"><img src="${heroImg}" alt="${title}"></div>
       <div class="main">
-        <div class="sec-title"><h1>${m.title}</h1><p>به‌زودی</p></div>
-        <div style="text-align:center"><a class="back" href="#/english">← زبان انگلیسی</a></div>
+        <div class="sec-title"><h1>${title}</h1><p>${subtitle}</p></div>
+        ${await renderCoursesSection(m.subject)}
+        <div style="text-align:center"><a class="back" href="#/">← صفحه اصلی</a></div>
       </div>`;
+    wireCourseCards(app);
     return;
   }
 

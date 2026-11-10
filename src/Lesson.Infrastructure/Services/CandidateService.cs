@@ -188,4 +188,71 @@ public sealed class CandidateService : ICandidateService
         if (digits.Length != 11 || !digits.StartsWith("09")) return null;
         return digits;
     }
+
+    public async Task<PlacementResultDto> SubmitGameAsync(
+        long candidateId,
+        decimal listeningScore,
+        decimal readingScore,
+        decimal writingScore,
+        decimal vocabularyScore,
+        string? suggestionLevel,
+        CancellationToken ct = default)
+    {
+        var entity = await _db.CandidateUsers.FirstOrDefaultAsync(x => x.Id == candidateId, ct)
+            ?? throw new InvalidOperationException("داوطلب یافت نشد.");
+
+        static decimal Clamp(decimal v) => Math.Clamp(v, 0m, 10m);
+        entity.ListeningScore = Clamp(listeningScore);
+        entity.ReadingScore = Clamp(readingScore);
+        entity.WritingScore = Clamp(writingScore);
+        entity.VocabularyScore = Clamp(vocabularyScore);
+        entity.TotalScore = Math.Round(
+            (entity.ListeningScore.Value + entity.ReadingScore.Value + entity.WritingScore.Value + entity.VocabularyScore.Value) / 4m, 1);
+        entity.SuggestionLevel = ParseLevel(suggestionLevel) ?? LevelFromAverage(entity.TotalScore.Value);
+        entity.Status = CandidateStatus.Completed;
+        entity.CompletedAt = DateTimeOffset.UtcNow;
+        entity.UpdatedAt = DateTimeOffset.UtcNow;
+        await _db.SaveChangesAsync(ct);
+
+        return new PlacementResultDto(
+            entity.Id,
+            entity.PhoneNumber,
+            entity.ListeningScore ?? 0,
+            entity.ReadingScore ?? 0,
+            entity.WritingScore ?? 0,
+            entity.VocabularyScore ?? 0,
+            entity.TotalScore ?? 0,
+            entity.TotalScore ?? 0,
+            entity.SuggestionLevel?.ToString() ?? "A1",
+            entity.SuggestionLevel?.ToString() ?? "A1");
+    }
+
+    private static LanguageLevel? ParseLevel(string? s)
+    {
+        if (string.IsNullOrWhiteSpace(s)) return null;
+        return Enum.TryParse<LanguageLevel>(s.Trim(), ignoreCase: true, out var lv) ? lv : null;
+    }
+
+    private static LanguageLevel LevelFromAverage(decimal avg) => avg switch
+    {
+        >= 9m => LanguageLevel.C2,
+        >= 7.5m => LanguageLevel.C1,
+        >= 6m => LanguageLevel.B2,
+        >= 4.5m => LanguageLevel.B1,
+        >= 3m => LanguageLevel.A2,
+        _ => LanguageLevel.A1
+    };
+
+    public object GetGameBank()
+    {
+        // فعلاً بانک پیش‌فرض سمت کلاینت؛ این endpoint برای override از سرور آماده است
+        return new
+        {
+            grammar = Array.Empty<object>(),
+            vocab = Array.Empty<object>(),
+            listening = Array.Empty<object>(),
+            speaking = Array.Empty<object>()
+        };
+    }
+
 }
