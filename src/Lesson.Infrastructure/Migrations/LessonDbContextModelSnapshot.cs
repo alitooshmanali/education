@@ -561,6 +561,78 @@ namespace Lesson.Infrastructure.Migrations
                     b.ToTable("Permissions", (string)null);
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.PlacementGameItem", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int?>("AnswerIndex")
+                        .HasColumnType("int");
+
+                    b.Property<long?>("AudioContentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Hint")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Level")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Line1")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Line2")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OptionsJson")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("QuestionText")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SpeakText")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("StoryPrompt")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Word")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AudioContentId");
+
+                    b.ToTable("PlacementGameItems");
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.Quiz", b =>
                 {
                     b.Property<long>("Id")
@@ -864,6 +936,45 @@ namespace Lesson.Infrastructure.Migrations
                     b.ToTable("QuizRetakeGrants", (string)null);
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.SiteBook", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<long?>("ImageContentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(18)
+                        .HasColumnType("decimal(18,0)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImageContentId");
+
+                    b.ToTable("SiteBooks");
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.SiteCourse", b =>
                 {
                     b.Property<long>("Id")
@@ -899,6 +1010,9 @@ namespace Lesson.Infrastructure.Migrations
 
                     b.Property<DateTimeOffset?>("StartsAt")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Subject")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -1423,6 +1537,16 @@ namespace Lesson.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Lesson.Domain.Entities.PlacementGameItem", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.LessonContent", "AudioContent")
+                        .WithMany()
+                        .HasForeignKey("AudioContentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("AudioContent");
+                });
+
             modelBuilder.Entity("Lesson.Domain.Entities.Quiz", b =>
                 {
                     b.HasOne("Lesson.Domain.Entities.ClassRoom", "Class")
@@ -1570,6 +1694,16 @@ namespace Lesson.Infrastructure.Migrations
                     b.Navigation("Quiz");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Lesson.Domain.Entities.SiteBook", b =>
+                {
+                    b.HasOne("Lesson.Domain.Entities.LessonContent", "ImageContent")
+                        .WithMany()
+                        .HasForeignKey("ImageContentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("ImageContent");
                 });
 
             modelBuilder.Entity("Lesson.Domain.Entities.SiteCourse", b =>

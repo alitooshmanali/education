@@ -1,3 +1,4 @@
+using Lesson.Web.Models;
 using Lesson.Web.Services;
 using Lesson.Domain.Enums;
 using Lesson.Infrastructure.Abstractions;
@@ -9,14 +10,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using System.Security.Claims;
-
-public record GameScoreRequest(
-    long CandidateId,
-    decimal ListeningScore,
-    decimal ReadingScore,
-    decimal WritingScore,
-    decimal VocabularyScore,
-    string? SuggestionLevel);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,7 +61,9 @@ builder.Services.AddScoped<ISiteLibraryService, SiteLibraryService>();
 builder.Services.AddScoped<ISitePageService, SitePageService>();
 builder.Services.AddScoped<ITeacherWorkspaceService, TeacherWorkspaceService>();
 builder.Services.AddScoped<ICandidateService, CandidateService>();
+builder.Services.AddScoped<IPlacementGameBankService, PlacementGameBankService>();
 builder.Services.AddScoped<ISiteCourseService, SiteCourseService>();
+builder.Services.AddScoped<ISiteBookService, SiteBookService>();
 builder.Services.AddScoped<TeacherSessionState>();
 
 builder.Services.AddHttpContextAccessor();
@@ -126,8 +121,14 @@ app.MapGet("/api/site/media/{contentId:long}", async (HttpContext context, long 
 });
 
 
+app.MapGet("/api/site/books", async (ISiteBookService books) =>
+    Results.Ok(await books.GetPublicAsync()));
+
 app.MapGet("/api/site/courses", async (SubjectArea? subject, CourseOfferLevel? level, ISiteCourseService courses) =>
-    Results.Ok(await courses.GetPublicAsync(subject, level)));
+{
+    var list = await courses.GetPublicAsync(subject, level, default);
+    return Results.Ok(list);
+});
 
 app.MapGet("/api/site/courses/{id:long}", async (long id, ISiteCourseService courses) =>
 {
@@ -171,6 +172,12 @@ app.MapPost("/api/placement/submit", async (PlacementSubmitRequest body, ICandid
     catch (InvalidOperationException ex)
     {
         return Results.BadRequest(new { error = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
 
 app.MapPost("/api/placement/submit-game", async (GameScoreRequest body, ICandidateService candidates) =>
 {
@@ -192,11 +199,7 @@ app.MapPost("/api/placement/submit-game", async (GameScoreRequest body, ICandida
     }
 });
 
-app.MapGet("/api/placement/game-bank", (ICandidateService candidates) => Results.Ok(candidates.GetGameBank()));
-
-
-    }
-});
+app.MapGet("/api/placement/game-bank", (IPlacementGameBankService bank) => Results.Ok(bank.GetPublicBank()));
 
 app.MapGet("/api/admin/candidates", async (ICandidateService svc) =>
     Results.Ok(await svc.GetAllAdminAsync())).RequireAuthorization("AdminOnly");

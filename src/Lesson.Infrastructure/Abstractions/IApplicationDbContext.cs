@@ -31,6 +31,8 @@ public interface IApplicationDbContext
     DbSet<ContentStudentAccess> ContentStudentAccesses { get; }
     DbSet<CandidateUser> CandidateUsers { get; }
     DbSet<SiteCourse> SiteCourses { get; }
+    DbSet<PlacementGameItem> PlacementGameItems { get; }
+    DbSet<SiteBook> SiteBooks { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

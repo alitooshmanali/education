@@ -1,0 +1,304 @@
+@page "/admin/placement-bank"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject IPlacementGameBankService Bank
+@inject IContentService Contents
+@inject IFolderService Folders
+@inject ICurrentUserContext Current
+
+<style>
+    .pb { max-width: 1100px; width:100%; }
+    .pb__head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; margin-bottom:16px; }
+    .pb__title { margin:0; font-size:24px; font-weight:900; color:#0A2B51; }
+    .pb-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+    .pb-tabs button { border:1px solid #E6E1D6; background:#fff; border-radius:999px; padding:8px 14px; font:inherit; font-weight:800; cursor:pointer; color:#6B7787; }
+    .pb-tabs button.is-on { background:#0A2B51; color:#fff; border-color:#0A2B51; }
+    .pb-form { background:#fff; border:1px solid #E6E1D6; border-radius:16px; padding:16px; margin-bottom:14px; }
+    .pb-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .pb-field label { display:block; font-size:12px; font-weight:700; color:#6B7787; margin-bottom:4px; }
+    .pb-field input, .pb-field select, .pb-field textarea { width:100%; box-sizing:border-box; border:1px solid #E6E1D6; border-radius:10px; padding:9px 12px; font:inherit; }
+    .pb-field.full { grid-column:1/-1; }
+    .pb-card { background:#fff; border:1px solid #E6E1D6; border-radius:16px; overflow:hidden; }
+    .pb-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .pb-table th { text-align:start; font-size:11px; font-weight:800; color:#6B7787; padding:10px 12px; background:#fbfaf7; border-bottom:1px solid #E6E1D6; }
+    .pb-table td { padding:10px 12px; border-bottom:1px solid #eef1f5; vertical-align:top; }
+    .pb-alert { padding:10px 12px; border-radius:10px; margin-bottom:12px; font-size:13px; }
+    .pb-alert.err { background:#fdecec; color:#8f2b21; }
+    .pb-alert.ok { background:#e6f6f0; color:#0c5c41; }
+    .pb-hint { font-size:11px; color:#6B7787; margin-top:4px; }
+    @@media (max-width:800px){ .pb-grid { grid-template-columns:1fr; } }
+</style>
+
+<section class="pb">
+    <div class="pb__head">
+        <div>
+            <h1 class="pb__title">بانک بازی تعیین سطح</h1>
+            <p style="margin:4px 0 0;color:#6B7787;font-size:13px">گرامر · واژگان · شنیداری · مکالمه</p>
+        </div>
+        <button class="btn btn-primary" type="button" @onclick="StartCreate">آیتم جدید</button>
+    </div>
+
+    <div class="pb-tabs">
+        @foreach (var k in Enum.GetValues<PlacementGameKind>())
+        {
+            <button type="button" class="@(k==_tab ? "is-on" : null)" @onclick="() => SwitchTab(k)">@KindFa(k)</button>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(_error)) { <div class="pb-alert err">@_error</div> }
+    @if (!string.IsNullOrEmpty(_ok)) { <div class="pb-alert ok">@_ok</div> }
+
+    @if (_showForm)
+    {
+        <div class="pb-form">
+            <div class="pb-grid">
+                <div class="pb-field">
+                    <label>نوع</label>
+                    <select value="@_kind.ToString()" @onchange="OnKindChange">
+                        @foreach (var k in Enum.GetValues<PlacementGameKind>())
+                        {
+                            <option value="@k.ToString()">@KindFa(k)</option>
+                        }
+                    </select>
+                </div>
+                <div class="pb-field">
+                    <label>سطح</label>
+                    <select @bind="_level">
+                        <option value="A1">A1</option><option value="A2">A2</option>
+                        <option value="B1">B1</option><option value="B2">B2</option>
+                        <option value="C1">C1</option><option value="C2">C2</option>
+                        <option value="IELTS">IELTS</option>
+                    </select>
+                </div>
+                <div class="pb-field">
+                    <label>ترتیب</label>
+                    <input type="number" @bind="_sort" />
+                </div>
+
+                @if (_kind == PlacementGameKind.Grammar)
+                {
+                    <div class="pb-field full">
+                        <label>سؤال</label>
+                        <input @bind="_question" dir="ltr" />
+                    </div>
+                    <div class="pb-field full">
+                        <label>گزینه‌ها (با | جدا کنید)</label>
+                        <input @bind="_options" dir="ltr" placeholder="is|are|am|be" />
+                        <div class="pb-hint">مثال: is|are|am|be</div>
+                    </div>
+                    <div class="pb-field">
+                        <label>ایندکس جواب درست (از ۰)</label>
+                        <input type="number" @bind="_answer" min="0" max="3" />
+                    </div>
+                }
+                else if (_kind == PlacementGameKind.Vocab)
+                {
+                    <div class="pb-field full">
+                        <label>کلمه (حروف بزرگ انگلیسی)</label>
+                        <input @bind="_word" dir="ltr" placeholder="APPLE" />
+                    </div>
+                }
+                else if (_kind == PlacementGameKind.Listening)
+                {
+                    <div class="pb-field full">
+                        <label>بیت اول (نمایش)</label>
+                        <input @bind="_line1" dir="ltr" />
+                    </div>
+                    <div class="pb-field full">
+                        <label>بیت دوم (پاسخ کاربر)</label>
+                        <input @bind="_line2" dir="ltr" />
+                    </div>
+                    <div class="pb-field full">
+                        <label>راهنما / نام آهنگ</label>
+                        <input @bind="_hint" />
+                    </div>
+                    <div class="pb-field full">
+                        <label>فایل صوت بیت دوم (mp3/wav)</label>
+                        <InputFile OnChange="OnAudioFile" accept="audio/*,.mp3,.wav,.m4a" />
+                        @if (_audioId is long aid)
+                        {
+                            <p class="pb-hint">صوت ✓ · <a href="/api/site/media/@aid" target="_blank">پخش</a></p>
+                        }
+                    </div>
+                }
+                else if (_kind == PlacementGameKind.Speaking)
+                {
+                    <div class="pb-field full">
+                        <label>جمله برای تکرار</label>
+                        <input @bind="_speak" dir="ltr" />
+                    </div>
+                    <div class="pb-field full">
+                        <label>دستورالعمل</label>
+                        <input @bind="_story" />
+                    </div>
+                }
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="btn btn-primary" type="button" disabled="@_busy" @onclick="SaveAsync">ذخیره</button>
+                <button class="btn btn-ghost" type="button" @onclick="() => _showForm=false">لغو</button>
+            </div>
+        </div>
+    }
+
+    <div class="pb-card">
+        <table class="pb-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>سطح</th>
+                    <th>محتوا</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Filtered.Count==0)
+                {
+                    <tr><td colspan="4" style="padding:20px;text-align:center;color:#6B7787">موردی نیست — از «آیتم جدید» اضافه کنید.</td></tr>
+                }
+                else
+                {
+                    @foreach (var it in Filtered)
+                    {
+                        <tr>
+                            <td>@it.Id</td>
+                            <td>@(it.Level ?? "—")</td>
+                            <td>@Preview(it)</td>
+                            <td style="text-align:end;white-space:nowrap">
+                                <button class="btn btn-sm btn-ghost" type="button" @onclick="() => StartEdit(it)">ویرایش</button>
+                                <button class="btn btn-sm btn-outline" type="button" @onclick="() => DeleteAsync(it.Id)">حذف</button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private List<PlacementGameItemDto> _items = new();
+    private PlacementGameKind _tab = PlacementGameKind.Grammar;
+    private PlacementGameKind _kind = PlacementGameKind.Grammar;
+    private bool _showForm, _busy;
+    private long? _editId, _audioId;
+    private string _level = "A1", _question = "", _options = "", _word = "", _line1 = "", _line2 = "", _hint = "", _speak = "", _story = "";
+    private int _answer, _sort;
+    private string? _error, _ok;
+
+    private IReadOnlyList<PlacementGameItemDto> Filtered =>
+        _items.Where(x => x.Kind == _tab).OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToList();
+
+    protected override async Task OnInitializedAsync() => await Reload();
+
+    private async Task Reload() => _items = (await Bank.GetAllAdminAsync()).ToList();
+
+    private async Task SwitchTab(PlacementGameKind k)
+    {
+        _tab = k;
+        _showForm = false;
+    }
+
+    private void StartCreate()
+    {
+        _editId = null; _kind = _tab; _level = "A1"; _question = ""; _options = "";
+        _word = ""; _line1 = ""; _line2 = ""; _hint = ""; _speak = ""; _story = "";
+        _answer = 0; _sort = Filtered.Count; _audioId = null;
+        _showForm = true; _error = _ok = null;
+    }
+
+    private void StartEdit(PlacementGameItemDto it)
+    {
+        _editId = it.Id; _kind = it.Kind; _level = it.Level ?? "A1";
+        _question = it.QuestionText ?? ""; _options = OptionsToPipe(it.OptionsJson);
+        _word = it.Word ?? ""; _line1 = it.Line1 ?? ""; _line2 = it.Line2 ?? ""; _hint = it.Hint ?? "";
+        _speak = it.SpeakText ?? ""; _story = it.StoryPrompt ?? "";
+        _answer = it.AnswerIndex ?? 0; _sort = it.SortOrder; _audioId = it.AudioContentId;
+        _showForm = true; _error = _ok = null;
+    }
+
+    private void OnKindChange(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<PlacementGameKind>(e.Value?.ToString(), out var k))
+            _kind = k;
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = _ok = null;
+        _busy = true;
+        try
+        {
+            string? optsJson = null;
+            if (_kind == PlacementGameKind.Grammar)
+            {
+                var parts = _options.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                optsJson = System.Text.Json.JsonSerializer.Serialize(parts);
+            }
+            await Bank.UpsertAsync(
+                _editId, _kind, _level, _question, optsJson, _answer, _word,
+                _line1, _line2, _hint, _audioId, _speak, _story, _sort, true);
+            _ok = "ذخیره شد.";
+            _showForm = false;
+            await Reload();
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private async Task DeleteAsync(long id)
+    {
+        try { await Bank.HardDeleteAsync(id); await Reload(); }
+        catch (Exception ex) { _error = ex.Message; }
+    }
+
+    private async Task OnAudioFile(InputFileChangeEventArgs e)
+    {
+        _error = _ok = null;
+        var file = e.File;
+        if (file is null) return;
+        if (file.Size > 30 * 1024 * 1024) { _error = "حجم صوت زیاد است."; return; }
+        _busy = true;
+        try
+        {
+            var folder = await Folders.GetSystemFolderAsync(Lesson.Domain.SystemFolders.PagePlacement);
+            await using var stream = file.OpenReadStream(maxAllowedSize: 30 * 1024 * 1024);
+            await using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            ms.Position = 0;
+            var req = new UploadContentRequest(folder.Id, file.Name, file.Name, ms, ms.Length, new[] { LanguageLevel.A1 }, ContentType.Audio);
+            var entity = await Contents.UploadAsync(req, Current.UserId, isAdmin: true);
+            _audioId = entity.Id;
+            _ok = "صوت ذخیره شد.";
+        }
+        catch (Exception ex) { _error = "آپلود صوت: " + ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private static string OptionsToPipe(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return "";
+        try
+        {
+            var arr = System.Text.Json.JsonSerializer.Deserialize<string[]>(json);
+            return arr is null ? json : string.Join("|", arr);
+        }
+        catch { return json.Replace(",", "|"); }
+    }
+
+    private static string KindFa(PlacementGameKind k) => k switch
+    {
+        PlacementGameKind.Grammar => "گرامر",
+        PlacementGameKind.Vocab => "واژگان",
+        PlacementGameKind.Listening => "شنیداری",
+        PlacementGameKind.Speaking => "مکالمه",
+        _ => k.ToString()
+    };
+
+    private static string Preview(PlacementGameItemDto it) => it.Kind switch
+    {
+        PlacementGameKind.Grammar => it.QuestionText ?? "—",
+        PlacementGameKind.Vocab => it.Word ?? "—",
+        PlacementGameKind.Listening => (it.Line1 ?? "") + (it.AudioContentId is null ? "" : " 🎵"),
+        PlacementGameKind.Speaking => it.SpeakText ?? "—",
+        _ => "—"
+    };
+}

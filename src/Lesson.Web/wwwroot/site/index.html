@@ -390,6 +390,32 @@ audioEl.addEventListener('loadedmetadata', ()=>{
 });
 
 
+async function fetchBooks(){
+  try{
+    const res = await fetch('/api/site/books', {cache:'no-store'});
+    if(!res.ok) return [];
+    return await res.json();
+  }catch(_){ return []; }
+}
+
+async function renderBooksGrid(){
+  const items = await fetchBooks();
+  if(!items.length){
+    return `<div class="lib-empty">هنوز کتابی ثبت نشده است.<br>از پنل ادمین → کتاب‌های سایت اضافه کنید.</div>`;
+  }
+  return `<div class="book-grid">${items.map(it=>{
+    const img = it.imageUrl || CAT_HERO.books || IMG.oxford;
+    const price = (it.price != null) ? Number(it.price).toLocaleString('fa-IR') : '—';
+    return `<article class="book-card">
+      <div class="book-card__img"><img src="${img}" alt="${escapeHtml(it.title||'')}" loading="lazy"></div>
+      <div class="book-card__body">
+        <h3 class="book-card__title">${escapeHtml(it.title||'')}</h3>
+        <p class="book-card__price">${price} <span>تومان</span></p>
+      </div>
+    </article>`;
+  }).join('')}</div>`;
+}
+
 async function renderLibraryList(key){
   const category = CAT[key];
   const items = await fetchLibrary(category);
@@ -1552,7 +1578,7 @@ async function route(){
       <div class="hero-still"><img src="${heroImg}" alt="${title}"></div>
       <div class="main">
         <div class="sec-title"><h1>${title}</h1></div>
-        ${await renderLibraryList(key)}
+        ${(key === 'books' ? await renderBooksGrid() : await renderLibraryList(key))}
         <div style="text-align:center"><a class="back" href="#/english">← زبان انگلیسی</a></div>
       </div>`;
     /* voice-only podcast: play inline — stay on page, show ring progress */

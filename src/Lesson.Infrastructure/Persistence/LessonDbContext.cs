@@ -36,6 +36,8 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
     public DbSet<SitePageSlot> SitePageSlots => Set<SitePageSlot>();
     public DbSet<CandidateUser> CandidateUsers => Set<CandidateUser>();
     public DbSet<SiteCourse> SiteCourses => Set<SiteCourse>();
+    public DbSet<PlacementGameItem> PlacementGameItems => Set<PlacementGameItem>();
+    public DbSet<SiteBook> SiteBooks => Set<SiteBook>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -71,6 +73,29 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
             entity.Property(x => x.TuitionAmount).HasPrecision(18, 0);
             entity.HasOne(x => x.ImageContent).WithMany().HasForeignKey(x => x.ImageContentId).OnDelete(DeleteBehavior.NoAction);
             entity.HasOne(x => x.VideoContent).WithMany().HasForeignKey(x => x.VideoContentId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        
+        modelBuilder.Entity<PlacementGameItem>(entity =>
+        {
+            entity.Property(x => x.Level).HasMaxLength(20);
+            entity.Property(x => x.QuestionText).HasMaxLength(1000);
+            entity.Property(x => x.OptionsJson).HasMaxLength(2000);
+            entity.Property(x => x.Word).HasMaxLength(100);
+            entity.Property(x => x.Line1).HasMaxLength(500);
+            entity.Property(x => x.Line2).HasMaxLength(500);
+            entity.Property(x => x.Hint).HasMaxLength(300);
+            entity.Property(x => x.SpeakText).HasMaxLength(500);
+            entity.Property(x => x.StoryPrompt).HasMaxLength(500);
+            entity.HasOne(x => x.AudioContent).WithMany().HasForeignKey(x => x.AudioContentId).OnDelete(DeleteBehavior.NoAction);
+        });
+
+        
+        modelBuilder.Entity<SiteBook>(entity =>
+        {
+            entity.Property(x => x.Title).HasMaxLength(300).IsRequired();
+            entity.Property(x => x.Price).HasPrecision(18, 0);
+            entity.HasOne(x => x.ImageContent).WithMany().HasForeignKey(x => x.ImageContentId).OnDelete(DeleteBehavior.NoAction);
         });
 
         base.OnModelCreating(modelBuilder);

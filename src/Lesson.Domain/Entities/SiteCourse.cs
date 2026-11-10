@@ -3,23 +3,21 @@ using Lesson.Domain.Enums;
 
 namespace Lesson.Domain.Entities;
 
-/// <summary>دورهٔ عمومی سایت (کارت روی صفحه زبان انگلیسی).</summary>
+/// <summary>دوره عمومی سایت (زبان / کامپیوتر / نقاشی / موسیقی).</summary>
 public sealed class SiteCourse : BaseEntity
 {
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; }
 
+    public SubjectArea Subject { get; set; } = SubjectArea.English;
+
     public CourseOfferLevel Level { get; set; }
 
-    /// <summary>شهریه به تومان (عدد صحیح).</summary>
     public decimal TuitionAmount { get; set; }
-
     public int SessionCount { get; set; }
-
-    /// <summary>مدت هر جلسه به دقیقه (اختیاری).</summary>
     public int? SessionDurationMinutes { get; set; }
 
-    /// <summary>شروع دوره — UTC در دیتابیس؛ نمایش جلالی در UI.</summary>
+    /// <summary>UTC — نمایش جلالی در UI</summary>
     public DateTimeOffset? StartsAt { get; set; }
 
     public long? ImageContentId { get; set; }

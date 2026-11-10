@@ -6,6 +6,8 @@ public sealed record SiteCourseDto(
     long Id,
     string Title,
     string? Description,
+    SubjectArea Subject,
+    string SubjectLabel,
     CourseOfferLevel Level,
     string LevelLabel,
     decimal TuitionAmount,
@@ -23,13 +25,18 @@ public sealed record SiteCourseDto(
 
 public interface ISiteCourseService
 {
-    Task<IReadOnlyList<SiteCourseDto>> GetPublicAsync(CourseOfferLevel? level = null, CancellationToken ct = default);
+    Task<IReadOnlyList<SiteCourseDto>> GetPublicAsync(
+        SubjectArea? subject = null,
+        CourseOfferLevel? level = null,
+        CancellationToken ct = default);
+
     Task<IReadOnlyList<SiteCourseDto>> GetAllAdminAsync(CancellationToken ct = default);
     Task<SiteCourseDto?> GetByIdAsync(long id, CancellationToken ct = default);
     Task<SiteCourseDto> UpsertAsync(
         long? id,
         string title,
         string? description,
+        SubjectArea subject,
         CourseOfferLevel level,
         decimal tuitionAmount,
         int sessionCount,

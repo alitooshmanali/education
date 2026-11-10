@@ -1,0 +1,183 @@
+@page "/admin/site-books"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject ISiteBookService Books
+@inject IContentService Contents
+@inject IFolderService Folders
+@inject ICurrentUserContext Current
+
+<style>
+    .sb { max-width: 960px; width:100%; }
+    .sb__head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; margin-bottom:16px; }
+    .sb__title { margin:0; font-size:24px; font-weight:900; color:#0A2B51; }
+    .sb-form { background:#fff; border:1px solid #E6E1D6; border-radius:16px; padding:16px; margin-bottom:14px; }
+    .sb-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .sb-field label { display:block; font-size:12px; font-weight:700; color:#6B7787; margin-bottom:4px; }
+    .sb-field input { width:100%; box-sizing:border-box; border:1px solid #E6E1D6; border-radius:10px; padding:9px 12px; font:inherit; }
+    .sb-field.full { grid-column:1/-1; }
+    .sb-card { background:#fff; border:1px solid #E6E1D6; border-radius:16px; overflow:hidden; }
+    .sb-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .sb-table th { text-align:start; font-size:11px; font-weight:800; color:#6B7787; padding:10px 12px; background:#fbfaf7; border-bottom:1px solid #E6E1D6; }
+    .sb-table td { padding:10px 12px; border-bottom:1px solid #eef1f5; vertical-align:middle; }
+    .sb-thumb { width:48px; height:48px; object-fit:cover; border-radius:8px; background:#f0eee8; }
+    .sb-alert { padding:10px 12px; border-radius:10px; margin-bottom:12px; font-size:13px; }
+    .sb-alert.err { background:#fdecec; color:#8f2b21; }
+    .sb-alert.ok { background:#e6f6f0; color:#0c5c41; }
+    @@media (max-width:600px){ .sb-grid { grid-template-columns:1fr; } }
+</style>
+
+<section class="sb">
+    <div class="sb__head">
+        <div>
+            <h1 class="sb__title">کتاب‌های سایت</h1>
+            <p style="margin:4px 0 0;color:#6B7787;font-size:13px">فقط عنوان · تصویر · قیمت</p>
+        </div>
+        <button class="btn btn-primary" type="button" @onclick="StartCreate">کتاب جدید</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(_error)) { <div class="sb-alert err">@_error</div> }
+    @if (!string.IsNullOrEmpty(_ok)) { <div class="sb-alert ok">@_ok</div> }
+
+    @if (_showForm)
+    {
+        <div class="sb-form">
+            <div class="sb-grid">
+                <div class="sb-field full">
+                    <label>عنوان</label>
+                    <input @bind="_title" />
+                </div>
+                <div class="sb-field">
+                    <label>قیمت (تومان)</label>
+                    <input type="number" @bind="_price" min="0" step="1000" />
+                </div>
+                <div class="sb-field">
+                    <label>ترتیب</label>
+                    <input type="number" @bind="_sort" />
+                </div>
+                <div class="sb-field full">
+                    <label>تصویر کتاب</label>
+                    <InputFile OnChange="OnImageFile" accept="image/*" />
+                    @if (_imageId is long iid)
+                    {
+                        <div style="margin-top:8px"><img class="sb-thumb" src="/api/site/media/@iid" alt="" /></div>
+                    }
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px">
+                <button class="btn btn-primary" type="button" disabled="@_busy" @onclick="SaveAsync">ذخیره</button>
+                <button class="btn btn-ghost" type="button" @onclick="() => _showForm=false">لغو</button>
+            </div>
+        </div>
+    }
+
+    <div class="sb-card">
+        <table class="sb-table">
+            <thead>
+                <tr><th></th><th>عنوان</th><th>قیمت</th><th></th></tr>
+            </thead>
+            <tbody>
+                @if (_items.Count == 0)
+                {
+                    <tr><td colspan="4" style="padding:20px;text-align:center;color:#6B7787">کتابی ثبت نشده.</td></tr>
+                }
+                else
+                {
+                    @foreach (var it in _items)
+                    {
+                        <tr>
+                            <td>
+                                @if (it.ImageUrl is not null)
+                                {
+                                    <img class="sb-thumb" src="@it.ImageUrl" alt="" />
+                                }
+                            </td>
+                            <td><strong>@it.Title</strong></td>
+                            <td>@it.Price.ToString("N0") تومان</td>
+                            <td style="text-align:end;white-space:nowrap">
+                                <button class="btn btn-sm btn-ghost" type="button" @onclick="() => StartEdit(it)">ویرایش</button>
+                                <button class="btn btn-sm btn-outline" type="button" @onclick="() => DeleteAsync(it.Id)">حذف</button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private List<SiteBookDto> _items = new();
+    private bool _showForm, _busy;
+    private long? _editId, _imageId;
+    private string _title = "";
+    private decimal _price;
+    private int _sort;
+    private string? _error, _ok;
+
+    protected override async Task OnInitializedAsync() => await Reload();
+    private async Task Reload() => _items = (await Books.GetAllAdminAsync()).ToList();
+
+    private void StartCreate()
+    {
+        _editId = null; _title = ""; _price = 0; _sort = _items.Count; _imageId = null;
+        _showForm = true; _error = _ok = null;
+    }
+
+    private void StartEdit(SiteBookDto it)
+    {
+        _editId = it.Id; _title = it.Title; _price = it.Price; _sort = it.SortOrder; _imageId = it.ImageContentId;
+        _showForm = true; _error = _ok = null;
+    }
+
+    private async Task SaveAsync()
+    {
+        _error = _ok = null;
+        if (string.IsNullOrWhiteSpace(_title)) { _error = "عنوان لازم است."; return; }
+        _busy = true;
+        try
+        {
+            await Books.UpsertAsync(_editId, _title.Trim(), _price, _imageId, _sort, true);
+            _ok = "ذخیره شد.";
+            _showForm = false;
+            await Reload();
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private async Task DeleteAsync(long id)
+    {
+        try { await Books.HardDeleteAsync(id); await Reload(); }
+        catch (Exception ex) { _error = ex.Message; }
+    }
+
+    private async Task OnImageFile(InputFileChangeEventArgs e)
+    {
+        _error = _ok = null;
+        var file = e.File;
+        if (file is null) return;
+        if (file.Size > 8 * 1024 * 1024) { _error = "حجم تصویر زیاد است."; return; }
+        _busy = true;
+        try
+        {
+            if (_editId is null)
+            {
+                if (string.IsNullOrWhiteSpace(_title)) _title = "کتاب جدید";
+                var created = await Books.UpsertAsync(null, _title.Trim(), _price, null, _sort, true);
+                _editId = created.Id;
+            }
+            var folder = await Folders.GetSystemFolderAsync(Lesson.Domain.SystemFolders.PageSiteImages);
+            await using var stream = file.OpenReadStream(maxAllowedSize: 8 * 1024 * 1024);
+            await using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            ms.Position = 0;
+            var req = new UploadContentRequest(folder.Id, file.Name, file.Name, ms, ms.Length, new[] { LanguageLevel.A1 }, ContentType.Image);
+            var entity = await Contents.UploadAsync(req, Current.UserId, isAdmin: true);
+            _imageId = entity.Id;
+            await Books.UpsertAsync(_editId, _title.Trim(), _price, _imageId, _sort, true);
+            _ok = "تصویر ذخیره شد.";
+            await Reload();
+        }
+        catch (Exception ex) { _error = "آپلود: " + ex.Message; }
+        finally { _busy = false; }
+    }
+}

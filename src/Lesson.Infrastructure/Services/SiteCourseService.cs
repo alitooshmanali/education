@@ -8,10 +8,11 @@ namespace Lesson.Infrastructure.Services;
 
 public sealed class SiteCourseService(IApplicationDbContext db) : ISiteCourseService
 {
-    public async Task<IReadOnlyList<SiteCourseDto>> GetPublicAsync(CourseOfferLevel? level = null, CancellationToken ct = default)
+    public async Task<IReadOnlyList<SiteCourseDto>> GetPublicAsync(
+        SubjectArea? subject = null, CourseOfferLevel? level = null, CancellationToken ct = default)
     {
-        // فقط دوره‌های فعال — حذف فقط HardDelete است
         var q = db.SiteCourses.AsNoTracking().Where(x => x.IsActive);
+        if (subject is { } s) q = q.Where(x => x.Subject == s);
         if (level is { } lv) q = q.Where(x => x.Level == lv);
         var list = await q.OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToListAsync(ct);
         return list.Select(Map).ToList();
@@ -19,9 +20,9 @@ public sealed class SiteCourseService(IApplicationDbContext db) : ISiteCourseSer
 
     public async Task<IReadOnlyList<SiteCourseDto>> GetAllAdminAsync(CancellationToken ct = default)
     {
-        // ادمین همه را می‌بیند (حتی غیرفعال‌های قدیمی)
         var list = await db.SiteCourses.AsNoTracking()
             .OrderByDescending(x => x.IsActive)
+            .ThenBy(x => x.Subject)
             .ThenBy(x => x.SortOrder).ThenBy(x => x.Id)
             .ToListAsync(ct);
         return list.Select(Map).ToList();
@@ -37,6 +38,7 @@ public sealed class SiteCourseService(IApplicationDbContext db) : ISiteCourseSer
         long? id,
         string title,
         string? description,
+        SubjectArea subject,
         CourseOfferLevel level,
         decimal tuitionAmount,
         int sessionCount,
@@ -62,6 +64,7 @@ public sealed class SiteCourseService(IApplicationDbContext db) : ISiteCourseSer
 
         entity.Title = title.Trim();
         entity.Description = string.IsNullOrWhiteSpace(description) ? null : description.Trim();
+        entity.Subject = subject;
         entity.Level = level;
         entity.TuitionAmount = tuitionAmount < 0 ? 0 : tuitionAmount;
         entity.SessionCount = sessionCount < 0 ? 0 : sessionCount;
@@ -95,23 +98,26 @@ public sealed class SiteCourseService(IApplicationDbContext db) : ISiteCourseSer
     }
 
     private static SiteCourseDto Map(SiteCourse x) => new(
-        x.Id,
-        x.Title,
-        x.Description,
-        x.Level,
-        LevelLabel(x.Level),
-        x.TuitionAmount,
-        x.SessionCount,
-        x.SessionDurationMinutes,
+        x.Id, x.Title, x.Description,
+        x.Subject, SubjectLabel(x.Subject),
+        x.Level, LevelLabel(x.Level),
+        x.TuitionAmount, x.SessionCount, x.SessionDurationMinutes,
         x.StartsAt,
-        x.StartsAt is null ? null : PersianDate.FormatFull(x.StartsAt),
-        x.StartsAt is null ? null : PersianDate.FormatDayName(x.StartsAt),
+        x.StartsAt is null ? null : Lesson.Domain.PersianDate.FormatFull(x.StartsAt),
+        x.StartsAt is null ? null : Lesson.Domain.PersianDate.FormatDayName(x.StartsAt),
         x.ImageContentId is { } iid ? $"/api/site/media/{iid}" : null,
         x.VideoContentId is { } vid ? $"/api/site/media/{vid}" : null,
-        x.ImageContentId,
-        x.VideoContentId,
-        x.SortOrder,
-        x.IsActive);
+        x.ImageContentId, x.VideoContentId,
+        x.SortOrder, x.IsActive);
+
+    public static string SubjectLabel(SubjectArea s) => s switch
+    {
+        SubjectArea.English => "زبان انگلیسی",
+        SubjectArea.Computer => "کامپیوتر",
+        SubjectArea.Music => "موسیقی",
+        SubjectArea.Painting => "نقاشی",
+        _ => s.ToString()
+    };
 
     public static string LevelLabel(CourseOfferLevel l) => l switch
     {

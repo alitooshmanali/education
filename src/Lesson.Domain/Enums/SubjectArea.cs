@@ -1,10 +1,10 @@
 namespace Lesson.Domain.Enums;
 
-/// <summary>حوزهٔ آموزشی کلاس (آکادمی).</summary>
+/// <summary>حوزه دوره سایت: زبان / کامپیوتر / نقاشی / موسیقی</summary>
 public enum SubjectArea
 {
     English = 1,
     Computer = 2,
-    Music = 3,
-    Painting = 4
+    Painting = 3,
+    Music = 4
 }
