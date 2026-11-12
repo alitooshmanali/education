@@ -261,3 +261,28 @@ textarea {
     outline: none;
     box-shadow: var(--shadow-focus);
 }
+
+
+/* Global logo loader (shared with marketing site) */
+.site-loader{
+  position:fixed;inset:0;z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(10,43,81,.35);backdrop-filter:blur(4px);
+}
+.site-loader[hidden]{display:none!important}
+.site-loader__card{
+  background:#fff;border-radius:20px;padding:28px 32px;text-align:center;
+  box-shadow:0 20px 50px rgba(0,0,0,.25);min-width:160px
+}
+.site-loader__logo{
+  width:72px;height:72px;object-fit:contain;display:block;margin:0 auto 12px;
+  animation:loaderLogoSpin 2.8s ease-in-out infinite;
+  transform-origin:center center
+}
+.site-loader__text{margin:0;font-size:13px;font-weight:800;color:#0A2B51}
+@keyframes loaderLogoSpin{
+  0%,15%{transform:scale(1) rotateY(0deg)}
+  40%{transform:scale(1.08) rotateY(180deg)}
+  70%{transform:scale(1.05) rotateY(360deg)}
+  100%{transform:scale(1) rotateY(360deg)}
+}

@@ -121,6 +121,60 @@ app.MapGet("/api/site/media/{contentId:long}", async (HttpContext context, long 
 });
 
 
+
+app.MapPost("/api/site/translate", async (HttpRequest req, IConfiguration config) =>
+{
+    try
+    {
+        using var doc = await System.Text.Json.JsonDocument.ParseAsync(req.Body);
+        var text = doc.RootElement.TryGetProperty("text", out var t) ? t.GetString() : null;
+        if (string.IsNullOrWhiteSpace(text))
+            return Results.BadRequest(new { error = "text required" });
+
+        var apiKey = config["DeepL:ApiKey"] ?? config["DEEPL_API_KEY"] ?? Environment.GetEnvironmentVariable("DEEPL_API_KEY");
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            // بدون کلید: متن اصلی برگردد تا UI نشکند
+            return Results.Ok(new { translated = "", skipped = true, reason = "DeepL API key not configured" });
+        }
+
+        var target = "FA";
+        if (doc.RootElement.TryGetProperty("targetLang", out var tl))
+            target = tl.GetString() ?? "FA";
+
+        using var http = new HttpClient();
+        using var form = new MultipartFormDataContent
+        {
+            { new StringContent(text), "text" },
+            { new StringContent(target), "target_lang" }
+        };
+        // Free API: https://api-free.deepl.com/v2/translate  Pro: https://api.deepl.com/v2/translate
+        var baseUrl = config["DeepL:ApiUrl"] ?? "https://api-free.deepl.com/v2/translate";
+        http.DefaultRequestHeaders.Add("Authorization", "DeepL-Auth-Key " + apiKey);
+        var resp = await http.PostAsync(baseUrl, form);
+        var json = await resp.Content.ReadAsStringAsync();
+        if (!resp.IsSuccessStatusCode)
+            return Results.Ok(new { translated = "", error = json });
+
+        using var parsed = System.Text.Json.JsonDocument.Parse(json);
+        var translated = "";
+        if (parsed.RootElement.TryGetProperty("translations", out var arr) && arr.GetArrayLength() > 0)
+            translated = arr[0].GetProperty("text").GetString() ?? "";
+        return Results.Ok(new { translated });
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok(new { translated = "", error = ex.Message });
+    }
+});
+
+app.MapPost("/api/site/transcribe", async (HttpRequest req) =>
+{
+    // Placeholder: اتصال STT (مثلاً Whisper) بعداً
+    return Results.Ok(new { text = "", skipped = true, reason = "STT not configured" });
+});
+
+
 app.MapGet("/api/site/books", async (ISiteBookService books) =>
     Results.Ok(await books.GetPublicAsync()));
 

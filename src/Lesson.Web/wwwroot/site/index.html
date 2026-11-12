@@ -28,10 +28,37 @@
     <button type="button" class="site-player__close" id="sp-close" aria-label="بستن">×</button>
   </div>
   <footer class="footer">
-    <img src="/site/img/logo.png" onerror="this.onerror=null;this.src='/site/img/logo.svg'" alt="" style="width:48px;height:48px;object-fit:contain;margin:0 auto 10px;display:block;border-radius:50%;background:#fff;padding:4px">
-    <strong>اساطیر آینده</strong>
-    آموزشگاه زبان و مهارت
-    · <a href="/login">ورود به پلتفرم</a>
+    <div class="footer__inner">
+      <div class="footer__brand">
+        <img src="/site/img/logo.png" onerror="this.onerror=null;this.src='/site/img/logo.svg'" alt="اساطیر آینده" class="footer__logo">
+        <strong>اساطیر آینده</strong>
+        <span class="footer__tag">آموزشگاه زبان و مهارت</span>
+        <a class="footer__login" href="/login">ورود به پلتفرم</a>
+      </div>
+      <div class="footer__info">
+        <h4>تماس با ما</h4>
+        <p class="footer__addr">
+          <span class="footer__ico">📍</span>
+          مهرآباد جنوبی، کوی فردوس، خیابان شهید بیگلو، نبش کوچه شهید سلطانی
+        </p>
+        <p class="footer__phones">
+          <span class="footer__ico">☎</span>
+          <a href="tel:02166611760" dir="ltr">021-66611760</a>
+          <span class="footer__sep">·</span>
+          <a href="tel:02166639124" dir="ltr">66639124</a>
+        </p>
+        <a class="footer__maplink" href="https://www.google.com/maps?q=35.6657696011795,51.32460201842742" target="_blank" rel="noopener">باز کردن در Google Maps</a>
+      </div>
+      <div class="footer__map">
+        <iframe
+          title="موقعیت آموزشگاه اساطیر آینده"
+          src="https://www.openstreetmap.org/export/embed.html?bbox=51.31660201842742%2C35.657769601179496%2C51.33260201842742%2C35.6737696011795&layer=mapnik&marker=35.6657696011795%2C51.32460201842742"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          allowfullscreen></iframe>
+      </div>
+    </div>
+    <div class="footer__copy">© اساطیر آینده</div>
   </footer>
 
   <button type="button" class="place-sticky" id="place-sticky" onclick="openPlacementModal()">تعیین سطح</button>
@@ -159,7 +186,7 @@ function renderCarousel(slides){
   const data = (slides && slides.length) ? slides : CAROUSEL;
   let i = 0;
   const html = `
-  <div class="carousel" id="carousel">
+  <div class="carousel site-banner" id="carousel">
     <div class="carousel__track" id="c-track">
       ${data.map(s=>`
         <div class="carousel__slide">
@@ -465,7 +492,7 @@ async function renderDetail(key, id){
       : '';
     return `
       <div class="detail">
-        <div class="detail__hero"><img src="${img}" alt="${escapeHtml(it.title)}"></div>
+        <div class="detail__hero site-banner"><img src="${img}" alt="${escapeHtml(it.title)}"></div>
         <h1 class="detail__title">${escapeHtml(it.title)}</h1>
         ${it.summary ? `<p class="detail__summary">${escapeHtml(it.summary)}</p>` : ''}
         ${player}
@@ -1164,11 +1191,31 @@ function renderSpeakingRound(){
     <div class="pg-q">
       <p class="pg-q__text">${item.story}</p>
       <div class="pg-story">${item.text}</div>
-      <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <div class="pg-speak-actions" id="pg-speak-actions">
         <button type="button" class="pg-btn pg-btn--ghost" id="pg-speak-hear">▶ بشنو</button>
         <button type="button" class="pg-btn" id="pg-speak-mic">🎙 من می‌گویم</button>
+        <button type="button" class="pg-btn pg-btn--danger" id="pg-speak-stop" hidden>⏹ پایان گفتار</button>
       </div>
-      <p id="pg-speak-status" style="margin-top:12px;font-size:13px;font-weight:700;color:var(--muted)">جمله را واضح تکرار کن</p>
+      <div class="pg-speak-meter" id="pg-speak-meter" hidden>
+        <span class="pg-speak-meter__dot"></span>
+        <span id="pg-speak-meter-text">در حال گوش دادن…</span>
+      </div>
+      <p id="pg-speak-status" class="pg-speak-status">جمله را کامل و واضح بگو؛ بعد از شنیدن، تأیید یا تکرار را بزن</p>
+      <div id="pg-speak-review" class="pg-speak-review" hidden>
+        <p class="pg-speak-review__label">آنچه شنیده شد:</p>
+        <p class="pg-speak-review__said" id="pg-speak-said" dir="ltr"></p>
+        <div class="pg-speak-review__btns">
+          <button type="button" class="pg-btn pg-btn--ghost" id="pg-speak-retry">تکرار جمله</button>
+          <button type="button" class="pg-btn" id="pg-speak-confirm">تأیید جمله</button>
+        </div>
+      </div>
+    </div>
+    <div id="pg-speak-feedback" class="pg-speak-feedback" hidden>
+      <div class="pg-speak-feedback__card" id="pg-speak-feedback-card">
+        <div class="pg-speak-feedback__icon" id="pg-speak-feedback-icon"></div>
+        <div class="pg-speak-feedback__title" id="pg-speak-feedback-title"></div>
+        <div class="pg-speak-feedback__detail" id="pg-speak-feedback-detail" dir="ltr"></div>
+      </div>
     </div>
   </div>`;
 }
@@ -1417,13 +1464,53 @@ function wireListening(){
 function wireSpeaking(){
   const roundId = _pg.idx;
   let advanced = false;
+  let lastSaid = '';
+  let recActive = null;
+  let silenceTimer = null;
+  let hardTimer = null;
+  let stopped = false;
+  let finalSaid = '';
+  let interimSaid = '';
+  let lastActivityAt = 0;
+
+  // سکوت بعد از آخرین فعالیت گفتار (میلی‌ثانیه)
+  const SILENCE_MS = 1400;
+  const HARD_MAX_MS = 20000;
+  // حداقل طول گفتار قبل از قبول پایان خودکار
+  const MIN_CHARS = 2;
+
+  function clearTimers(){
+    if(silenceTimer){ clearTimeout(silenceTimer); silenceTimer = null; }
+    if(hardTimer){ clearTimeout(hardTimer); hardTimer = null; }
+  }
+
+  function setListeningUi(on){
+    const mic = document.getElementById('pg-speak-mic');
+    const stop = document.getElementById('pg-speak-stop');
+    const meter = document.getElementById('pg-speak-meter');
+    if(mic) mic.disabled = !!on;
+    if(stop) stop.hidden = !on;
+    if(meter) meter.hidden = !on;
+  }
+
+  function bumpSilenceWatch(){
+    lastActivityAt = Date.now();
+    if(silenceTimer) clearTimeout(silenceTimer);
+    silenceTimer = setTimeout(()=>{
+      // فقط اگر متن کافی داریم پایان بده
+      const text = (finalSaid + ' ' + interimSaid).trim();
+      if(text.length >= MIN_CHARS) finishListen('silence');
+    }, SILENCE_MS);
+  }
+
   function advanceOnce(ok){
     if(advanced || _pg.idx !== roundId) return;
     advanced = true;
     _pg.locked = true;
     if(ok) _pg.scores.speaking++;
+    const delay = ok ? 1600 : 4000;
     setTimeout(()=>{
-      if(_pg.idx !== roundId) return; // already moved
+      if(_pg.idx !== roundId) return;
       _pg.idx = roundId + 1;
       _pg.locked = false;
       if(_pg.idx >= PG_BANK.speaking.length){
@@ -1431,7 +1518,95 @@ function wireSpeaking(){
         _pg.mode = 'hub';
       }
       paintPlacementGame();
-    }, 1100);
+    }, delay);
+  }
+
+  function showReview(said){
+    lastSaid = said || '';
+    const review = document.getElementById('pg-speak-review');
+    const saidEl = document.getElementById('pg-speak-said');
+    const status = document.getElementById('pg-speak-status');
+    const actions = document.getElementById('pg-speak-actions');
+    if(saidEl) saidEl.textContent = lastSaid || '—';
+    if(review) review.hidden = false;
+    if(actions) actions.style.display = 'none';
+    setListeningUi(false);
+    if(status){
+      status.textContent = 'جمله را بررسی کن؛ اگر درست شنیده شد «تأیید جمله» را بزن';
+      status.style.color = 'var(--muted)';
+    }
+  }
+
+  function hideReview(){
+    const review = document.getElementById('pg-speak-review');
+    const actions = document.getElementById('pg-speak-actions');
+    const saidEl = document.getElementById('pg-speak-said');
+    if(review) review.hidden = true;
+    if(actions) actions.style.display = '';
+    if(saidEl) saidEl.textContent = '';
+    lastSaid = '';
+  }
+
+  function showFeedback(ok, detailHtml){
+    const box = document.getElementById('pg-speak-feedback');
+    const card = document.getElementById('pg-speak-feedback-card');
+    const icon = document.getElementById('pg-speak-feedback-icon');
+    const title = document.getElementById('pg-speak-feedback-title');
+    const detail = document.getElementById('pg-speak-feedback-detail');
+    if(!box) return;
+    box.hidden = false;
+    if(card) card.className = 'pg-speak-feedback__card ' + (ok ? 'is-ok' : 'is-bad');
+    if(icon) icon.textContent = ok ? '✓' : '✗';
+    if(title) title.textContent = ok ? 'صحیح' : 'غلط';
+    if(detail) detail.innerHTML = detailHtml || '';
+  }
+
+  function analyzeSpeak(target, said){
+    const tw = normalizeLyric(target).split(' ').filter(Boolean);
+    const sw = normalizeLyric(said).split(' ').filter(Boolean);
+    if(normalizeLyric(target) === normalizeLyric(said)) return { ok: true, wrong: [] };
+    const wrong = [];
+    const max = Math.max(tw.length, sw.length);
+    for(let i=0;i<max;i++){
+      const a = tw[i] || '';
+      const b = sw[i] || '';
+      if(a !== b){
+        if(a) wrong.push({ expected: a, got: b || '—' });
+        else if(b) wrong.push({ expected: '(اضافه)', got: b });
+      }
+    }
+    return { ok: wrong.length === 0 && tw.length > 0 && sw.length > 0, wrong, targetWords: tw, saidWords: sw };
+  }
+
+  function buildWrongHtml(wrong){
+    if(!wrong.length) return '';
+    return wrong.map(w =>
+      `<span class="pg-speak-wrong-word"><b>${escapeHtml(w.expected)}</b> ← «${escapeHtml(w.got)}»</span>`
+    ).join(' ');
+  }
+
+  function finishListen(reason){
+    if(stopped) return;
+    stopped = true;
+    clearTimers();
+    const rec = recActive;
+    recActive = null;
+    if(rec){
+      try{ rec.onresult = null; rec.onspeechend = null; rec.onend = null; rec.onerror = null; }catch(_){}
+      try{ rec.stop(); }catch(_){}
+      try{ rec.abort(); }catch(_){}
+    }
+    setListeningUi(false);
+    const status = document.getElementById('pg-speak-status');
+    // کمی صبر برای آخرین final از موتور
+    setTimeout(()=>{
+      const said = (finalSaid || interimSaid || '').trim().replace(/\s+/g,' ');
+      if(!said){
+        if(status) status.textContent = 'چیزی شنیده نشد. دوباره تلاش کن.';
+        return;
+      }
+      showReview(said);
+    }, reason === 'manual' ? 120 : 350);
   }
 
   document.getElementById('pg-speak-hear')?.addEventListener('click', ()=>{
@@ -1443,55 +1618,145 @@ function wireSpeaking(){
     }catch(_){}
   });
 
+  document.getElementById('pg-speak-stop')?.addEventListener('click', ()=>{
+    finishListen('manual');
+  });
+
   document.getElementById('pg-speak-mic')?.addEventListener('click', ()=>{
     if(_pg.locked || advanced) return;
-    const item = PG_BANK.speaking[_pg.idx];
     const status = document.getElementById('pg-speak-status');
-    const micBtn = document.getElementById('pg-speak-mic');
+    const meterText = document.getElementById('pg-speak-meter-text');
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!SR){ if(status) status.textContent='مرورگر از تشخیص گفتار پشتیبانی نمی‌کند.'; return; }
-    if(micBtn) micBtn.disabled = true;
+
+    // reset session
+    clearTimers();
+    stopped = false;
+    finalSaid = '';
+    interimSaid = '';
+    lastActivityAt = Date.now();
+    if(recActive){ try{ recActive.abort(); }catch(_){ } }
+
     const rec = new SR();
-    rec.lang='en-US';
-    rec.interimResults=false;
-    rec.continuous=false;
-    rec.maxAlternatives=1;
-    if(status) status.textContent='در حال شنیدن...';
-    let handled = false;
+    recActive = rec;
+    rec.lang = 'en-US';
+    rec.interimResults = true;
+    rec.continuous = true;
+    rec.maxAlternatives = 1;
+
+    setListeningUi(true);
+    if(status) status.textContent = 'صحبت کن… بعد از سکوت کوتاه یا با «پایان گفتار» تمام می‌شود';
+    if(meterText) meterText.textContent = 'در حال گوش دادن…';
+
+    rec.onstart = ()=>{ lastActivityAt = Date.now(); };
+
+    rec.onaudiostart = ()=>{ lastActivityAt = Date.now(); };
+
+    rec.onsoundstart = ()=>{
+      lastActivityAt = Date.now();
+      if(meterText) meterText.textContent = 'صدا تشخیص داده شد…';
+    };
+
+    rec.onspeechstart = ()=>{
+      lastActivityAt = Date.now();
+      if(meterText) meterText.textContent = 'در حال گفتار…';
+      if(silenceTimer){ clearTimeout(silenceTimer); silenceTimer = null; }
+    };
+
+    rec.onspeechend = ()=>{
+      if(meterText) meterText.textContent = 'پایان گفتار — در حال تثبیت…';
+      bumpSilenceWatch();
+    };
+
+    rec.onsoundend = ()=>{ bumpSilenceWatch(); };
+
     rec.onresult = (ev)=>{
-      if(handled) return;
-      handled = true;
-      let said='';
-      try{ said = ev.results[0][0].transcript||''; }catch(_){}
-      const target = normalizeLyric(item.text);
-      const got = normalizeLyric(said);
-      const ok = got === target || (got.length>3 && (target.includes(got) || got.includes(target.split(' ').slice(0,3).join(' '))));
-      if(status){
-        status.textContent = ok ? ('عالی ✓ «'+said+'»') : ('تشخیص: «'+said+'»');
-        status.style.color = ok ? '#0c5c41' : '#8f2b21';
+      if(stopped) return;
+      let interim = '';
+      for(let i = ev.resultIndex; i < ev.results.length; i++){
+        const r = ev.results[i];
+        const t = (r[0] && r[0].transcript) ? r[0].transcript : '';
+        if(r.isFinal) finalSaid = (finalSaid + ' ' + t).trim();
+        else interim += t;
       }
-      advanceOnce(ok);
+      interimSaid = interim.trim();
+      const live = (finalSaid + (interimSaid ? ' ' + interimSaid : '')).trim();
+      if(status) status.textContent = live ? ('شنیده می‌شود: «' + live + '»') : 'در حال شنیدن…';
+      if(meterText) meterText.textContent = live ? 'در حال دریافت جمله…' : 'در حال گوش دادن…';
+      // هر نتیجه = فعالیت → تایمر سکوت از نو
+      bumpSilenceWatch();
     };
-    rec.onerror = ()=>{
-      if(handled) return;
-      handled = true;
-      if(status) status.textContent='خطای میکروفون — مرحله بعد';
-      if(micBtn) micBtn.disabled = false;
-      advanceOnce(false);
+
+    rec.onerror = (ev)=>{
+      // no-speech / aborted را نادیده نرم می‌گیریم
+      const err = (ev && ev.error) || '';
+      if(err === 'aborted' || err === 'no-speech') return;
+      if(stopped) return;
+      setListeningUi(false);
+      if(status) status.textContent = 'خطای میکروفون (' + err + '). دوباره تلاش کن.';
+      clearTimers();
     };
+
     rec.onend = ()=>{
-      if(micBtn) micBtn.disabled = false;
-      // اگر نتیجه‌ای نیامد، یک‌بار فرصت بده نه پرش خودکار
-      if(!handled){
-        if(status) status.textContent='چیزی شنیده نشد. دوباره تلاش کن.';
+      // اگر هنوز session فعال است، بعضی مرورگرها continuous را قطع می‌کنند — در صورت متن، finish
+      if(stopped) return;
+      const text = (finalSaid + ' ' + interimSaid).trim();
+      if(text.length >= MIN_CHARS){
+        finishListen('onend');
+      } else {
+        // تلاش برای restart کوتاه اگر هنوز در حالت listening هستیم
+        try{
+          if(recActive === rec && !stopped) rec.start();
+        }catch(_){
+          setListeningUi(false);
+          if(status) status.textContent = 'شنیدن قطع شد. دوباره «من می‌گویم» را بزن.';
+        }
       }
     };
-    try{ rec.start(); }catch(_){
-      if(status) status.textContent='شروع میکروفون ممکن نشد';
-      if(micBtn) micBtn.disabled = false;
+
+    try{
+      rec.start();
+    }catch(_){
+      setListeningUi(false);
+      if(status) status.textContent = 'شروع میکروفون ممکن نشد';
+      return;
+    }
+
+    hardTimer = setTimeout(()=>{ if(!stopped) finishListen('timeout'); }, HARD_MAX_MS);
+  });
+
+  document.getElementById('pg-speak-retry')?.addEventListener('click', ()=>{
+    if(_pg.locked || advanced) return;
+    hideReview();
+    const status = document.getElementById('pg-speak-status');
+    if(status){
+      status.textContent = 'دوباره جمله را کامل بگو';
+      status.style.color = 'var(--muted)';
+    }
+  });
+
+  document.getElementById('pg-speak-confirm')?.addEventListener('click', ()=>{
+    if(_pg.locked || advanced) return;
+    const item = PG_BANK.speaking[_pg.idx];
+    if(!item) return;
+    const said = lastSaid || (document.getElementById('pg-speak-said')?.textContent || '');
+    const result = analyzeSpeak(item.text, said);
+    const review = document.getElementById('pg-speak-review');
+    if(review) review.hidden = true;
+
+    if(result.ok){
+      showFeedback(true, 'تلفظ درست بود');
+      advanceOnce(true);
+    } else {
+      const detail = result.wrong.length
+        ? ('کلمه(های) اشتباه: ' + buildWrongHtml(result.wrong))
+        : 'جمله با متن هدف مطابقت نداشت';
+      showFeedback(false, detail);
+      advanceOnce(false);
     }
   });
 }
+
 
 async function renderPlacementPage(){
   document.body.classList.add('is-placement');
@@ -1543,7 +1808,7 @@ async function route(){
     const heroImg = (page && page.hero && page.hero.imageUrl) || IMG.lang;
     const circles = slotsToCircles(page, ENGLISH_CIRCLES);
     app.innerHTML = `
-      <div class="hero-still"><img src="${heroImg}" alt="زبان انگلیسی"></div>
+      <div class="hero-still site-banner"><img src="${heroImg}" alt="زبان انگلیسی"></div>
       <div class="main">
         <div class="sec-title"><h1>${(page&&page.hero&&page.hero.title)||'زبان انگلیسی'}</h1><p>${(page&&page.hero&&page.hero.subtitle)||'مسیر خود را انتخاب کنید'}</p></div>
         <div class="place-cta">
@@ -1575,7 +1840,7 @@ async function route(){
     const heroImg = (page && page.hero && page.hero.imageUrl) || CAT_HERO[key];
     const title = (page && page.hero && page.hero.title) || CAT_NAME[key];
     app.innerHTML = `
-      <div class="hero-still"><img src="${heroImg}" alt="${title}"></div>
+      <div class="hero-still site-banner"><img src="${heroImg}" alt="${title}"></div>
       <div class="main">
         <div class="sec-title"><h1>${title}</h1></div>
         ${(key === 'books' ? await renderBooksGrid() : await renderLibraryList(key))}
@@ -1612,7 +1877,7 @@ async function route(){
     const subtitle = (page && page.hero && page.hero.subtitle) || 'دوره‌ها و مسیر یادگیری';
     _courseFilter = null;
     app.innerHTML = `
-      <div class="hero-still"><img src="${heroImg}" alt="${title}"></div>
+      <div class="hero-still site-banner"><img src="${heroImg}" alt="${title}"></div>
       <div class="main">
         <div class="sec-title"><h1>${title}</h1><p>${subtitle}</p></div>
         ${await renderCoursesSection(m.subject)}
