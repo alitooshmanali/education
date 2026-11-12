@@ -9,15 +9,18 @@ public sealed class SiteLibraryService(IApplicationDbContext db) : ISiteLibraryS
 {
     public async Task<IReadOnlyList<SiteLibraryItemDto>> GetPublicAsync(SiteLibraryCategory? category = null, CancellationToken cancellationToken = default)
     {
-        var page = await GetPublicPageAsync(category, 0, 500, null, cancellationToken);
-        return page.Items;
+        // بدون محدودیت take صفحه (Clamp در GetPublicPageAsync روی 50 می‌ماند و لیست عمومی را ناقص می‌کرد)
+        var q = db.SiteLibraryItems.AsNoTracking().Where(x => x.IsActive);
+        if (category is { } c) q = q.Where(x => x.Category == c);
+        var list = await q.OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToListAsync(cancellationToken);
+        return list.Select(x => Map(x)).ToList();
     }
 
     public async Task<SiteLibraryPageDto> GetPublicPageAsync(
         SiteLibraryCategory? category, int skip, int take, long? excludeId = null, CancellationToken cancellationToken = default)
     {
         skip = Math.Max(0, skip);
-        take = Math.Clamp(take, 1, 50);
+        take = Math.Clamp(take, 1, 200);
 
         var q = db.SiteLibraryItems.AsNoTracking().Where(x => x.IsActive);
         if (category is { } c) q = q.Where(x => x.Category == c);

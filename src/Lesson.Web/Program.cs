@@ -100,11 +100,20 @@ app.MapRazorComponents<Lesson.Web.App>().AddInteractiveServerRenderMode();
 app.MapGet("/site", () => Results.Redirect("/site/index.html"));
 
 // Public site library API
-app.MapGet("/api/site/library", async (SiteLibraryCategory? category, int? skip, int? take, long? excludeId, ISiteLibraryService lib) =>
+app.MapGet("/api/site/library", async (int? category, string? cat, int? skip, int? take, long? excludeId, ISiteLibraryService lib) =>
 {
+    SiteLibraryCategory? parsed = null;
+    if (category is int ci && Enum.IsDefined(typeof(SiteLibraryCategory), ci))
+        parsed = (SiteLibraryCategory)ci;
+    else if (!string.IsNullOrWhiteSpace(cat) && Enum.TryParse<SiteLibraryCategory>(cat, true, out var byName))
+        parsed = byName;
+    // alias: music / musics → Music
+    else if (!string.IsNullOrWhiteSpace(cat) && (cat.Equals("musics", StringComparison.OrdinalIgnoreCase) || cat.Equals("music", StringComparison.OrdinalIgnoreCase)))
+        parsed = SiteLibraryCategory.Music;
+
     if (skip is not null || take is not null || excludeId is not null)
-        return Results.Ok(await lib.GetPublicPageAsync(category, skip ?? 0, take ?? 10, excludeId));
-    return Results.Ok(await lib.GetPublicAsync(category));
+        return Results.Ok(await lib.GetPublicPageAsync(parsed, skip ?? 0, take ?? 50, excludeId));
+    return Results.Ok(await lib.GetPublicAsync(parsed));
 });
 
 app.MapGet("/api/site/pages/{pageKey}", async (string pageKey, ISitePageService pages) =>

@@ -61,6 +61,38 @@
     <div class="footer__copy">© اساطیر آینده</div>
   </footer>
 
+  <!-- global logo loader -->
+  <div id="site-loader" class="site-loader" hidden aria-live="polite" aria-busy="true">
+    <div class="site-loader__card">
+      <img class="site-loader__logo" src="/site/img/logo.png" onerror="this.onerror=null;this.src='/site/img/logo.svg'" alt="">
+      <p class="site-loader__text">در حال بارگذاری…</p>
+    </div>
+  </div>
+
+  <!-- voice transcript drawer -->
+  <div id="voice-drawer-backdrop" class="voice-drawer-backdrop" hidden></div>
+  <aside id="voice-drawer" class="voice-drawer" aria-hidden="true" hidden>
+    <div class="voice-drawer__head">
+      <div>
+        <p class="voice-drawer__eyebrow">متن / متن آهنگ</p>
+        <h3 id="voice-drawer-title" class="voice-drawer__title">—</h3>
+      </div>
+      <button type="button" class="voice-drawer__close" id="voice-drawer-close" aria-label="بستن">×</button>
+    </div>
+    <div class="voice-drawer__tabs">
+      <button type="button" class="voice-drawer__tab is-on" data-tab="orig">متن اصلی</button>
+      <button type="button" class="voice-drawer__tab" data-tab="fa">ترجمه فارسی</button>
+    </div>
+    <div class="voice-drawer__body">
+      <div id="voice-drawer-loading" class="voice-drawer__loading" hidden>
+        <img class="site-loader__logo site-loader__logo--sm" src="/site/img/logo.png" onerror="this.onerror=null;this.src='/site/img/logo.svg'" alt="">
+        <span>در حال آماده‌سازی متن…</span>
+      </div>
+      <div id="voice-drawer-content" class="voice-drawer__content" dir="auto"></div>
+    </div>
+  </aside>
+
+
   <button type="button" class="place-sticky" id="place-sticky" onclick="openPlacementModal()">تعیین سطح</button>
   <div class="place-modal" id="place-modal" role="dialog" aria-modal="true">
     <div class="place-modal__card">
@@ -146,7 +178,7 @@ function inferCircleRoute(title, fallback, index){
     [/نقاش|paint|art/i, '#/painting'],
     [/کامپیوتر|computer|code/i, '#/computer'],
     [/موسیقی.*انگلیس|musics/i, '#/english/musics'],
-    [/موسیقی|music/i, '#/music-skill'],
+    [/موسیقی|music/i, '#/english/musics'],
   ];
   for(const [re, route] of rules){
     if(re.test(t)) return route;
@@ -320,10 +352,32 @@ function circlesHtml(items, sm=false){
 
 async function fetchLibrary(category){
   try{
-    const r = await fetch(`/api/site/library?category=${category}`);
-    if(!r.ok) return [];
-    return await r.json();
-  }catch{ return []; }
+    // category: عدد enum (Music=3) — چند شکل درخواست برای سازگاری
+    const urls = [
+      `/api/site/library?category=${encodeURIComponent(category)}`,
+      `/api/site/library?cat=${encodeURIComponent(category === 3 ? 'Music' : category)}`
+    ];
+    let data = null;
+    for (const url of urls){
+      const r = await fetch(url, { cache: 'no-store' });
+      if(!r.ok) continue;
+      data = await r.json();
+      break;
+    }
+    if (data == null) return [];
+    // هم آرایه هم { items: [...] }
+    let items = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : []);
+    // فیلتر سمت کلاینت اگر سرور همه را برگرداند
+    if (category != null && items.length && items[0] && items[0].category != null){
+      const filtered = items.filter(it => Number(it.category) === Number(category) || String(it.category).toLowerCase() === 'music' && Number(category)===3);
+      // فقط اگر بعد از فیلتر چیزی ماند؛ وگرنه همان items (شاید category در JSON نباشد)
+      if (filtered.length) items = filtered;
+    }
+    return items;
+  }catch(e){
+    console.warn('fetchLibrary failed', e);
+    return [];
+  }
 }
 
 const sitePlayer = document.getElementById('site-player');
@@ -359,7 +413,163 @@ document.getElementById('sp-close')?.addEventListener('click', ()=>{
 
 let _activeWrap = null;
 
-function playAudio(url, title, wrapEl){
+
+/* —— Logo loader + Voice/Music transcript drawer —— */
+const _transcriptCache = new Map();
+let _drawerVoiceKey = null;
+let _drawerTab = 'orig';
+
+window.showSiteLoader = function(show, text){
+  const el = document.getElementById('site-loader');
+  if(!el) return;
+  const t = el.querySelector('.site-loader__text');
+  if(t && text) t.textContent = text;
+  else if(t && show) t.textContent = 'در حال بارگذاری…';
+  el.hidden = !show;
+};
+
+function openVoiceDrawerShell(title){
+  const drawer = document.getElementById('voice-drawer');
+  const bd = document.getElementById('voice-drawer-backdrop');
+  const titleEl = document.getElementById('voice-drawer-title');
+  if(titleEl) titleEl.textContent = title || 'متن';
+  if(bd){
+    bd.hidden = false;
+    requestAnimationFrame(()=> bd.classList.add('is-open'));
+  }
+  if(drawer){
+    drawer.hidden = false;
+    drawer.setAttribute('aria-hidden','false');
+    // force reflow then animate in
+    void drawer.offsetWidth;
+    requestAnimationFrame(()=> drawer.classList.add('is-open'));
+  }
+}
+
+function closeVoiceDrawer(){
+  const drawer = document.getElementById('voice-drawer');
+  const bd = document.getElementById('voice-drawer-backdrop');
+  if(drawer){
+    drawer.classList.remove('is-open');
+    drawer.setAttribute('aria-hidden','true');
+    setTimeout(()=>{ if(!drawer.classList.contains('is-open')) drawer.hidden = true; }, 420);
+  }
+  if(bd){
+    bd.classList.remove('is-open');
+    setTimeout(()=>{ bd.hidden = true; }, 350);
+  }
+}
+
+function setDrawerLoading(on){
+  const ld = document.getElementById('voice-drawer-loading');
+  const ct = document.getElementById('voice-drawer-content');
+  if(ld) ld.hidden = !on;
+  if(ct && on){ ct.textContent = ''; ct.classList.remove('is-empty'); }
+}
+
+function paintDrawerContent(){
+  const ct = document.getElementById('voice-drawer-content');
+  if(!ct || !_drawerVoiceKey) return;
+  const cached = _transcriptCache.get(_drawerVoiceKey);
+  if(!cached){ ct.textContent = ''; return; }
+  const text = _drawerTab === 'fa' ? (cached.fa || '') : (cached.original || '');
+  if(!text){
+    ct.classList.add('is-empty');
+    ct.textContent = _drawerTab === 'fa' ? 'ترجمه‌ای موجود نیست.' : 'متنی برای این مورد ثبت نشده است.';
+    return;
+  }
+  ct.classList.remove('is-empty');
+  ct.textContent = text;
+}
+
+async function translateToFa(text){
+  if(!text || !text.trim()) return '';
+  try{
+    const res = await fetch('/api/site/translate', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ text, targetLang: 'FA' })
+    });
+    if(!res.ok) return '';
+    const data = await res.json();
+    return (data && data.translated) ? data.translated : '';
+  }catch(_){ return ''; }
+}
+
+async function ensureTranscript(key, { id, title, audioUrl }){
+  if(_transcriptCache.has(key)) return _transcriptCache.get(key);
+  setDrawerLoading(true);
+  let original = '';
+  if(id){
+    try{
+      const r = await fetch('/api/site/library/' + id, { cache:'no-store' });
+      if(r.ok){
+        const it = await r.json();
+        original = (it.bodyText || it.BodyText || it.summary || it.Summary || '').trim();
+      }
+    }catch(_){}
+  }
+  if(!original && audioUrl){
+    try{
+      const r = await fetch('/api/site/transcribe', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ audioUrl, contentId: id || null })
+      });
+      if(r.ok){
+        const data = await r.json();
+        original = (data && data.text) ? String(data.text).trim() : '';
+      }
+    }catch(_){}
+  }
+  let fa = '';
+  if(original) fa = await translateToFa(original);
+  const entry = { original, fa, title: title || '' };
+  _transcriptCache.set(key, entry);
+  setDrawerLoading(false);
+  return entry;
+}
+
+async function openVoiceTranscript({ id, title, audioUrl }){
+  const key = id ? ('id:' + id) : ('url:' + (audioUrl || ''));
+  if(_drawerVoiceKey && _drawerVoiceKey !== key){
+    const ct = document.getElementById('voice-drawer-content');
+    if(ct){ ct.textContent = ''; ct.classList.remove('is-empty'); }
+  }
+  _drawerVoiceKey = key;
+  _drawerTab = 'orig';
+  document.querySelectorAll('.voice-drawer__tab').forEach(t=>{
+    t.classList.toggle('is-on', t.getAttribute('data-tab') === 'orig');
+  });
+  openVoiceDrawerShell(title);
+  await ensureTranscript(key, { id, title, audioUrl });
+  if(_drawerVoiceKey === key) paintDrawerContent();
+}
+
+function wireVoiceDrawerOnce(){
+  if(window.__voiceDrawerWired) return;
+  window.__voiceDrawerWired = true;
+  document.getElementById('voice-drawer-close')?.addEventListener('click', closeVoiceDrawer);
+  document.getElementById('voice-drawer-backdrop')?.addEventListener('click', closeVoiceDrawer);
+  document.querySelectorAll('.voice-drawer__tab').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      _drawerTab = btn.getAttribute('data-tab') || 'orig';
+      document.querySelectorAll('.voice-drawer__tab').forEach(t=> t.classList.toggle('is-on', t === btn));
+      if(_drawerTab === 'fa' && _drawerVoiceKey){
+        const c = _transcriptCache.get(_drawerVoiceKey);
+        if(c && c.original && !c.fa){
+          setDrawerLoading(true);
+          c.fa = await translateToFa(c.original);
+          _transcriptCache.set(_drawerVoiceKey, c);
+          setDrawerLoading(false);
+        }
+      }
+      paintDrawerContent();
+    });
+  });
+}
+wireVoiceDrawerOnce();
+
+
+function playAudio(url, title, wrapEl, itemId){
   if(!url) return;
   audioEl.setAttribute('controlsList','nodownload noplaybackrate');
   // same track resume vs new
@@ -377,6 +587,9 @@ function playAudio(url, title, wrapEl){
     _activeWrap.classList.add('has-progress');
   }
   audioEl.play().catch(()=>{});
+  const id = itemId || (wrapEl && wrapEl.getAttribute('data-id')) || null;
+  openVoiceTranscript({ id, title: title || '', audioUrl: url });
+
 }
 
 function stopInlinePlayer(){
@@ -452,11 +665,13 @@ async function renderLibraryList(key){
   return `<div class="circles">${items.map(it=>{
     const img = it.imageUrl || CAT_HERO[key];
     const isVideo = key === 'videos';
-    const voiceOnly = !isVideo && !!it.isVoiceOnly;
-    const href = isVideo ? `#/english/videos/${it.id}` : ((!voiceOnly) ? `#/english/${key}/${it.id}` : 'javascript:void(0)');
-    const voice = (voiceOnly && it.audioUrl) ? it.audioUrl : '';
+    const isMusic = key === 'musics';
+    // موسیقی و voice-only: پخش درجا + drawer متن/شعر
+    const playInline = !isVideo && (!!it.isVoiceOnly || isMusic) && !!it.audioUrl;
+    const href = isVideo ? `#/english/videos/${it.id}` : (playInline ? 'javascript:void(0)' : `#/english/${key}/${it.id}`);
+    const voice = playInline ? (it.audioUrl || '') : '';
     const videoUrl = (isVideo && it.videoUrl) ? it.videoUrl : '';
-    const isVoice = voiceOnly && voice;
+    const isVoice = playInline && voice;
     return `<a class="circle-wrap" href="${href}" data-id="${it.id}"
       data-audio="${voice}" data-video="${videoUrl}" data-title="${escapeHtml(it.title)}"
       data-voice-only="${isVoice ? '1' : '0'}"
@@ -476,6 +691,21 @@ async function renderLibraryList(key){
   }).join('')}</div>`;
 }
 
+
+function wireDetailAudio(root){
+  const a = (root || document).querySelector('#detail-audio');
+  if(!a || a.__drawerWired) return;
+  a.__drawerWired = true;
+  const open = ()=>{
+    openVoiceTranscript({
+      id: a.getAttribute('data-id'),
+      title: a.getAttribute('data-title') || '',
+      audioUrl: a.getAttribute('src') || a.src
+    });
+  };
+  a.addEventListener('play', open);
+}
+
 async function renderDetail(key, id){
   try{
     const r = await fetch('/api/site/library/' + id);
@@ -484,7 +714,8 @@ async function renderDetail(key, id){
     const img = it.imageUrl || CAT_HERO[key];
     const player = it.audioUrl
       ? `<div class="detail__player">
-           <audio controls controlsList="nodownload noplaybackrate" oncontextmenu="return false" src="${it.audioUrl}"></audio>
+           <audio id="detail-audio" controls controlsList="nodownload noplaybackrate" oncontextmenu="return false" src="${it.audioUrl}"
+             data-id="${it.id}" data-title="${escapeHtml(it.title)}"></audio>
          </div>`
       : '';
     const body = (it.bodyText && String(it.bodyText).trim())
@@ -1804,6 +2035,8 @@ async function route(){
 
   /* english hub */
   if(parts[0]==='english' && parts.length===1){
+    showSiteLoader(true, 'در حال بارگذاری زبان انگلیسی…');
+    try{
     const page = await fetchPage('english');
     const heroImg = (page && page.hero && page.hero.imageUrl) || IMG.lang;
     const circles = slotsToCircles(page, ENGLISH_CIRCLES);
@@ -1821,18 +2054,22 @@ async function route(){
         <div style="text-align:center"><a class="back" href="#/">← صفحه اصلی</a></div>
       </div>`;
     wireCourseCards(app);
+    } finally { showSiteLoader(false); }
     return;
   }
 
   /* english library section or detail */
-  if(parts[0]==='english' && ['podcast','stories','musics','books','videos'].includes(parts[1])){
-    const key = parts[1];
+  if(parts[0]==='english' && ['podcast','stories','musics','music','books','videos'].includes(parts[1])){
+    const key = parts[1] === 'music' ? 'musics' : parts[1];
+    showSiteLoader(true, key === 'musics' ? 'در حال بارگذاری موسیقی…' : 'در حال بارگذاری…');
+    try{
     if(parts[2]){
       if(key === 'videos'){
         app.innerHTML = `<div class="main">${await renderVideoWatch(parts[2])}</div>`;
         bindVideoWatchClicks(app);
       } else {
         app.innerHTML = `<div class="main">${await renderDetail(key, parts[2])}</div>`;
+        wireDetailAudio(app);
       }
       return;
     }
@@ -1860,6 +2097,7 @@ async function route(){
     if(key === 'videos'){
       bindVideoHoverPreviews(app);
     }
+    } finally { showSiteLoader(false); }
     return;
   }
 
@@ -1893,5 +2131,6 @@ async function route(){
 window.addEventListener('hashchange', route);
 route();
 </script>
+  <script src="/js/global-loader.js"></script>
 </body>
 </html>

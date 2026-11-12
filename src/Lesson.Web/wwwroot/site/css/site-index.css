@@ -827,3 +827,169 @@ to{transform:translateY(0);opacity:1}}
   }
 }
 
+/* —— Site loader (logo) —— */
+.site-loader{
+  position:fixed;inset:0;z-index:200;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(10,43,81,.35);backdrop-filter:blur(4px);
+}
+.site-loader[hidden]{display:none!important}
+.site-loader__card{
+  background:#fff;border-radius:20px;padding:28px 32px;text-align:center;
+  box-shadow:0 20px 50px rgba(0,0,0,.25);min-width:160px
+}
+.site-loader__logo{
+  width:72px;height:72px;object-fit:contain;display:block;margin:0 auto 12px;
+  animation:loaderLogoSpin 2.8s ease-in-out infinite;
+  transform-origin:center center
+}
+.site-loader__logo--sm{width:48px;height:48px;margin:0 auto 8px}
+.site-loader__text{margin:0;font-size:13px;font-weight:800;color:#0A2B51}
+@keyframes loaderLogoSpin{
+  0%,15%{transform:scale(1) rotateY(0deg)}
+  40%{transform:scale(1.08) rotateY(180deg)}
+  70%{transform:scale(1.05) rotateY(360deg)}
+  100%{transform:scale(1) rotateY(360deg)}
+}
+
+
+/* —— Voice drawer: HIDDEN until play; slides from inline-end —— */
+.voice-drawer-backdrop{
+  position:fixed;inset:0;z-index:160;
+  background:rgba(6,29,56,.4);backdrop-filter:blur(2px);
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .35s ease, visibility .35s;
+}
+.voice-drawer-backdrop.is-open{
+  opacity:1;visibility:visible;pointer-events:auto;
+}
+.voice-drawer-backdrop[hidden]{display:none!important}
+
+.voice-drawer{
+  position:fixed;
+  top:0;bottom:0;
+  /* در RTL: راستِ منطقی = left فیزیکی — از همان لبه خارج می‌شود */
+  right:0;
+  left:auto;
+  z-index:170;
+  width:min(400px, 92vw);
+  max-width:100vw;
+  background:#F9F6ED;
+  box-shadow:-12px 0 40px rgba(6,29,56,.22);
+  display:flex;
+  flex-direction:column;
+  /* پیش‌فرض: کامل خارج از صفحه (سمت راست) */
+  transform:translate3d(105%, 0, 0);
+  visibility:hidden;
+  pointer-events:none;
+  transition:transform .42s cubic-bezier(.22,1,.36,1), visibility .42s;
+  will-change:transform;
+}
+/* اگر خواستیم در RTL از چپ بیاید — با right:0 همچنان از راست می‌آید که در UI فارسی هم رایج است */
+html[dir="rtl"] .voice-drawer{
+  right:0;
+  left:auto;
+  transform:translate3d(105%, 0, 0);
+  box-shadow:-12px 0 40px rgba(6,29,56,.22);
+}
+.voice-drawer.is-open{
+  transform:translate3d(0, 0, 0) !important;
+  visibility:visible !important;
+  pointer-events:auto !important;
+}
+.voice-drawer:not(.is-open){
+  /* تضمین پنهان بودن حتی اگر transform در مرورگر گیر کند */
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+.voice-drawer__head{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+  padding:18px 16px 12px;border-bottom:1px solid #E6E1D6;
+  background:#fff
+}
+.voice-drawer__eyebrow{margin:0;font-size:11px;font-weight:800;color:#6B7787}
+.voice-drawer__title{margin:4px 0 0;font-size:16px;font-weight:900;color:#0A2B51;line-height:1.35}
+.voice-drawer__close{
+  width:36px;height:36px;border:0;border-radius:10px;background:#f0eee8;
+  font-size:22px;line-height:1;cursor:pointer;color:#0A2B51;flex-shrink:0
+}
+.voice-drawer__tabs{
+  display:flex;gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid #E6E1D6
+}
+.voice-drawer__tab{
+  flex:1;border:1px solid #E6E1D6;background:#fbfaf7;border-radius:999px;
+  padding:8px 10px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;color:#6B7787
+}
+.voice-drawer__tab.is-on{background:#0A2B51;color:#fff;border-color:#0A2B51}
+.voice-drawer__body{flex:1;overflow:auto;padding:16px}
+.voice-drawer__loading{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;min-height:160px;font-size:13px;font-weight:800;color:#6B7787
+}
+.voice-drawer__loading[hidden]{display:none!important}
+.voice-drawer__content{
+  font-size:14.5px;line-height:1.85;font-weight:600;color:#1a2433;
+  white-space:pre-wrap;text-align:justify
+}
+.voice-drawer__content.is-empty{color:#6B7787;text-align:center;font-weight:700}
+@media (max-width:520px){
+  .voice-drawer{width:100vw}
+}
+
+
+/* =========================================================
+   Voice drawer MUST stay off-screen until .is-open
+   ========================================================= */
+#voice-drawer-backdrop.voice-drawer-backdrop,
+.voice-drawer-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 160 !important;
+  background: rgba(6,29,56,.4);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .35s ease, visibility .35s;
+}
+#voice-drawer-backdrop.is-open,
+.voice-drawer-backdrop.is-open {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+#voice-drawer-backdrop[hidden],
+.voice-drawer-backdrop[hidden] {
+  display: none !important;
+}
+
+#voice-drawer.voice-drawer,
+.voice-drawer {
+  position: fixed !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  left: auto !important;
+  z-index: 170 !important;
+  width: min(400px, 92vw) !important;
+  max-width: 100vw;
+  background: #F9F6ED !important;
+  box-shadow: -12px 0 40px rgba(6,29,56,.22);
+  display: flex !important;
+  flex-direction: column;
+  transform: translate3d(110%, 0, 0) !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: transform .42s cubic-bezier(.22,1,.36,1), visibility .42s;
+  will-change: transform;
+}
+#voice-drawer.voice-drawer.is-open,
+.voice-drawer.is-open {
+  transform: translate3d(0, 0, 0) !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+#voice-drawer[hidden],
+.voice-drawer[hidden] {
+  display: none !important;
+}
+
