@@ -10,50 +10,7 @@
     <configurations />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bba0822f-46d9-4d97-aa9a-2857b4f57e21" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lesson/.idea/dataSources/data_sources_history.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lesson/.idea/dataSources/data_sources_history.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lesson/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lesson/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/App.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/App.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/AppButton.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/AppButton.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/ConfirmDialog.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/ConfirmDialog.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/DataTable.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/DataTable.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/EmptyState.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/EmptyState.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/SearchInput.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/SearchInput.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/ToastContainer.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/ToastContainer.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Layout/MainLayout.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Layout/MainLayout.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/Admin/Admin.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/Admin/Admin.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminCandidates/AdminCandidates.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminCandidates/AdminCandidates.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminClasses/AdminClasses.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminClasses/AdminClasses.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminFolders/AdminFolders.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminFolders/AdminFolders.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminPlacementBank/AdminPlacementBank.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminPlacementBank/AdminPlacementBank.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSchedule/AdminSchedule.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSchedule/AdminSchedule.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSiteBooks/AdminSiteBooks.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSiteBooks/AdminSiteBooks.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSiteCourses/AdminSiteCourses.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSiteCourses/AdminSiteCourses.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSiteLibrary/AdminSiteLibrary.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSiteLibrary/AdminSiteLibrary.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSitePages/AdminSitePages.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSitePages/AdminSitePages.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminTeachers/AdminTeachers.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminTeachers/AdminTeachers.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/Login/Login.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/Login/Login.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/Student/Student.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/Student/Student.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/StudentQuiz/StudentQuizTake.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/StudentQuiz/StudentQuizTake.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/Teacher/Teacher.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/Teacher/Teacher.razor" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/app.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/app.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/components.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/components.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/gauges.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/gauges.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/layout.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/layout.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/pages.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/pages.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/responsive.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/responsive.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/website.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/website.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/login.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/login.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/platform-admin.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/platform-admin.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/platform-student.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/platform-student.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/platform-teacher.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/platform-teacher.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/site-index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/site-index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-admin.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-admin.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-student.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-student.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-teacher.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-teacher.html" afterDir="false" />
-    </list>
+    <list default="true" id="bba0822f-46d9-4d97-aa9a-2857b4f57e21" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -87,23 +44,23 @@
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.385464676521106" />
-      <entry key="MS500" value="3.568880320841328" />
-      <entry key="S2" value="7.893370128041843" />
-      <entry key="S5" value="10.447955374321321" />
-      <entry key="S10" value="11.616526630394434" />
-      <entry key="S30" value="12.512358456677582" />
-      <entry key="S60" value="12.752690540303224" />
-      <entry key="M2" value="12.875459109636884" />
-      <entry key="M5" value="12.950829917752765" />
-      <entry key="M10" value="13.108025212620262" />
-      <entry key="M15" value="13.73202615361682" />
-      <entry key="M30" value="17.333179185481878" />
-      <entry key="H1" value="23.576925457165245" />
-      <entry key="H2" value="29.567347007469024" />
-      <entry key="H4" value="33.74950576442874" />
-      <entry key="D1" value="38.03980793358932" />
-      <entry key="W1" value="38.86058609174528" />
+      <entry key="MS100" value="1.0009379827100455" />
+      <entry key="MS500" value="1.3324850814392375" />
+      <entry key="S2" value="2.583292652408814" />
+      <entry key="S5" value="3.304403374460133" />
+      <entry key="S10" value="3.6257032445221054" />
+      <entry key="S30" value="3.868780150667282" />
+      <entry key="S60" value="3.933728971391004" />
+      <entry key="M2" value="4.0154646731127315" />
+      <entry key="M5" value="5.380174165501438" />
+      <entry key="M10" value="8.293173114237959" />
+      <entry key="M15" value="10.527048443384064" />
+      <entry key="M30" value="15.951900349097297" />
+      <entry key="H1" value="23.57863474175961" />
+      <entry key="H2" value="30.944080962442325" />
+      <entry key="H4" value="36.21763561307342" />
+      <entry key="D1" value="41.74645022892891" />
+      <entry key="W1" value="42.81763161287513" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -125,23 +82,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="1.345840770774884" />
-      <entry key="MS500" value="3.5444418616839735" />
-      <entry key="S2" value="7.875490547173642" />
-      <entry key="S5" value="10.437921354184617" />
-      <entry key="S10" value="11.610853540192679" />
-      <entry key="S30" value="12.510300390437207" />
-      <entry key="S60" value="12.75163914861518" />
-      <entry key="M2" value="12.874927707015642" />
-      <entry key="M5" value="12.950615961048115" />
-      <entry key="M10" value="13.107917156004314" />
-      <entry key="M15" value="13.731951403613605" />
-      <entry key="M30" value="17.33313393024381" />
-      <entry key="H1" value="23.576895950580386" />
-      <entry key="H2" value="29.567328941284465" />
-      <entry key="H4" value="33.74949557254788" />
-      <entry key="D1" value="38.039806036563824" />
-      <entry key="W1" value="38.86058581531635" />
+      <entry key="MS100" value="0.9668423524847662" />
+      <entry key="MS500" value="1.3231646056385373" />
+      <entry key="S2" value="2.578516431013038" />
+      <entry key="S5" value="3.3019150072288928" />
+      <entry key="S10" value="3.624329580131619" />
+      <entry key="S30" value="3.8682895341913435" />
+      <entry key="S60" value="3.9334792830735026" />
+      <entry key="M2" value="4.0153367051894895" />
+      <entry key="M5" value="5.380100492543029" />
+      <entry key="M10" value="8.293112297787397" />
+      <entry key="M15" value="10.526995965683424" />
+      <entry key="M30" value="15.951860671239947" />
+      <entry key="H1" value="23.578606003003763" />
+      <entry key="H2" value="30.944062381143628" />
+      <entry key="H4" value="36.217624824815275" />
+      <entry key="D1" value="41.74644817003705" />
+      <entry key="W1" value="42.81763131153805" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -208,7 +165,8 @@
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="part 1" />
     <MESSAGE value="fixing logo animitions" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixing logo animitions" />
+    <MESSAGE value="fixing ui kit" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixing ui kit" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
