@@ -419,8 +419,8 @@
     box-sizing: border-box;
     margin: 0 0 12px;
     padding: 12px 14px;
-    background: #fff;
-    border: 1px solid #E6E1D6;
+    background: var(--paper);
+    border: 1px solid var(--line);
     border-radius: 14px;
     box-shadow: 0 4px 14px rgba(10, 43, 81, 0.04);
   }
@@ -447,7 +447,7 @@
     box-sizing: border-box;
     padding: 9px 0 !important;
     border: 0 !important;
-    border-bottom: 1px solid #f1efe8 !important;
+    border-bottom: 1px solid var(--sand-50) !important;
     text-align: start !important;
     white-space: normal !important;
     overflow: visible !important;
@@ -489,7 +489,7 @@
     max-width: 34%;
     font-size: 11px;
     font-weight: 800;
-    color: #6B7787;
+    color: var(--muted);
     line-height: 1.4;
   }
 
@@ -564,14 +564,14 @@
     box-sizing: border-box;
     margin: 0 0 12px !important;
     padding: 14px !important;
-    background: #fff;
-    border: 1px solid #E6E1D6 !important;
+    background: var(--paper);
+    border: 1px solid var(--line) !important;
     border-radius: 14px;
     box-shadow: 0 4px 14px rgba(10, 43, 81, 0.04);
   }
 
   .data-grid__row + .data-grid__row {
-    border-top: 1px solid #E6E1D6 !important;
+    border-top: 1px solid var(--line) !important;
   }
 
   .data-grid__cell {

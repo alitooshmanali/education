@@ -4,49 +4,42 @@
 @inject ICandidateService Candidates
 
 <style>
-    .cand { max-width: 1200px; width: 100%; }
+    .cand { max-width:var(--content-max-width); width:100%; }
     .cand__head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; margin-bottom:18px; align-items:flex-start; }
-    .cand__title { margin:0; font-size:24px; font-weight:900; color:#0A2B51; }
-    .cand__sub { margin:4px 0 0; color:#6B7787; font-size:13px; }
-    .cand-card { background:#fff; border:1px solid #E6E1D6; border-radius:16px; overflow:hidden; }
+    .cand__title { margin:0; font-family:var(--font-display); font-size:24px; font-weight:900; color:var(--navy-800); }
+    .cand__sub { margin:4px 0 0; color:var(--muted); font-size:13px; }
+    .cand-card { background:var(--paper); border:1px solid var(--line); border-radius:var(--r-xl); overflow:hidden; box-shadow:var(--sh-1); }
     .cand-table { width:100%; border-collapse:collapse; font-size:13px; }
-    .cand-table th {
-        text-align:start; font-size:11px; font-weight:800; color:#6B7787;
-        padding:12px 14px; background:#fbfaf7; border-bottom:1px solid #E6E1D6; white-space:nowrap;
-    }
-    .cand-table td { padding:12px 14px; border-bottom:1px solid #eef1f5; vertical-align:middle; }
-    .cand-phone {
-        display:inline-flex; align-items:center; gap:8px;
-        font-weight:800; color:#0A2B51; text-decoration:none; direction:ltr;
-    }
-    .cand-phone:hover { color:#D1AB7B; }
-    .cand-call {
-        display:inline-flex; align-items:center; justify-content:center;
-        padding:6px 12px; border-radius:999px; background:#0A2B51; color:#fff;
-        font-size:12px; font-weight:800; text-decoration:none; white-space:nowrap;
-    }
-    .cand-call:hover { filter:brightness(1.08); color:#fff; }
-    .cand-pill {
-        display:inline-flex; font-size:11px; font-weight:800; padding:3px 10px;
-        border-radius:999px; background:#eef3fa; color:#0A2B51;
-    }
-    .cand-pill.done { background:#e6f6f0; color:#0c5c41; }
-    .cand-pill.started { background:#fff6e8; color:#8a5a12; }
-    .cand-score { font-weight:800; color:#0A2B51; font-variant-numeric:tabular-nums; }
-    .cand-empty { padding:28px; text-align:center; color:#6B7787; }
+    .cand-table th { text-align:start; font-size:11px; font-weight:800; color:var(--muted); padding:12px 14px; background:var(--sand-50); border-bottom:1px solid var(--line); white-space:nowrap; }
+    .cand-table td { padding:12px 14px; border-bottom:1px solid var(--line-cool); vertical-align:middle; }
+    .cand-table tbody tr:hover td { background:var(--row-hover); }
+    .cand-phone { display:inline-flex; align-items:center; gap:8px; font-weight:800; color:var(--navy-800); text-decoration:none; direction:ltr; unicode-bidi:isolate; font-family:var(--font-latin); }
+    .cand-phone:hover { color:var(--sand-700); }
+    .cand-call { display:inline-flex; align-items:center; justify-content:center; padding:7px 13px; border-radius:var(--r-pill); background:var(--navy-800); color:var(--paper); font-size:12px; font-weight:800; text-decoration:none; white-space:nowrap; transition:transform .16s var(--ease),box-shadow .16s var(--ease); }
+    .cand-call:hover { transform:translateY(-1px); box-shadow:var(--sh-2); color:var(--paper); }
+    .cand-pill { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:800; padding:4px 10px; border-radius:var(--r-pill); background:var(--navy-50); color:var(--navy-700); }
+    .cand-pill.done { background:var(--jade-bg); color:var(--jade); }
+    .cand-pill.started { background:var(--amber-bg); color:var(--amber); }
+    .cand-score { font-weight:800; color:var(--navy-800); font-variant-numeric:tabular-nums; }
+    .cand-date { white-space:nowrap; font-size:12px; color:var(--muted); }
+    .cand-empty { padding:28px; text-align:center; color:var(--muted); }
     .cand-tools { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
-    .cand-tools input {
-        border:1px solid #E6E1D6; border-radius:10px; padding:9px 12px; font:inherit; min-width:200px;
-    }
-    .cand-tools select {
-        border:1px solid #E6E1D6; border-radius:10px; padding:9px 12px; font:inherit;
-    }
+    .cand-tools input,.cand-tools select { border:1px solid var(--line); border-radius:var(--r-md); padding:9px 12px; font:inherit; background:var(--paper); color:var(--ink); }
+    .cand-tools input { min-width:min(260px,100%); }
+    .cand-tools input:focus,.cand-tools select:focus { outline:0; border-color:var(--sand-500); box-shadow:var(--ring); }
+    .cand-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:18px; }
+    .cand-summary article { padding:16px 18px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--paper); box-shadow:var(--sh-1); }
+    .cand-summary small { display:block; color:var(--muted); font-size:11.5px; font-weight:700; }
+    .cand-summary strong { display:block; margin-top:3px; color:var(--navy-800); font-family:var(--font-display); font-size:26px; font-weight:900; font-variant-numeric:tabular-nums; }
     @@media (max-width:900px) {
         .cand-table thead { display:none; }
-        .cand-table tr { display:block; border-bottom:1px solid #E6E1D6; padding:12px 14px; }
-        .cand-table td { display:flex; justify-content:space-between; gap:12px; border:0; padding:6px 0; }
-        .cand-table td::before { content:attr(data-label); font-weight:700; color:#6B7787; font-size:11px; }
+        .cand-table,.cand-table tbody { display:block; width:100%; }
+        .cand-table tr { display:block; margin:10px; padding:10px 14px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--paper); box-shadow:var(--sh-1); }
+        .cand-table td { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; border:0; border-bottom:1px solid var(--line-cool); padding:8px 0; text-align:start; }
+        .cand-table td:last-child { border-bottom:0; }
+        .cand-table td::before { content:attr(data-label); flex:0 0 34%; max-width:34%; color:var(--muted); font-size:11px; font-weight:800; }
     }
+    @@media (max-width:560px) { .cand-summary { grid-template-columns:1fr 1fr; gap:9px; } .cand-summary article:last-child { grid-column:1/-1; } .cand__title { font-size:21px; } }
 </style>
 
 <section class="cand">
@@ -58,8 +51,14 @@
         <button class="btn btn-ghost" type="button" disabled="@_busy" @onclick="Reload">بروزرسانی</button>
     </div>
 
+    <div class="cand-summary" aria-label="خلاصه داوطلبان">
+        <article><small>کل داوطلبان</small><strong>@_items.Count</strong></article>
+        <article><small>تکمیل‌شده</small><strong>@_items.Count(x => string.Equals(x.Status, "Completed", StringComparison.OrdinalIgnoreCase))</strong></article>
+        <article><small>در حال انجام</small><strong>@_items.Count(x => string.Equals(x.Status, "Started", StringComparison.OrdinalIgnoreCase))</strong></article>
+    </div>
+
     <div class="cand-tools">
-        <input placeholder="جستجوی شماره..." @bind="_q" @bind:event="oninput" />
+        <input type="tel" inputmode="numeric" dir="ltr" aria-label="جستجوی شماره داوطلب" placeholder="جستجوی شماره..." @bind="_q" @bind:event="oninput" />
         <select @bind="_statusFilter">
             <option value="">همه وضعیت‌ها</option>
             <option value="Completed">تکمیل‌شده</option>
@@ -74,7 +73,7 @@
         }
         else if (Filtered.Count == 0)
         {
-            <div class="cand-empty">موردی یافت نشد.</div>
+            <div class="cand-empty">داوطلبی با این فیلتر پیدا نشد. عبارت جست‌وجو یا وضعیت را تغییر بده.</div>
         }
         else
         {
@@ -109,14 +108,14 @@
                             <td data-label="وضعیت">
                                 <span class="cand-pill @StatusClass(c.Status)">@StatusFa(c.Status)</span>
                             </td>
-                            <td data-label="تاریخ" style="white-space:nowrap;font-size:12px;color:#6B7787">
+                            <td data-label="تاریخ" class="cand-date">
                                 @PersianDate.Format(c.CreatedAt)
                                 @if (c.CompletedAt is { } done)
                                 {
                                     <div>اتمام: @PersianDate.Format(done)</div>
                                 }
                             </td>
-                            <td data-label="">
+                            <td data-label="اقدام">
                                 <a class="cand-call" href="tel:@c.PhoneNumber">تماس</a>
                             </td>
                         </tr>

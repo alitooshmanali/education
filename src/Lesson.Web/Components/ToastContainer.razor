@@ -1,13 +1,18 @@
-<div class="toast-wrap">
+@implements IDisposable
+
+<div class="toast-wrap" aria-live="polite" aria-relevant="additions text">
     @if (Visible)
     {
-        <div class="toast toast--@Tone" role="status">
-            <div class="toast__icon">@Icon</div>
-            <div>
-                <div class="toast__title">@Title</div>
+        <div class="toast toast--@Tone" role="status" aria-atomic="true">
+            <div class="toast__icon" aria-hidden="true">@Icon</div>
+            <div class="toast__content">
+                @if (!string.IsNullOrWhiteSpace(Title))
+                {
+                    <div class="toast__title">@Title</div>
+                }
                 <div class="toast__message">@Message</div>
             </div>
-            <button type="button" class="toast__close" @onclick="Close">×</button>
+            <button type="button" class="toast__close" aria-label="بستن پیام" @onclick="Close">×</button>
         </div>
     }
 </div>
@@ -16,9 +21,11 @@
     [Parameter] public string Tone { get; set; } = "info";
     [Parameter] public string Title { get; set; } = string.Empty;
     [Parameter] public string Message { get; set; } = string.Empty;
-    [Parameter] public int AutoHideMs { get; set; } = 2500;
+    [Parameter] public int AutoHideMs { get; set; } = 4000;
     [Parameter] public bool Visible { get; set; }
     [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    private CancellationTokenSource? _hideCts;
 
     private string Icon => Tone switch
     {
@@ -28,19 +35,51 @@
         _ => "ℹ"
     };
 
-    protected override async Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
-        if (Visible)
+        CancelHideTimer();
+
+        if (Visible && AutoHideMs > 0)
         {
-            await Task.Delay(AutoHideMs);
-            await Close();
+            _hideCts = new CancellationTokenSource();
+            _ = HideAfterDelayAsync(_hideCts.Token);
+        }
+    }
+
+    private async Task HideAfterDelayAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(AutoHideMs, cancellationToken);
+            if (!cancellationToken.IsCancellationRequested)
+                await InvokeAsync(Close);
+        }
+        catch (OperationCanceledException)
+        {
+            // A newer toast or an explicit close superseded this timer.
         }
     }
 
     private async Task Close()
     {
+        CancelHideTimer();
+        if (!Visible)
+            return;
+
         Visible = false;
         await VisibleChanged.InvokeAsync(false);
         StateHasChanged();
     }
+
+    private void CancelHideTimer()
+    {
+        if (_hideCts is null)
+            return;
+
+        _hideCts.Cancel();
+        _hideCts.Dispose();
+        _hideCts = null;
+    }
+
+    public void Dispose() => CancelHideTimer();
 }

@@ -1,20 +1,47 @@
+@implements IDisposable
+
 <div class="search-input">
-    <label class="search-input__label" for="@_id">@Label</label>
-    <input id="@_id" type="text" value="@Value" @oninput="OnInput" placeholder="@Placeholder" />
+    @if (!string.IsNullOrWhiteSpace(Label))
+    {
+        <label class="search-input__label" for="@_id">@Label</label>
+    }
+    <input id="@_id" type="search" role="searchbox" aria-label="@(string.IsNullOrWhiteSpace(Label) ? Placeholder : Label)"
+           value="@Value" @oninput="OnInput" placeholder="@Placeholder" autocomplete="off" />
 </div>
 
 @code {
     private readonly string _id = "q_" + Guid.NewGuid().ToString("N");
+    private CancellationTokenSource? _debounceCts;
 
-    [Parameter] public string Label { get; set; } = "Search";
+    [Parameter] public string Label { get; set; } = "";
     [Parameter] public string Placeholder { get; set; } = "جستجو...";
     [Parameter] public string Value { get; set; } = string.Empty;
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public int DebounceMilliseconds { get; set; } = 300;
 
     private async Task OnInput(ChangeEventArgs e)
     {
-        var value = e.Value?.ToString() ?? string.Empty;
-        Value = value;
-        await ValueChanged.InvokeAsync(value);
+        Value = e.Value?.ToString() ?? string.Empty;
+        _debounceCts?.Cancel();
+        _debounceCts?.Dispose();
+        _debounceCts = new CancellationTokenSource();
+        var token = _debounceCts.Token;
+
+        try
+        {
+            if (DebounceMilliseconds > 0)
+                await Task.Delay(DebounceMilliseconds, token);
+            await ValueChanged.InvokeAsync(Value);
+        }
+        catch (OperationCanceledException)
+        {
+            // A newer keystroke superseded this pending search.
+        }
+    }
+
+    public void Dispose()
+    {
+        _debounceCts?.Cancel();
+        _debounceCts?.Dispose();
     }
 }

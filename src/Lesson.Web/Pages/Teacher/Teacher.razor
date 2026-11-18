@@ -18,13 +18,21 @@
     }
     else
     {
+        <section class="teacher-welcome panel-spaced">
+            <div>
+                <span class="eyebrow">پنل مدرس</span>
+                <h2>کلاس انتخاب‌شده، مرکز فعالیت امروز توست</h2>
+                <p>محتوا و گزارش‌ها بر اساس همان کلاسی نمایش داده می‌شوند که از سربرگ انتخاب کرده‌ای.</p>
+            </div>
+            <div class="teacher-welcome__mark" aria-hidden="true">آ</div>
+        </section>
         <section class="grid stats">
-            <div class="stat-card"><div class="stat-label">دانش‌آموزان سطح</div><div class="stat-value">@_dash.StudentCount</div></div>
-            <div class="stat-card"><div class="stat-label">پوشه‌ها</div><div class="stat-value">@_dash.FolderCount</div></div>
-            <div class="stat-card"><div class="stat-label">ویدیو</div><div class="stat-value">@_dash.VideoCount</div></div>
-            <div class="stat-card"><div class="stat-label">پادکست</div><div class="stat-value">@_dash.PodcastCount</div></div>
-            <div class="stat-card"><div class="stat-label">داستان</div><div class="stat-value">@_dash.StoryCount</div></div>
-            <div class="stat-card"><div class="stat-label">آزمون</div><div class="stat-value">@_dash.QuizCount</div></div>
+            <StatCard Label="دانش‌آموزان سطح" Value="@_dash.StudentCount.ToString()" Icon="users" IconTone="navy" />
+            <StatCard Label="پوشه‌ها" Value="@_dash.FolderCount.ToString()" Icon="folder" IconTone="gold" />
+            <StatCard Label="ویدیوها" Value="@_dash.VideoCount.ToString()" Icon="video" IconTone="navy" />
+            <StatCard Label="پادکست‌ها" Value="@_dash.PodcastCount.ToString()" Icon="audit" IconTone="violet" />
+            <StatCard Label="داستان‌ها" Value="@_dash.StoryCount.ToString()" Icon="folder" IconTone="jade" />
+            <StatCard Label="آزمون‌ها" Value="@_dash.QuizCount.ToString()" Icon="audit" IconTone="gold" />
         </section>
         <div class="toolbar" style="margin-top:20px;display:flex;flex-wrap:wrap;gap:10px">
             <a class="btn btn-primary" href="/teacher/folders">پوشه‌ها</a>

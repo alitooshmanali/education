@@ -1,9 +1,17 @@
-<button class="@Class" type="@Type" disabled="@Disabled" aria-busy="@Busy" @onclick="HandleClick">
+<button class="@Class" type="@Type" disabled="@(Disabled || Busy)" aria-busy="@Busy" @onclick="HandleClick">
     @if (!string.IsNullOrWhiteSpace(Icon))
     {
         <AppIcon Name="@Icon" />
     }
+    @if (Busy)
+    {
+        <span class="btn__spinner" aria-hidden="true"></span>
+    }
     <span>@ChildContent</span>
+    @if (Busy)
+    {
+        <span class="visually-hidden">در حال انجام عملیات</span>
+    }
 </button>
 
 @code {

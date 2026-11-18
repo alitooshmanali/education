@@ -8,24 +8,24 @@
 <style>
     .sp { max-width: 1100px; width: 100%; }
     .sp__head { margin-bottom: 16px; }
-    .sp__title { margin: 0; font-size: 24px; font-weight: 900; color: #0A2B51; }
-    .sp__sub { margin: 4px 0 0; color: #6B7787; font-size: 13px; }
+    .sp__title { margin: 0; font-size: 24px; font-weight: 900; color: var(--navy-800); }
+    .sp__sub { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
     .sp-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-    .sp-tab { padding: 8px 14px; border-radius: 999px; border: 1px solid #E6E1D6; background: #fff; font-size: 12.5px; font-weight: 700; cursor: pointer; color: #0A2B51; }
-    .sp-tab.is-on { background: #0A2B51; color: #fff; border-color: #0A2B51; }
-    .sp-form { background: #fff; border: 1px solid #E6E1D6; border-radius: 16px; padding: 18px; margin-bottom: 16px; }
+    .sp-tab { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); font-size: 12.5px; font-weight: 700; cursor: pointer; color: var(--navy-800); }
+    .sp-tab.is-on { background: var(--navy-800); color: var(--paper); border-color: var(--navy-800); }
+    .sp-form { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 18px; margin-bottom: 16px; }
     .sp-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-    .sp-field label { display: block; font-size: 12px; font-weight: 700; color: #6B7787; margin-bottom: 5px; }
-    .sp-field input, .sp-field select { width: 100%; box-sizing: border-box; border: 1px solid #E6E1D6; border-radius: 10px; padding: 9px 12px; font: inherit; }
+    .sp-field label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 5px; }
+    .sp-field input, .sp-field select { width: 100%; box-sizing: border-box; border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; font: inherit; }
     .sp-field.full { grid-column: 1 / -1; }
-    .sp-card { background: #fff; border: 1px solid #E6E1D6; border-radius: 16px; overflow: hidden; }
+    .sp-card { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
     .sp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .sp-table th { text-align: start; font-size: 11px; font-weight: 800; color: #6B7787; padding: 12px 14px; background: #fbfaf7; border-bottom: 1px solid #E6E1D6; }
-    .sp-table td { padding: 12px 14px; border-bottom: 1px solid #eef1f5; vertical-align: middle; }
-    .sp-thumb { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; background: #eef3fa; }
+    .sp-table th { text-align: start; font-size: 11px; font-weight: 800; color: var(--muted); padding: 12px 14px; background: var(--sand-50); border-bottom: 1px solid var(--line); }
+    .sp-table td { padding: 12px 14px; border-bottom: 1px solid var(--navy-50); vertical-align: middle; }
+    .sp-thumb { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; background: var(--navy-50); }
     .sp-alert { padding: 10px 12px; border-radius: 10px; margin-bottom: 12px; font-size: 13px; }
-    .sp-alert.err { background: #fdecec; color: #8f2b21; }
-    .sp-alert.ok { background: #e6f6f0; color: #0c5c41; }
+    .sp-alert.err { background: var(--coral-bg); color: var(--coral); }
+    .sp-alert.ok { background: var(--jade-bg); color: var(--jade); }
     @@media (max-width: 800px) {
         .sp-grid { grid-template-columns: 1fr; }
         /* card layout provided by responsive.css */
@@ -94,7 +94,7 @@
                     <InputFile OnChange="OnFile" accept="image/*" />
                     @if (_contentId is { } cid)
                     {
-                        <p style="margin-top:8px;font-size:12px;color:#6B7787">Content Id: @cid · <a href="/api/site/media/@cid" target="_blank">پیش‌نمایش</a></p>
+                        <p style="margin-top:8px;font-size:12px;color:var(--muted)">Content Id: @cid · <a href="/api/site/media/@cid" target="_blank">پیش‌نمایش</a></p>
                     }
                 </div>
             </div>
@@ -120,7 +120,7 @@
             <tbody>
                 @if (_items.Count == 0)
                 {
-                    <tr><td colspan="6" style="padding:24px;text-align:center;color:#6B7787">برای این صفحه اسلاتی نیست. با «اسلات جدید» اضافه کنید.</td></tr>
+                    <tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted)">برای این صفحه اسلاتی نیست. با «اسلات جدید» اضافه کنید.</td></tr>
                 }
                 else
                 {
@@ -132,10 +132,10 @@
                                 {
                                     <img class="sp-thumb" src="@it.ImageUrl" alt="" />
                                 }
-                                else { <span style="color:#6B7787">—</span> }
+                                else { <span style="color:var(--muted)">—</span> }
                             </td>
                             <td data-label="نوع">@TypeLabel(it.SlotType)</td>
-                            <td data-label="عنوان"><b>@(it.Title ?? "—")</b><div style="font-size:11px;color:#6B7787">@(it.Subtitle ?? "")</div></td>
+                            <td data-label="عنوان"><b>@(it.Title ?? "—")</b><div style="font-size:11px;color:var(--muted)">@(it.Subtitle ?? "")</div></td>
                             <td data-label="مقصد" style="font-size:12px">@DestLabel(it.LinkHref)</td>
                             <td data-label="ترتیب">@it.SortOrder</td>
                             <td data-label="عملیات" style="text-align:end;white-space:nowrap">

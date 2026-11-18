@@ -7,10 +7,9 @@
     <title>اساطیر آینده — آموزشگاه زبان و مهارت</title>
     <meta name="description" content="آموزشگاه اساطیر آینده — دوره‌های زبان انگلیسی، کامپیوتر، موسیقی و نقاشی به‌همراه پلتفرم آموزش آنلاین." />
     @*
-        Stylesheet order matters: base tokens/reset first, then structure,
-        components and pages, with responsive.css last so its breakpoints win.
-        Do NOT re-add @import rules in app.css or link the sheets twice —
-        duplicated, out-of-order loading silently defeats the media queries.
+        Legacy stylesheets are kept intact for compatibility. The Design System v2
+        layer is loaded after them and skins the existing Razor markup. Do not use
+        @import or duplicate these links; keep the v2 responsive sheet last.
     *@
     <link rel="stylesheet" href="css/app.css" />
     @* Blazor CSS-isolation bundle (Login/Admin/AppButton .razor.css).
@@ -21,9 +20,14 @@
     <link rel="stylesheet" href="css/pages.css" />
     <link rel="stylesheet" href="css/gauges.css" />
     <link rel="stylesheet" href="css/responsive.css" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    @* Asatir Design System v2 — loaded last so it can skin legacy markup without changing behavior. *@
+    <link rel="stylesheet" href="css/ds/fonts.css" />
+    <link rel="stylesheet" href="css/ds/tokens.css" />
+    <link rel="stylesheet" href="css/ds/base.css" />
+    <link rel="stylesheet" href="css/ds/layout.css" />
+    <link rel="stylesheet" href="css/ds/components.css" />
+    <link rel="stylesheet" href="css/ds/patterns.css" />
+    <link rel="stylesheet" href="css/ds/responsive.css" />
     <HeadOutlet @rendermode="InteractiveServer" />
 </head>
 <body>

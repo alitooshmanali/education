@@ -30,8 +30,8 @@
 
 @if (_phase == Phase.Taking && _detail is not null && _attempt is not null)
 {
-    <section class="panel pad">
-        <div class="toolbar">
+    <section class="quiz-focus panel pad">
+        <div class="toolbar quiz-focus__hud">
             <strong class="quiz-timer @(_remainingSeconds <= 60 ? "is-urgent" : "")">
                 ⏱ @_remainingDisplay
             </strong>
@@ -44,7 +44,7 @@
             var answerResult = _attempt.Answers.FirstOrDefault(a => a.QuestionId == q.Id);
         }
 
-        <div class="quiz-question">
+        <div class="quiz-question quiz-focus__question">
             <h3>سؤال @(_currentIndex + 1) از @_detail.Questions.Count</h3>
             <p style="white-space: pre-wrap">@q.Text</p>
             <p class="hint">نمره این سؤال: @q.Score</p>
@@ -90,7 +90,7 @@
 
 @if (_phase == Phase.Done && _attempt is not null && _detail is not null)
 {
-    <section class="panel pad" style="text-align:center">
+    <section class="quiz-result panel pad" style="text-align:center">
         <h2>نتیجه آزمون</h2>
         <div class="stat-card__value" style="font-size:48px;margin:16px 0">@_attempt.ScoreEarned / @_detail.TotalScore</div>
         <p>زمان صرف‌شده: @_attempt.Answers.Count سؤال پاسخ‌داده‌شده</p>

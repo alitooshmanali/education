@@ -1,24 +1,52 @@
 @typeparam TItem
 @using System.Globalization
 
-<div class="data-grid @GridColumnsClass" role="table">
+<div class="data-grid @GridColumnsClass" role="table" aria-busy="@Loading">
     <div class="data-grid__head" role="row">
         @if (Columns is not null)
         {
             @foreach (var column in Columns)
             {
-                <div class="data-grid__cell data-grid__cell--head">@column.Header</div>
+                <div class="data-grid__cell data-grid__cell--head" role="columnheader">@column.Header</div>
             }
             @if (ActionsTemplate is not null)
             {
-                <div class="data-grid__cell data-grid__cell--head">عملیات</div>
+                <div class="data-grid__cell data-grid__cell--head" role="columnheader">عملیات</div>
             }
         }
     </div>
-    @if (Items?.Any() != true)
+
+    @if (Loading)
     {
-        <div class="data-grid__empty" role="row">
-            <div class="data-grid__cell data-grid__cell--empty">موردی برای نمایش وجود ندارد.</div>
+        @for (var row = 0; row < 5; row++)
+        {
+            <div class="data-grid__row data-grid__row--skeleton" role="row" aria-hidden="true">
+                @for (var cell = 0; cell < ColumnCount; cell++)
+                {
+                    <div class="data-grid__cell" role="cell"><span class="skeleton data-grid__skeleton"></span></div>
+                }
+            </div>
+        }
+    }
+    else if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <div class="data-grid__state data-grid__state--error" role="alert">
+            <strong>@ErrorTitle</strong>
+            <span>@ErrorMessage</span>
+            @if (OnRetry.HasDelegate)
+            {
+                <button class="btn btn-primary btn-compact" type="button" @onclick="OnRetry">تلاش دوباره</button>
+            }
+        </div>
+    }
+    else if (Items?.Any() != true)
+    {
+        <div class="data-grid__state" role="status">
+            <EmptyState
+                Icon="folder"
+                Title="@EmptyTitle"
+                Message="@EmptyMessage"
+                Action="@EmptyAction" />
         </div>
     }
     else
@@ -26,13 +54,13 @@
         @foreach (var item in Items)
         {
             <div class="data-grid__row" role="row">
-                @foreach (var column in Columns)
+                @foreach (var column in Columns!)
                 {
-                    <div class="data-grid__cell">@column.Template(item)</div>
+                    <div class="data-grid__cell" role="cell" data-label="@column.Header">@column.Template(item)</div>
                 }
                 @if (ActionsTemplate is not null)
                 {
-                    <div class="data-grid__cell">@ActionsTemplate(item)</div>
+                    <div class="data-grid__cell" role="cell" data-label="عملیات">@ActionsTemplate(item)</div>
                 }
             </div>
         }
@@ -43,8 +71,14 @@
     [Parameter] public IReadOnlyList<TItem>? Items { get; set; }
     [Parameter] public IReadOnlyList<TableColumn<TItem>>? Columns { get; set; }
     [Parameter] public RenderFragment<TItem>? ActionsTemplate { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public string EmptyTitle { get; set; } = "هنوز موردی ثبت نشده است";
+    [Parameter] public string EmptyMessage { get; set; } = "با ثبت اولین مورد، اطلاعات این بخش در اینجا نمایش داده می‌شود.";
+    [Parameter] public RenderFragment? EmptyAction { get; set; }
+    [Parameter] public string? ErrorTitle { get; set; } = "بارگذاری اطلاعات انجام نشد";
+    [Parameter] public string? ErrorMessage { get; set; }
+    [Parameter] public EventCallback OnRetry { get; set; }
 
     private int ColumnCount => Math.Clamp((Columns?.Count ?? 0) + (ActionsTemplate is not null ? 1 : 0), 1, 10);
-
     private string GridColumnsClass => $"data-grid--cols-{Math.Min(Math.Max(ColumnCount, 1), 10)}";
 }

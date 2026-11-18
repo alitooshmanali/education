@@ -28,7 +28,12 @@
                 </div>
             </div>
             <h1>ورود به پلتفرم</h1>
-            <p>برای دسترسی به پنل مدرس یا زبان‌آموز وارد شوید.</p>
+            <p>برای دسترسی به پنل مدرس یا زبان‌آموز وارد شوید و مسیر یادگیری را ادامه دهید.</p>
+            <div class="auth-hero__features" aria-label="قابلیت‌های پلتفرم">
+                <span>مسیر یادگیری شخصی</span>
+                <span>محتوای چندرسانه‌ای</span>
+                <span>پیگیری پیشرفت</span>
+            </div>
         </section>
 
         <section class="auth-card-wrap">
@@ -38,19 +43,19 @@
 
                 @if (!string.IsNullOrWhiteSpace(_error))
                 {
-                    <div class="alert alert-error">@_error</div>
+                    <div class="alert alert-error" role="alert" aria-live="assertive">@_error</div>
                 }
 
                 <div class="form-grid">
                     <div class="field">
                         <label for="username">نام کاربری</label>
-                        <input id="username" name="username" autocomplete="username" placeholder="student01" />
+                        <input id="username" name="username" type="text" dir="ltr" autocomplete="username" autocapitalize="off" spellcheck="false" required placeholder="student01" />
                     </div>
 
                     <div class="field">
                         <label for="password">رمز عبور</label>
                             <div class="login-password-wrap">
-                            <input id="password" name="password" type="@(_showPassword ? "text" : "password")" autocomplete="current-password" placeholder="رمز عبور" />
+                            <input id="password" name="password" type="@(_showPassword ? "text" : "password")" dir="ltr" autocomplete="current-password" required placeholder="رمز عبور" />
                             <button class="login-toggle-password" type="button" @onclick="() => _showPassword = !_showPassword" aria-label="نمایش/مخفی کردن رمز">
                                 <AppIcon Name="@( _showPassword ? "eye-off" : "eye" )" />
                             </button>

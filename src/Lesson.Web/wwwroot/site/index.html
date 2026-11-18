@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>اساطیر آینده</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/site-index.css">
 <link rel="stylesheet" href="/site/css/site-index.css">
+<link rel="stylesheet" href="/css/ds/tokens.css">
+<link rel="stylesheet" href="/site/css/public-shell.css">
+<link rel="stylesheet" href="/site/css/design-system.css">
+    <link rel="stylesheet" href="/css/ds/fonts.css">
 </head>
 <body>
 <div class="shell">
@@ -94,15 +94,25 @@
 
 
   <button type="button" class="place-sticky" id="place-sticky" onclick="openPlacementModal()">تعیین سطح</button>
-  <div class="place-modal" id="place-modal" role="dialog" aria-modal="true">
-    <div class="place-modal__card">
-      <h3>تعیین سطح رایگان</h3>
-      <p>شماره موبایل‌ات را وارد کن تا نتیجه ذخیره شود و برای مشاوره باهات تماس بگیریم.</p>
-      <input id="place-phone" type="tel" inputmode="numeric" placeholder="09121234567" maxlength="15" />
-      <div class="place-err" id="place-phone-err" hidden></div>
+  <div class="place-modal" id="place-modal" role="dialog" aria-modal="true" aria-labelledby="place-modal-title" aria-describedby="place-modal-description">
+    <div class="place-modal__card" role="document">
+      <div class="place-modal__guide">
+        <span class="place-modal__avatar" aria-hidden="true">آ</span>
+        <div>
+          <span class="place-modal__eyebrow">یک شروع روشن</span>
+          <h3 id="place-modal-title">تعیین سطح رایگان</h3>
+        </div>
+      </div>
+      <p id="place-modal-description">سلام! من آوا هستم. حدود ۴ دقیقه همراهت می‌مانم تا مسیر مناسب شروع یادگیری‌ات را پیدا کنیم.</p>
+      <label for="place-phone">شماره موبایل</label>
+      <input id="place-phone" type="tel" inputmode="numeric" autocomplete="tel" dir="ltr" placeholder="09121234567" maxlength="15" aria-describedby="place-phone-err" />
+      <div class="place-modal__benefits" aria-label="مزیت‌های تعیین سطح">
+        <span>✓ بدون ثبت‌نام</span><span>✓ نتیجهٔ فوری</span><span>✓ مشاورهٔ رایگان</span>
+      </div>
+      <div class="place-err" id="place-phone-err" role="alert" aria-live="assertive" hidden></div>
       <div class="place-modal__actions">
         <button type="button" class="place-modal__cancel" onclick="closePlacementModal()">انصراف</button>
-        <button type="button" class="place-modal__ok" id="place-start-btn" onclick="startPlacement()">شروع آزمون</button>
+        <button type="button" class="place-modal__ok" id="place-start-btn" onclick="startPlacement()">شروع بازی</button>
       </div>
     </div>
   </div>
@@ -1143,10 +1153,12 @@ let _placeCandidateId = null;
 let _placeQuestions = [];
 let _placeAnswers = {};
 let _placeIdx = 0;
+let _placeReturnFocus = null;
 
 window.openPlacementModal = function openPlacementModal(){
   const m = document.getElementById('place-modal');
   if(!m){ console.error('place-modal missing'); alert('مودال تعیین سطح پیدا نشد. صفحه را رفرش کنید.'); return; }
+  _placeReturnFocus = document.activeElement;
   m.classList.add('is-open');
   const err = document.getElementById('place-phone-err');
   if(err){ err.hidden = true; err.textContent = ''; }
@@ -1156,23 +1168,45 @@ window.openPlacementModal = function openPlacementModal(){
 window.closePlacementModal = function closePlacementModal(){
   const m = document.getElementById('place-modal');
   if(m) m.classList.remove('is-open');
+  if(_placeReturnFocus && typeof _placeReturnFocus.focus === 'function') _placeReturnFocus.focus();
+  _placeReturnFocus = null;
 }
 document.getElementById('place-modal')?.addEventListener('click', e=>{
   if(e.target.id === 'place-modal') closePlacementModal();
+});
+document.addEventListener('keydown', e=>{
+  const modal = document.getElementById('place-modal');
+  if(!modal?.classList.contains('is-open')) return;
+  if(e.key === 'Escape') { e.preventDefault(); closePlacementModal(); return; }
+  if(e.key === 'Tab') {
+    const focusable = [...modal.querySelectorAll('button:not([disabled]),input:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])')];
+    if(!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length-1];
+    if(e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
 });
 
 window.startPlacement = async function startPlacement(){
   const inp = document.getElementById('place-phone');
   const err = document.getElementById('place-phone-err');
   const btn = document.getElementById('place-start-btn');
-  const phone = (inp?.value || '').trim();
-  if(err){ err.hidden = true; }
-  if(!phone){
-    if(err){ err.textContent = 'شماره موبایل را وارد کنید.'; err.hidden = false; }
+  const rawPhone = (inp?.value || '').trim();
+  const digitMap = {'۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9','٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
+  const asciiPhone = rawPhone.replace(/[۰-۹٠-٩]/g, d => digitMap[d]);
+  let phone = asciiPhone.replace(/\D/g, '');
+  if(phone.startsWith('0098')) phone = '0' + phone.slice(4);
+  else if(phone.startsWith('98') && phone.length >= 12) phone = '0' + phone.slice(2);
+  else if(phone.startsWith('9') && phone.length === 10) phone = '0' + phone;
+  if(err){ err.hidden = true; err.textContent = ''; }
+  if(!/^09\d{9}$/.test(phone)){
+    if(err){ err.textContent = 'شماره باید با ۰۹ شروع شود و ۱۱ رقم باشد.'; err.hidden = false; }
+    inp?.focus();
     return;
   }
+  if(inp) inp.value = phone;
   try{
-    if(btn) btn.disabled = true;
+    if(btn) { btn.disabled = true; btn.classList.add('is-busy'); btn.setAttribute('aria-busy','true'); }
     const res = await fetch('/api/placement/start', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -1191,7 +1225,7 @@ window.startPlacement = async function startPlacement(){
   } catch(ex){
     if(err){ err.textContent = 'ارتباط با سرور برقرار نشد.'; err.hidden = false; }
   } finally {
-    if(btn) btn.disabled = false;
+    if(btn) { btn.disabled = false; btn.classList.remove('is-busy'); btn.removeAttribute('aria-busy'); }
   }
 }
 
@@ -1348,11 +1382,15 @@ function renderPlacementHub(){
     </button>`;
   }).join('');
   const finished = keys.filter(k=>_pg.done[k]).length;
-  return `<div class="pg">
-    <h1 class="pg__title">بازی تعیین سطح</h1>
-    <p class="pg__sub">یک مهارت را انتخاب کن · ${finished} از ۴ انجام شده</p>
-    <div class="pg-cubes">${cubes}</div>
-  </div>`;
+  return `<section class="pg pg--hub">
+    <span class="pg__eyebrow">مسیر روشنایی · تعیین سطح</span>
+    <h1 class="pg__title">مسیر یادگیری‌ات را <em>روشن</em> کن</h1>
+    <p class="pg__sub">چهار مهارت را با آرامش و به ترتیب دلخواه انجام بده. پاسخ‌ها برای ساخت پیشنهاد سطح ثبت می‌شوند؛ اینجا خبری از رد شدن یا رقابت نیست.</p>
+    <div class="pg__guide"><span class="pg__guide-mark">آ</span><span><b>سلام! من آوا هستم.</b><br>کنارت می‌مانم تا هر بخش را کامل کنی. هر زمان آماده بودی، یکی از دروازه‌ها را انتخاب کن.</span></div>
+    <p class="pg__gates-label">دروازه‌های مسیر · ${finished} از ۴ تکمیل شده</p>
+    <div class="pg-cubes" role="list">${cubes}</div>
+    <p class="pg__start-note">می‌توانی مسیرها را به هر ترتیبی انجام بدهی و بین آن‌ها جابه‌جا شوی.</p>
+  </section>`;
 }
 
 function renderGrammarRound(){
@@ -1362,7 +1400,7 @@ function renderGrammarRound(){
   const opts = item.opts.map((o,i)=>
     `<button type="button" class="pg-opt" data-oi="${i}">${o}</button>`
   ).join('');
-  return `<div class="pg">
+  return `<div class="pg pg--round">
     <div class="pg-hud"><span>گرامر · ${item.level}</span><b>${_pg.idx+1} / ${list.length}</b></div>
     <div class="pg-q"><p class="pg-q__text" dir="ltr">${item.q}</p><div class="pg-opts">${opts}</div></div>
   </div>`;
@@ -1383,7 +1421,7 @@ function renderVocabRound(){
   const letters = _pg.vocabPool.map((ch,i)=>
     `<button type="button" class="pg-letter${_pg.vocabUsed[i]?' used':''}" data-li="${i}" draggable="${_pg.vocabUsed[i]?'false':'true'}">${ch}</button>`
   ).join('');
-  return `<div class="pg">
+  return `<div class="pg pg--round">
     <div class="pg-hud"><span>واژگان · ${item.level}</span><b>${_pg.idx+1} / ${list.length}</b></div>
     <div class="pg-q">
       <p class="pg-q__text">حروف را بچین تا کلمه ساخته شود</p>
@@ -1400,7 +1438,7 @@ function renderListeningRound(){
   const list = PG_BANK.listening;
   const item = list[_pg.idx];
   if(!item) return '';
-  return `<div class="pg">
+  return `<div class="pg pg--round">
     <div class="pg-hud"><span>شنیداری</span><b>${_pg.idx+1} / ${list.length}</b></div>
     <div class="pg-q">
       <p class="pg-q__text">بیت اول را بخوان؛ بیت دوم را بشنو و همان را بنویس</p>
@@ -1417,7 +1455,7 @@ function renderSpeakingRound(){
   const list = PG_BANK.speaking;
   const item = list[_pg.idx];
   if(!item) return '';
-  return `<div class="pg">
+  return `<div class="pg pg--round">
     <div class="pg-hud"><span>مکالمه / Shadow · ${item.level||''}</span><b>${_pg.idx+1} / ${list.length}</b></div>
     <div class="pg-q">
       <p class="pg-q__text">${item.story}</p>
@@ -1453,15 +1491,15 @@ function renderSpeakingRound(){
 
 function renderPlacementGameResult(){
   const r = _pg.result || {};
-  return `<div class="pg"><div class="pg-result">
+  return `<div class="pg pg--result"><div class="pg-result">
     <h2>نتیجه بازی تعیین سطح</h2>
     <div class="lvl">${r.level||'—'}</div>
     <p style="color:var(--muted);font-size:13px">به زودی همکاران ما با شما تماس خواهند گرفت برای فرایند ثبت نام</p>
-    <div style="margin-top:16px;text-align:start;max-width:320px;margin-inline:auto;font-size:14px;font-weight:700;color:var(--navy)">
-      <div>گرامر: ${r.writing ?? '—'}</div>
-      <div>واژگان: ${r.vocabulary ?? '—'}</div>
-      <div>شنیداری: ${r.listening ?? '—'}</div>
-      <div>مکالمه: ${r.reading ?? '—'}</div>
+    <div class="pg-result__scores">
+      <div><b>گرامر و نوشتار</b><span>${r.writing ?? '—'} / ۱۰</span></div>
+      <div><b>واژگان</b><span>${r.vocabulary ?? '—'} / ۱۰</span></div>
+      <div><b>شنیداری</b><span>${r.listening ?? '—'} / ۱۰</span></div>
+      <div><b>گفتار و خواندن</b><span>${r.reading ?? '—'} / ۱۰</span></div>
     </div>
     <div style="margin-top:20px"><a class="back" href="#/english">← بازگشت</a></div>
   </div></div>`;

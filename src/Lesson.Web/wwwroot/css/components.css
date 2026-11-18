@@ -70,7 +70,7 @@
 
 .btn-primary {
     background: var(--color-primary);
-    color: #fff;
+    color: var(--paper);
     border-color: var(--color-primary);
 }
 .btn-primary:hover {
@@ -108,22 +108,22 @@
 
 .btn-danger {
     background: var(--color-error);
-    color: #fff;
+    color: var(--paper);
     border-color: var(--color-error);
 }
 .btn-danger:hover {
-    background: #DC2626;
+    background: var(--coral);
 }
 
 .btn-success {
     background: var(--color-success-light);
-    color: #047857;
+    color: var(--jade);
     border-color: transparent;
 }
 
 .btn-warning {
     background: var(--color-warning-light);
-    color: #B45309;
+    color: var(--amber);
     border-color: transparent;
 }
 
@@ -446,7 +446,7 @@ table.data-table,
 
 .data-table td {
     padding: 14px 16px;
-    border-bottom: 1px solid #EAECF0;
+    border-bottom: 1px solid var(--line-cool);
     color: var(--color-text);
     vertical-align: middle;
 }
@@ -457,7 +457,7 @@ table.data-table,
 }
 
 .data-table tbody tr:hover {
-    background: #F9FAFB;
+    background: var(--cream);
 }
 
 html.theme-dark .data-table tbody tr:hover,
@@ -486,32 +486,32 @@ html.theme-dark .data-table tbody tr:hover,
 .badge-success,
 .status-badge.success {
     background: var(--color-success-light);
-    color: #047857;
+    color: var(--jade);
 }
 
 .badge-warning,
 .status-badge.warning {
     background: var(--color-warning-light);
-    color: #B45309;
+    color: var(--amber);
 }
 
 .badge-error,
 .status-badge.error,
 .badge-danger {
     background: var(--color-error-light);
-    color: #B91C1C;
+    color: var(--coral);
 }
 
 .badge-info,
 .status-badge.info {
     background: var(--color-info-light);
-    color: #1D4ED8;
+    color: var(--navy-500);
 }
 
 .badge-neutral,
 .status-badge.neutral {
-    background: #F2F4F7;
-    color: #475467;
+    background: var(--sand-50);
+    color: var(--muted);
 }
 
 html.theme-dark .badge-neutral,
@@ -630,7 +630,7 @@ html.theme-dark .badge-neutral,
 .toast-wrap {
     position: fixed;
     top: 16px;
-    left: 50%;
+    inset-inline-start: 50%;
     transform: translateX(-50%);
     z-index: 1200;
     width: min(680px, calc(100% - 32px));
@@ -848,13 +848,13 @@ select:disabled,
 .status-badge.tone-success,
 .tone-success {
     background: var(--color-success-light);
-    color: #047857;
+    color: var(--jade);
 }
 
 .status-badge.tone-warning,
 .tone-warning {
     background: var(--color-warning-light);
-    color: #B45309;
+    color: var(--amber);
 }
 
 .status-badge.tone-error,
@@ -862,19 +862,19 @@ select:disabled,
 .tone-error,
 .tone-danger {
     background: var(--color-error-light);
-    color: #B91C1C;
+    color: var(--coral);
 }
 
 .status-badge.tone-info,
 .tone-info {
     background: var(--color-info-light);
-    color: #1D4ED8;
+    color: var(--navy-500);
 }
 
 .status-badge.tone-neutral,
 .tone-neutral {
-    background: #F2F4F7;
-    color: #475467;
+    background: var(--sand-50);
+    color: var(--muted);
 }
 
 html.theme-dark .status-badge.tone-neutral,
@@ -959,7 +959,7 @@ html.theme-dark .status-badge.tone-neutral,
     margin: 8px 12px 12px;
     border-radius: var(--radius-btn);
     background: var(--color-primary);
-    color: #fff;
+    color: var(--paper);
     font-size: 13px;
     font-weight: 500;
     transition: background-color 0.15s ease;
@@ -1034,13 +1034,13 @@ html.theme-dark .status-badge.tone-neutral,
 .quiz-option.is-correct {
     border-color: var(--color-success);
     background: var(--color-success-light);
-    color: #047857;
+    color: var(--jade);
 }
 
 .quiz-option.is-wrong {
     border-color: var(--color-error);
     background: var(--color-error-light);
-    color: #B91C1C;
+    color: var(--coral);
 }
 
 .alert {
@@ -1053,13 +1053,13 @@ html.theme-dark .status-badge.tone-neutral,
 
 .alert-success {
     background: var(--color-success-light);
-    color: #047857;
+    color: var(--jade);
     border-color: color-mix(in srgb, var(--color-success) 25%, transparent);
 }
 
 .alert-error {
     background: var(--color-error-light);
-    color: #B91C1C;
+    color: var(--coral);
     border-color: color-mix(in srgb, var(--color-error) 25%, transparent);
 }
 
@@ -1118,7 +1118,7 @@ html.theme-dark .status-badge.tone-neutral,
 }
 
 .data-grid__row:hover {
-    background: #F9FAFB;
+    background: var(--cream);
 }
 
 html.theme-dark .data-grid__row:hover,
@@ -1296,7 +1296,7 @@ html.theme-dark .data-grid__row:hover,
 
 /* Video player shell (legacy pages) */
 .video-player-shell {
-    background: #050b17;
+    background: var(--navy-950);
     border-radius: var(--radius-lg);
     padding: 10px;
 }

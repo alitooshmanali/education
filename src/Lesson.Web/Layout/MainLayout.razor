@@ -12,38 +12,38 @@
 .umenu__trigger {
   display: inline-flex; align-items: center; gap: 10px;
   padding: 5px 12px 5px 6px; border-radius: 999px;
-  border: 1px solid #E6E1D6; background: #fff; cursor: pointer;
+  border: 1px solid var(--line); background: var(--paper); cursor: pointer;
   font: inherit; color: inherit; max-width: 260px;
 }
-.umenu__trigger:hover { border-color: #c3d2e6; box-shadow: 0 2px 8px rgba(10,43,81,.06); }
+.umenu__trigger:hover { border-color: var(--navy-200); box-shadow: 0 2px 8px rgba(10,43,81,.06); }
 .umenu__avatar {
   width: 32px; height: 32px; border-radius: 999px; flex-shrink: 0;
   display: inline-grid; place-items: center;
-  background: #eef3fa; color: #0A2B51; font-size: 12px; font-weight: 800;
+  background: var(--navy-50); color: var(--navy-800); font-size: 12px; font-weight: 800;
 }
 .umenu__meta { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; line-height: 1.3; }
 .umenu__meta strong { font-size: 12.5px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
-.umenu__meta small { font-size: 10.5px; color: #6B7787; }
-.umenu__caret { font-size: 10px; color: #6B7787; margin-inline-start: 2px; }
+.umenu__meta small { font-size: 10.5px; color: var(--muted); }
+.umenu__caret { font-size: 10px; color: var(--muted); margin-inline-start: 2px; }
 .umenu--open .umenu__caret { transform: rotate(180deg); }
 .umenu__panel {
   position: absolute; top: calc(100% + 8px); inset-inline-end: 0;
-  min-width: 220px; background: #fff; border: 1px solid #E6E1D6;
+  min-width: 220px; background: var(--paper); border: 1px solid var(--line);
   border-radius: 14px; box-shadow: 0 16px 40px rgba(10,43,81,.14);
   padding: 8px; z-index: 70;
 }
 .umenu__panel-head {
   display: flex; align-items: center; gap: 10px;
-  padding: 8px 10px 12px; border-bottom: 1px solid #E6E1D6; margin-bottom: 6px;
+  padding: 8px 10px 12px; border-bottom: 1px solid var(--line); margin-bottom: 6px;
 }
 .umenu__panel-head strong { display: block; font-size: 13px; font-weight: 800; }
-.umenu__panel-head small { display: block; font-size: 11px; color: #6B7787; }
+.umenu__panel-head small { display: block; font-size: 11px; color: var(--muted); }
 .umenu__logout {
   display: block; width: 100%; border: 0; background: transparent;
   text-align: start; padding: 10px 12px; border-radius: 10px;
-  font: inherit; font-size: 13px; font-weight: 700; color: #c0392b; cursor: pointer;
+  font: inherit; font-size: 13px; font-weight: 700; color: var(--coral); cursor: pointer;
 }
-.umenu__logout:hover { background: #fdecec; }
+.umenu__logout:hover { background: var(--coral-bg); }
 .umenu__scrim {
   position: fixed; inset: 0; border: 0; padding: 0; margin: 0;
   background: transparent; cursor: default; z-index: 65;
@@ -51,7 +51,7 @@
 </style>
 
 <div class="app-shell @(ThemeClass) @(_isNavOpen ? "nav-open" : null)" dir="rtl" lang="fa">
-    <aside class="app-sidebar @(_isNavOpen ? "is-open" : null)" data-open="@_isNavOpen" aria-label="Primary navigation" style="@(_isNavOpen ? "right:0;left:auto;transform:none;" : null)">
+    <aside class="app-sidebar @(_isNavOpen ? "is-open" : null)" data-open="@_isNavOpen" aria-label="Primary navigation">
         <div class="brand">
             <div class="brand__mark brand__mark--logo">
                 <img src="/img/logo.png" alt="اساطیر آینده" />

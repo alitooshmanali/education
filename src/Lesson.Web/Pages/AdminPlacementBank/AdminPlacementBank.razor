@@ -8,23 +8,23 @@
 <style>
     .pb { max-width: 1100px; width:100%; }
     .pb__head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; margin-bottom:16px; }
-    .pb__title { margin:0; font-size:24px; font-weight:900; color:#0A2B51; }
+    .pb__title { margin:0; font-size:24px; font-weight:900; color:var(--navy-800); }
     .pb-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
-    .pb-tabs button { border:1px solid #E6E1D6; background:#fff; border-radius:999px; padding:8px 14px; font:inherit; font-weight:800; cursor:pointer; color:#6B7787; }
-    .pb-tabs button.is-on { background:#0A2B51; color:#fff; border-color:#0A2B51; }
-    .pb-form { background:#fff; border:1px solid #E6E1D6; border-radius:16px; padding:16px; margin-bottom:14px; }
+    .pb-tabs button { border:1px solid var(--line); background:var(--paper); border-radius:999px; padding:8px 14px; font:inherit; font-weight:800; cursor:pointer; color:var(--muted); }
+    .pb-tabs button.is-on { background:var(--navy-800); color:var(--paper); border-color:var(--navy-800); }
+    .pb-form { background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px; }
     .pb-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
-    .pb-field label { display:block; font-size:12px; font-weight:700; color:#6B7787; margin-bottom:4px; }
-    .pb-field input, .pb-field select, .pb-field textarea { width:100%; box-sizing:border-box; border:1px solid #E6E1D6; border-radius:10px; padding:9px 12px; font:inherit; }
+    .pb-field label { display:block; font-size:12px; font-weight:700; color:var(--muted); margin-bottom:4px; }
+    .pb-field input, .pb-field select, .pb-field textarea { width:100%; box-sizing:border-box; border:1px solid var(--line); border-radius:10px; padding:9px 12px; font:inherit; }
     .pb-field.full { grid-column:1/-1; }
-    .pb-card { background:#fff; border:1px solid #E6E1D6; border-radius:16px; overflow:hidden; }
+    .pb-card { background:var(--paper); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
     .pb-table { width:100%; border-collapse:collapse; font-size:13px; }
-    .pb-table th { text-align:start; font-size:11px; font-weight:800; color:#6B7787; padding:10px 12px; background:#fbfaf7; border-bottom:1px solid #E6E1D6; }
-    .pb-table td { padding:10px 12px; border-bottom:1px solid #eef1f5; vertical-align:top; }
+    .pb-table th { text-align:start; font-size:11px; font-weight:800; color:var(--muted); padding:10px 12px; background:var(--sand-50); border-bottom:1px solid var(--line); }
+    .pb-table td { padding:10px 12px; border-bottom:1px solid var(--navy-50); vertical-align:top; }
     .pb-alert { padding:10px 12px; border-radius:10px; margin-bottom:12px; font-size:13px; }
-    .pb-alert.err { background:#fdecec; color:#8f2b21; }
-    .pb-alert.ok { background:#e6f6f0; color:#0c5c41; }
-    .pb-hint { font-size:11px; color:#6B7787; margin-top:4px; }
+    .pb-alert.err { background:var(--coral-bg); color:var(--coral); }
+    .pb-alert.ok { background:var(--jade-bg); color:var(--jade); }
+    .pb-hint { font-size:11px; color:var(--muted); margin-top:4px; }
     @@media (max-width:800px){ .pb-grid { grid-template-columns:1fr; } }
 </style>
 
@@ -32,7 +32,7 @@
     <div class="pb__head">
         <div>
             <h1 class="pb__title">بانک بازی تعیین سطح</h1>
-            <p style="margin:4px 0 0;color:#6B7787;font-size:13px">گرامر · واژگان · شنیداری · مکالمه</p>
+            <p style="margin:4px 0 0;color:var(--muted);font-size:13px">گرامر · واژگان · شنیداری · مکالمه</p>
         </div>
         <button class="btn btn-primary" type="button" @onclick="StartCreate">آیتم جدید</button>
     </div>
@@ -152,7 +152,7 @@
             <tbody>
                 @if (Filtered.Count==0)
                 {
-                    <tr><td colspan="4" style="padding:20px;text-align:center;color:#6B7787">موردی نیست — از «آیتم جدید» اضافه کنید.</td></tr>
+                    <tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted)">موردی نیست — از «آیتم جدید» اضافه کنید.</td></tr>
                 }
                 else
                 {

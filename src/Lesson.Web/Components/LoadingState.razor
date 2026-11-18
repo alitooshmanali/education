@@ -1,0 +1,15 @@
+<section class="state-card state-card--loading" role="status" aria-live="polite" aria-busy="true">
+    <span class="state-card__spinner" aria-hidden="true"></span>
+    <div class="state-card__body">
+        <h3>@Title</h3>
+        @if (!string.IsNullOrWhiteSpace(Message))
+        {
+            <p>@Message</p>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter] public string Title { get; set; } = "در حال بارگذاری اطلاعات";
+    [Parameter] public string Message { get; set; } = "لطفاً چند لحظه صبر کنید.";
+}

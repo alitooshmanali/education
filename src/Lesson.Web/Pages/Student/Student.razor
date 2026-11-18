@@ -12,30 +12,29 @@
 
 @if (_summary is not null)
 {
-    <section class="panel pad panel-spaced">
-        <h3>پیشرفت کلی سطح</h3>
-        <div class="gauge" style="--pct: @(_summary.OverallProgressPercent)">
-            <span>@_summary.OverallProgressPercent%</span>
+    <section class="student-welcome panel-spaced">
+        <div class="student-welcome__copy">
+            <span class="eyebrow">مسیر یادگیری تو</span>
+            <h2>هر جلسه، یک قدم جلوتر</h2>
+            <p>محتوای تازه را ادامه بده و پیشرفت مهارت‌هایت را دنبال کن.</p>
+            <div class="student-welcome__actions">
+                <a class="btn btn-secondary" href="/student/videos"><AppIcon Name="play" /> ادامه یادگیری</a>
+                <a class="btn btn-ghost-light" href="/student/quizzes">رفتن به آزمون‌ها</a>
+            </div>
         </div>
-        <p class="gauge-meta">@_summary.OverallProgressPercent٪ از مسیر سطح شما طی شده — @(Math.Round(100 - _summary.OverallProgressPercent, 1))٪ باقی‌مانده</p>
+        <div class="student-welcome__progress" aria-label="پیشرفت کلی @_summary.OverallProgressPercent درصد">
+            <div class="gauge" style="--pct: @(_summary.OverallProgressPercent)">
+                <span>@_summary.OverallProgressPercent٪</span>
+            </div>
+            <small>پیشرفت کلی مسیر</small>
+        </div>
     </section>
 
+
     <section class="grid stats panel-spaced">
-        <article class="stat-card">
-            <div class="stat-card__label">ویدیو</div>
-            <div class="stat-card__value">@_summary.CompletedVideos / @_summary.TotalVideos</div>
-            <div class="stat-card__trend">@_summary.VideoProgressPercent%</div>
-        </article>
-        <article class="stat-card">
-            <div class="stat-card__label">داستان</div>
-            <div class="stat-card__value">@_summary.CompletedStories / @_summary.TotalStories</div>
-            <div class="stat-card__trend">@_summary.StoryProgressPercent%</div>
-        </article>
-        <article class="stat-card">
-            <div class="stat-card__label">آزمون</div>
-            <div class="stat-card__value">@_summary.CompletedQuizzes / @_summary.TotalQuizzes</div>
-            <div class="stat-card__trend">@_summary.QuizProgressPercent%</div>
-        </article>
+        <StatCard Label="ویدیوهای تکمیل‌شده" Value="@($"{_summary.CompletedVideos} / {_summary.TotalVideos}")" Hint="@($"{_summary.VideoProgressPercent}٪ تکمیل")" Icon="video" IconTone="navy" />
+        <StatCard Label="داستان‌های تکمیل‌شده" Value="@($"{_summary.CompletedStories} / {_summary.TotalStories}")" Hint="@($"{_summary.StoryProgressPercent}٪ تکمیل")" Icon="folder" IconTone="gold" />
+        <StatCard Label="آزمون‌های تکمیل‌شده" Value="@($"{_summary.CompletedQuizzes} / {_summary.TotalQuizzes}")" Hint="@($"{_summary.QuizProgressPercent}٪ تکمیل")" Icon="audit" IconTone="violet" />
     </section>
 }
 

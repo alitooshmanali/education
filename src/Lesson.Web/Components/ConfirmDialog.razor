@@ -1,11 +1,12 @@
 @if (IsOpen)
 {
-    <div class="dialog-overlay" @onclick="Close">
-        <div class="dialog" role="dialog" aria-modal="true" @onclick:stopPropagation>
-            <div class="dialog__title">@Title</div>
-            <p>@Message</p>
+    <div class="dialog-overlay" role="presentation" @onclick="CloseFromBackdrop">
+        <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title" aria-describedby="confirm-dialog-message" tabindex="-1"
+             @onclick:stopPropagation @onkeydown="HandleKeyDown">
+            <div class="dialog__title" id="confirm-dialog-title">@Title</div>
+            <p id="confirm-dialog-message">@Message</p>
             <div class="dialog__actions">
-                <AppButton Variant="ghost" Type="button" OnClick="Close">انصراف</AppButton>
+                <button class="btn btn-ghost" type="button" autofocus disabled="@Busy" @onclick="Close">انصراف</button>
                 <AppButton Variant="danger" Type="button" Busy="Busy" OnClick="ConfirmAsync">@ConfirmText</AppButton>
             </div>
         </div>
@@ -14,20 +15,20 @@
 
 @code {
     [Parameter] public bool IsOpen { get; set; }
-    [Parameter] public string Title { get; set; } = "Confirm";
-    [Parameter] public string Message { get; set; } = "Are you sure?";
-    [Parameter] public string ConfirmText { get; set; } = "Confirm";
+    [Parameter] public string Title { get; set; } = "تأیید عملیات";
+    [Parameter] public string Message { get; set; } = "آیا از انجام این عملیات مطمئن هستید؟";
+    [Parameter] public string ConfirmText { get; set; } = "تأیید";
     [Parameter] public bool Busy { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
     [Parameter] public EventCallback OnConfirm { get; set; }
 
-    private async Task Close()
+    private async Task HandleKeyDown(KeyboardEventArgs e)
     {
-        await OnClose.InvokeAsync();
+        if (e.Key == "Escape" && !Busy)
+            await Close();
     }
 
-    private async Task ConfirmAsync()
-    {
-        await OnConfirm.InvokeAsync();
-    }
+    private Task CloseFromBackdrop() => Busy ? Task.CompletedTask : Close();
+    private Task Close() => OnClose.InvokeAsync();
+    private Task ConfirmAsync() => Busy ? Task.CompletedTask : OnConfirm.InvokeAsync();
 }
