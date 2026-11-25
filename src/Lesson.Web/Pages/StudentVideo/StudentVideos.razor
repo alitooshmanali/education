@@ -2,65 +2,159 @@
 @attribute [Authorize(Roles = nameof(UserRole.Student))]
 @inject IContentService Contents
 @inject ICurrentUserContext CurrentUser
+@inject NavigationManager Nav
 
-<PageHeader Eyebrow="Student" Title="درس‌ها" Subtitle="فقط محتوای مجاز شما" />
+<PageHeader Eyebrow="STUDENT LIBRARY" Title="کتابخانهٔ ویدیو و محتوا" Subtitle="محتوای آموزشی‌ای که برای حساب و سطح شما مجاز شده است" />
 
-<section class="panel pad">
-    <div class="toolbar">
-        <SearchInput Label="جستجو" Placeholder="عنوان یا مسیر" Value="@_query" ValueChanged="OnSearch" />
-    </div>
+@if (_loading)
+{
+    <section class="v4-library-state panel pad" aria-live="polite">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <strong>در حال دریافت محتوای مجاز شما…</strong>
+    </section>
+}
+else if (!string.IsNullOrWhiteSpace(_error))
+{
+    <section class="panel pad v4-library-state" role="alert">
+        <AppIcon Name="alert" />
+        <h2>دریافت کتابخانه انجام نشد</h2>
+        <p>@_error</p>
+        <button class="btn btn-primary" @onclick="LoadAsync">تلاش دوباره</button>
+    </section>
+}
+else
+{
+    <section class="v4-library-intro">
+        <div>
+            <span class="eyebrow">WATCH · LISTEN · LEARN</span>
+            <h2>یادگیری را از همین‌جا ادامه بده</h2>
+            <p>محتوا بر اساس دسترسی حساب شما نمایش داده می‌شود. برای ادامه، یک کارت را انتخاب کنید.</p>
+        </div>
+        <div class="v4-library-count"><strong>@_items.Count</strong><span>مورد در دسترس</span></div>
+    </section>
 
-    <DataTable TItem="ContentDto" Items="_filtered" Columns="_columns">
-        <ActionsTemplate Context="item">
-            <a class="btn btn-secondary" href="@($"/student/videos/{item.Id}")"><AppIcon Name="play" /> باز کردن</a>
-        </ActionsTemplate>
-    </DataTable>
+    <section class="v4-library-toolbar panel pad" aria-label="جستجو و فیلتر محتوا">
+        <div class="v4-library-search">
+            <label for="content-search">جستجو در محتوا</label>
+            <input id="content-search" type="search" value="@_query" @oninput="OnSearch" placeholder="عنوان یا نام پوشه…" />
+        </div>
+        <div class="v4-library-filters" role="group" aria-label="فیلتر نوع محتوا">
+            @foreach (var filter in _filters)
+            {
+                <button type="button" class="v4-filter @( _selectedType == filter.Value ? "is-active" : null)" aria-pressed="@(_selectedType == filter.Value)" @onclick="() => SelectType(filter.Value)">@filter.Label</button>
+            }
+        </div>
+        <span class="v4-library-result">نمایش @_filtered.Count از @_items.Count محتوا</span>
+    </section>
 
-    @if (!_filtered.Any())
+    @if (_filtered.Count == 0)
     {
-        <EmptyState Icon="video" Title="یافت نشد" Message="عبارت جستجو را تغییر دهید یا با ادمین برای تخصیص دسترسی تماس بگیرید." />
+        <section class="panel pad v4-library-empty">
+            <EmptyState Icon="video" Title="محتوایی پیدا نشد" Message="فیلتر یا عبارت جستجو را تغییر دهید. اگر انتظار محتوای دیگری دارید، دسترسی آن را از مدرس یا مدیر پیگیری کنید." />
+            @if (!string.IsNullOrWhiteSpace(_query) || _selectedType is not null)
+            {
+                <button class="btn btn-ghost" @onclick="ResetFilters">پاک کردن فیلترها</button>
+            }
+        </section>
     }
-</section>
+    else
+    {
+        <section class="v4-video-grid" aria-label="فهرست محتوای آموزشی">
+            @foreach (var item in _filtered)
+            {
+                <article class="v4-video-card">
+                    <a class="v4-video-thumb" href="@($"/student/videos/{item.Id}")" aria-label="باز کردن @item.DisplayName">
+                        <span class="v4-video-thumb__art"><AppIcon Name="@IconFor(item.Type)" /></span>
+                        <span class="v4-video-thumb__play"><AppIcon Name="play" /></span>
+                        <span class="v4-video-thumb__type">@TypeLabel(item.Type)</span>
+                        @if (item.DurationSeconds is > 0) { <span class="v4-video-thumb__duration">@FormatDuration(item.DurationSeconds.Value)</span> }
+                        @if (item.Levels.Count > 0) { <span class="v4-video-thumb__level">@string.Join(" · ", item.Levels.Take(2))</span> }
+                    </a>
+                    <div class="v4-video-card__body">
+                        <div class="v4-video-card__title-row">
+                            <span class="v4-video-avatar">@Initial(item.DisplayName)</span>
+                            <div class="v4-video-card__copy">
+                                <h3><a href="@($"/student/videos/{item.Id}")">@item.DisplayName</a></h3>
+                                <p class="v4-video-card__path" title="@item.FolderPath">@item.FolderPath</p>
+                            </div>
+                        </div>
+                        <div class="v4-video-card__meta">
+                            <span>@item.FileExtension.ToUpperInvariant()</span>
+                            <span>@FormatSize(item.FileSize)</span>
+                            <a href="@($"/student/videos/{item.Id}")">مشاهده <AppIcon Name="arrow-left" /></a>
+                        </div>
+                    </div>
+                </article>
+            }
+        </section>
+    }
+}
 
 @code {
     private IReadOnlyList<ContentDto> _items = [];
     private IReadOnlyList<ContentDto> _filtered = [];
     private string _query = string.Empty;
+    private int? _selectedType;
+    private bool _loading = true;
+    private string? _error;
 
-    private readonly IReadOnlyList<TableColumn<ContentDto>> _columns =
+    private readonly (string Label, int? Value)[] _filters =
     [
-        new() { Header = "عنوان", Template = v => (RenderFragment)(b => b.AddContent(0, v.DisplayName)) },
-        new() { Header = "مسیر", Template = v => (RenderFragment)(b =>
-            {
-                b.OpenElement(0, "span");
-                b.AddAttribute(1, "class", "ltr");
-                b.AddContent(2, v.FolderPath);
-                b.CloseElement();
-            }) },
-        new() { Header = "نوع", Template = v => (RenderFragment)(b => b.AddContent(0, v.Type.ToString())) },
-        new() { Header = "حجم", Template = v => (RenderFragment)(b => b.AddContent(0, FormatSize(v.FileSize))) }
+        ("همه", null), ("ویدیو", (int)Lesson.Domain.Enums.ContentType.Video),
+        ("صوت", (int)Lesson.Domain.Enums.ContentType.Audio), ("تصویر", (int)Lesson.Domain.Enums.ContentType.Image),
+        ("سند", (int)Lesson.Domain.Enums.ContentType.Document), ("داستان", (int)Lesson.Domain.Enums.ContentType.Story)
     ];
 
     protected override async Task OnInitializedAsync()
     {
-        if (CurrentUser.UserId is null) return;
-
-        _items = await Contents.GetForUserAsync(CurrentUser.UserId.Value, false);
-        _filtered = _items;
+        await CurrentUser.EnsureInitializedAsync();
+        if (CurrentUser.UserId is null) { Nav.NavigateTo("/login", true); return; }
+        await LoadAsync();
     }
 
-    private void OnSearch(string value)
+    private async Task LoadAsync()
     {
-        _query = value;
-        _filtered = string.IsNullOrWhiteSpace(value)
-            ? _items
-            : _items.Where(v =>
-                v.DisplayName.Contains(value, StringComparison.OrdinalIgnoreCase) ||
-                v.FolderPath.Contains(value, StringComparison.OrdinalIgnoreCase)).ToList();
+        _loading = true;
+        _error = null;
+        try
+        {
+            if (CurrentUser.UserId is null) { Nav.NavigateTo("/login", true); return; }
+            _items = await Contents.GetForUserAsync(CurrentUser.UserId.Value, false);
+            ApplyFilters();
+        }
+        catch
+        {
+            _error = "ارتباط با سرویس محتوا برقرار نشد. لطفاً اتصال را بررسی و دوباره تلاش کنید.";
+        }
+        finally { _loading = false; }
     }
 
-    private static string FormatSize(long size)
-        => size > 1024 * 1024 * 1024 ? $"{size / 1024d / 1024d / 1024d:0.0} GB" :
-           size > 1024 * 1024 ? $"{size / 1024d / 1024d:0.0} MB" :
-           $"{size / 1024d:0.0} KB";
+    private void OnSearch(ChangeEventArgs e) { _query = e.Value?.ToString() ?? string.Empty; ApplyFilters(); }
+    private void SelectType(int? value) { _selectedType = value; ApplyFilters(); }
+    private void ResetFilters() { _query = string.Empty; _selectedType = null; ApplyFilters(); }
+
+    private void ApplyFilters()
+    {
+        IEnumerable<ContentDto> query = _items;
+        if (_selectedType is not null) query = query.Where(x => (int)x.Type == _selectedType.Value);
+        if (!string.IsNullOrWhiteSpace(_query))
+            query = query.Where(x => x.DisplayName.Contains(_query, StringComparison.OrdinalIgnoreCase) || x.FolderPath.Contains(_query, StringComparison.OrdinalIgnoreCase));
+        _filtered = query.OrderBy(x => x.FolderPath).ThenBy(x => x.DisplayName).ToList();
+    }
+
+    private static string TypeLabel(Lesson.Domain.Enums.ContentType type) => type switch
+    {
+        Lesson.Domain.Enums.ContentType.Video => "ویدیو", Lesson.Domain.Enums.ContentType.Audio => "صوت",
+        Lesson.Domain.Enums.ContentType.Image => "تصویر", Lesson.Domain.Enums.ContentType.Document => "سند",
+        Lesson.Domain.Enums.ContentType.Story => "داستان", _ => "محتوا"
+    };
+    private static string IconFor(Lesson.Domain.Enums.ContentType type) => type switch
+    {
+        Lesson.Domain.Enums.ContentType.Video => "video", Lesson.Domain.Enums.ContentType.Audio => "volume-2",
+        Lesson.Domain.Enums.ContentType.Image => "image", Lesson.Domain.Enums.ContentType.Document => "file-text",
+        Lesson.Domain.Enums.ContentType.Story => "book-open", _ => "folder"
+    };
+    private static string Initial(string? value) => string.IsNullOrWhiteSpace(value) ? "A" : value.Trim()[0].ToString();
+    private static string FormatDuration(double seconds) { var span = TimeSpan.FromSeconds(Math.Max(0, seconds)); return span.TotalHours >= 1 ? span.ToString(@"h\:mm\:ss") : span.ToString(@"m\:ss"); }
+    private static string FormatSize(long size) => size >= 1024L * 1024 * 1024 ? $"{size / 1024d / 1024d / 1024d:0.0} GB" : size >= 1024L * 1024 ? $"{size / 1024d / 1024d:0.0} MB" : $"{size / 1024d:0.0} KB";
 }

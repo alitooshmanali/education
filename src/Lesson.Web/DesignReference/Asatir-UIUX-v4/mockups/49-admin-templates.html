@@ -1,0 +1,284 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مدیر — گالری قالب‌های آماده</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800;900&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+
+/* ===== v4 additions: shared new blocks ===== */
+.bookrow{display:grid;grid-template-columns:290px minmax(0,1fr);gap:26px;align-items:center;padding:18px;border:1px solid var(--line);border-radius:20px;background:#fff;margin-bottom:16px}
+.bookrow.rev{grid-template-columns:minmax(0,1fr) 290px}
+.bookrow.rev .bookrow__img{order:2}
+.bookrow__img{position:relative}
+.bookcov{aspect-ratio:3/4;border-radius:12px;background:linear-gradient(150deg,#164a7c,#04162a);display:grid;place-items:center;color:#fff;font-family:Inter;font-weight:900;font-size:15px;letter-spacing:.06em;box-shadow:0 20px 34px -20px rgba(10,43,81,.6);text-align:center;padding:14px}
+.bookprice{display:inline-flex;align-items:baseline;gap:5px;font-weight:900;font-size:17px;color:var(--navy-900,#0A2B51)}
+.bookrow h2{font-size:17px;font-weight:900;margin-bottom:4px}
+.bookrow .au{font-size:11.5px;color:var(--muted);margin-bottom:9px}
+.bookrow p{font-size:12.5px;line-height:2;color:var(--ink-soft)}
+.coll{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.coll span{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:#F1F4F8;color:#3B4E63;border:1px solid #DCE4EE}
+.storygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:20px 14px}
+.storybanner{position:relative;aspect-ratio:16/6;border-radius:18px;overflow:hidden;background:linear-gradient(150deg,#164a7c,#0A2B51 55%,#04162a);display:grid;place-items:center}
+.storybanner b{font-family:Inter;font-size:30px;color:rgba(255,255,255,.14);letter-spacing:.2em}
+.justtext{text-align:justify;text-justify:inter-word;font-size:13.5px;line-height:2.25;color:var(--ink-soft)}
+.justtext p{margin-bottom:12px}
+.watchx{display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:18px;align-items:start}
+.watchx__side .rel{display:grid;grid-template-columns:120px minmax(0,1fr);gap:9px;margin-bottom:10px}
+.watchx__side .rel__th{aspect-ratio:16/9;border-radius:9px;background:linear-gradient(150deg,#164a7c,#04162a);position:relative;display:grid;place-items:center;color:#fff;font-size:10px}
+.watchx__side .rel__th i{position:absolute;bottom:3px;left:4px;font-style:normal;font-size:8.5px;background:rgba(0,0,0,.6);padding:1px 4px;border-radius:3px}
+.watchx__side h4{font-size:11px;font-weight:800;line-height:1.7}
+.watchx__side small{font-size:9.5px;color:var(--muted)}
+.chipsrow{display:flex;gap:6px;flex-wrap:wrap}
+@media(max-width:860px){.bookrow,.bookrow.rev{grid-template-columns:1fr}.bookrow.rev .bookrow__img{order:0}.watchx{grid-template-columns:1fr}}
+/* ===== v4 platform + admin ===== */
+.plat{display:grid;grid-template-columns:264px minmax(0,1fr);min-height:100vh;background:#F5F7FA}
+.pside{background:linear-gradient(180deg,#0A2B51,#061B33);color:#fff;padding:16px 14px;display:flex;flex-direction:column;gap:6px}
+.pside__brand{display:flex;gap:9px;align-items:center;font-weight:900;font-size:13px;padding:4px 6px 14px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:8px}
+.pside__brand span{width:30px;height:30px;border-radius:9px;background:linear-gradient(140deg,#D1AB7B,#a9803f);display:grid;place-items:center;font-size:15px;color:#0A2B51}
+.pgrp{font-size:9.5px;font-weight:800;color:rgba(255,255,255,.45);letter-spacing:.08em;margin:10px 8px 4px}
+.pnav{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;font-size:11.5px;font-weight:600;color:rgba(255,255,255,.72);text-decoration:none}
+.pnav:hover{background:rgba(255,255,255,.07);color:#fff}
+.pnav.on{background:rgba(209,171,123,.18);color:#F2DCB6;box-shadow:inset 2px 0 0 #D1AB7B}
+.pnav i{font-style:normal;opacity:.85}
+.pmain{padding:0 0 40px;min-width:0}
+.ptop{height:60px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:0 20px;position:sticky;top:0;z-index:20}
+.ptop h1{font-size:14px;font-weight:900;margin:0}
+.pbody{padding:18px 20px}
+.st4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.st{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 14px;position:relative;overflow:hidden}
+.st small{font-size:10px;font-weight:700;color:var(--muted);display:block}
+.st b{font-size:22px;font-weight:900;display:block;margin-top:3px;letter-spacing:-.02em}
+.st .dl{font-size:10px;margin-top:2px;color:#0f7a57;font-weight:700}
+.st .tip{position:absolute;inset-inline-end:12px;top:12px;font-size:14px;opacity:.5}
+.st--accent{background:#0A2B51;border-color:#0A2B51;color:#fff}
+.st--accent small,.st--accent .dl{color:rgba(255,255,255,.65)}
+.fld{display:grid;gap:5px;margin-bottom:12px}
+.fld label{font-size:11px;font-weight:800;color:var(--ink)}
+.fld small{font-size:10px;color:var(--muted);font-weight:500}
+.fld input,.fld select,.fld textarea{border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-family:inherit;font-size:12px;background:#fff;color:var(--ink);width:100%}
+.fld textarea{min-height:88px;line-height:1.9;resize:vertical}
+.drop{border:1.6px dashed #C3D0DE;border-radius:12px;background:#FAFCFE;padding:16px;text-align:center;font-size:11px;color:var(--muted)}
+.drop b{display:block;font-size:12px;color:var(--ink);margin-bottom:3px}
+.drop--ok{border-style:solid;border-color:#0f7a57;background:#F1FAF5;color:#0f7a57}
+.switchx{display:flex;align-items:center;gap:9px;font-size:11.5px;font-weight:700}
+.switchx i{width:38px;height:21px;border-radius:999px;background:#0A2B51;position:relative;flex:none}
+.switchx i::after{content:"";position:absolute;top:2.5px;inset-inline-start:19px;width:16px;height:16px;border-radius:50%;background:#fff}
+.switchx.off i{background:#C3D0DE}
+.switchx.off i::after{inset-inline-start:2.5px}
+.modebox{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.modebox label{border:1.6px solid var(--line);border-radius:12px;padding:11px 12px;cursor:pointer;display:block;background:#fff}
+.modebox label.on{border-color:#0A2B51;background:#F3F6FA;box-shadow:inset 0 0 0 1px #0A2B51}
+.modebox b{font-size:11.5px;display:block}
+.modebox span{font-size:10px;color:var(--muted);line-height:1.7;display:block;margin-top:2px}
+.dtbl{width:100%;border-collapse:collapse;font-size:11.5px}
+.dtbl th{text-align:start;font-size:10px;font-weight:800;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);background:#FAFCFE;white-space:nowrap}
+.dtbl td{padding:9px 10px;border-bottom:1px solid #EEF2F6;vertical-align:middle}
+.dtbl tr:hover td{background:#FAFBFD}
+.stgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.stn{border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px;text-decoration:none;color:inherit;display:block}
+.stn:hover{border-color:#D1AB7B;box-shadow:0 10px 20px -16px rgba(10,43,81,.4)}
+.stn b{font-size:12px;display:block;margin-bottom:3px}
+.stn span{font-size:10.5px;color:var(--muted)}
+.stn em{font-style:normal;font-size:18px;display:block;margin-bottom:6px}
+.watchbox{aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:linear-gradient(150deg,#164a7c,#04162a);position:relative;display:grid;place-items:center;color:#fff}
+.watchbox .big{width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.16);backdrop-filter:blur(4px);display:grid;place-items:center;font-size:20px;border:1px solid rgba(255,255,255,.3)}
+.abar{display:flex;gap:10px;align-items:flex-end}
+.abar .r{flex:1;height:2px;background:rgba(255,255,255,.28);border-radius:2px;position:relative}
+.abar .r i{position:absolute;inset-inline-start:0;top:0;height:2px;background:#D1AB7B;width:38%}
+@media(max-width:1024px){.plat{grid-template-columns:1fr}.pside{display:none}.st4{grid-template-columns:1fr 1fr}.modebox{grid-template-columns:1fr}}
+/* v4 extras */
+.radar{width:100%;height:auto}
+.phone{width:290px;border-radius:30px;border:8px solid #16233a;background:#fff;overflow:hidden;box-shadow:0 26px 50px -30px rgba(10,43,81,.55);position:relative}
+.phone__notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:92px;height:16px;background:#16233a;border-radius:0 0 12px 12px;z-index:3}
+.phone__scr{padding:20px 12px 14px;min-height:420px;background:#fff}
+.upl{display:flex;gap:8px;flex-wrap:wrap}
+.up{position:relative;width:104px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.up__th{height:58px;background:linear-gradient(150deg,#164a7c,#04162a);display:grid;place-items:center;color:#fff;font-size:13px}
+.up__t{font-size:9px;padding:4px 5px;line-height:1.5}
+.up__x{position:absolute;top:3px;inset-inline-end:3px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:9px;display:grid;place-items:center}
+.rowrep{display:grid;grid-template-columns:52px 1fr 96px 96px 110px 34px;gap:6px;align-items:center;padding:7px 8px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;background:#fff;font-size:10.5px}
+.rowrep input,.rowrep select{font-size:10.5px;padding:5px 6px;border:1px solid #E3E9F0;border-radius:6px;width:100%;font-family:inherit}
+.satring{width:64px;height:64px;border-radius:50%;background:conic-gradient(#D1AB7B 0 88%,#E7EBF1 88% 100%);display:grid;place-items:center;position:relative}
+.satring::after{content:"";position:absolute;inset:6px;background:#fff;border-radius:50%}
+.satring b{position:relative;z-index:2;font-size:13px;font-weight:900}
+/* ===== base / normalize — بخش پایهٔ کیت v4 ===== */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:'Vazirmatn','Inter',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.9;color:#111E2B;background:#F9F6ED;font-feature-settings:"ss01"}
+a{color:inherit;text-decoration:none}
+img,video{max-width:100%;display:block}
+h1,h2,h3,h4{margin:0;font-weight:800;line-height:1.5;letter-spacing:-.01em}
+p{margin:0}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+ul{margin:0;padding:0;list-style:none}
+.mono{font-family:'Inter',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+/* نوار ناوبری بالای سایت */
+.xnav{display:flex;align-items:center;gap:18px;padding:12px 22px;background:#06203C;color:#fff;position:sticky;top:0;z-index:40}
+.xnav b{font-size:14.5px;color:#F5E9D6;letter-spacing:.02em}
+.xnav a{font-size:12.5px;color:#C6D4E3;padding:6px 2px;border-bottom:2px solid transparent}
+.xnav a:hover,.xnav a.on{color:#fff;border-bottom-color:#D1AB7B}
+.xnav .ghost{border:1px solid rgba(209,171,123,.5);border-radius:999px;padding:7px 14px;color:#F5E9D6}
+.xnav .gold{background:linear-gradient(180deg,#E3CFA9,#D1AB7B);color:#3F2C13;font-weight:800;border-radius:999px;padding:7px 16px;border:0}
+/* گرید کارت دوره */
+.cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:16px}
+.ccard{background:#fff;border:1px solid #E4EAF1;border-radius:20px;overflow:hidden;display:flex;flex-direction:column;transition:.22s cubic-bezier(.22,.61,.36,1)}
+.ccard:hover{transform:translateY(-3px);box-shadow:0 18px 34px -22px rgba(10,43,81,.45);border-color:#D1AB7B}
+.ccard__media{position:relative;aspect-ratio:16/9;background:linear-gradient(150deg,#164A7C,#0A2B51 70%,#06203C);display:flex;align-items:center;justify-content:center}
+.ccard__media .glyph{font-family:'Inter',sans-serif;font-size:26px;font-weight:900;color:rgba(245,233,214,.9);letter-spacing:.04em}
+.ccard__media .chip{position:absolute;top:10px;inset-inline-start:10px;background:rgba(6,32,60,.72);border:1px solid rgba(209,171,123,.55);color:#F5E9D6;font-size:10.5px;padding:3px 9px;border-radius:999px;backdrop-filter:blur(4px)}
+.ccard__body{padding:14px 15px 16px;display:flex;flex-direction:column;gap:6px}
+.ccard__body h3{font-size:14.5px;line-height:1.7}
+.ccard__body p{font-size:11.8px;color:#647587}
+.ccard__body b{font-size:15px;color:#0A2B51;margin-top:6px}
+/* ردیف رسانه (پادکست/موسیقی) */
+.plist{display:flex;flex-direction:column;gap:10px}
+.pod{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;background:#fff;border:1px solid #E4EAF1;border-radius:16px;padding:12px 14px}
+.pod__art{width:56px;height:56px;border-radius:14px;background:linear-gradient(150deg,#D1AB7B,#7A5326);box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.pod__body b{font-size:13.5px;display:block}
+.pod__body p{font-size:11.5px;color:#647587;margin-top:2px}
+.pod__act{display:flex;gap:8px;align-items:center}
+.txtbtn{width:36px;height:36px;border-radius:50%;background:#0A2B51;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
+.txtbtn:hover{background:#164A7C}
+/* کشو متن */
+.trx{position:fixed;top:0;right:0;height:100%;width:min(440px,100%);background:#fff;box-shadow:-30px 0 60px -30px rgba(6,32,60,.5);z-index:80;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .42s cubic-bezier(.22,.61,.36,1)}
+.trx.is-open{transform:translateX(0)}
+.trx__hd{background:#06203C;color:#fff;padding:16px 18px;display:flex;align-items:center;gap:10px}
+.trx__hd b{font-size:13.5px}
+.trx__bd{padding:18px;overflow:auto;flex:1;overscroll-behavior:contain}
+.trx__tabs{display:flex;gap:6px;margin-bottom:14px}
+.trx__tabs span{font-size:11.5px;padding:5px 12px;border-radius:999px;background:#F3F6FA;color:#3B4E63}
+.trx__tabs span.on{background:#0A2B51;color:#fff}
+/* گرید ویدیو */
+.ytgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:18px 14px}
+.ytcard{display:flex;flex-direction:column;gap:9px}
+.ytcard__th{position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:linear-gradient(150deg,#164A7C,#06203C);display:flex;align-items:center;justify-content:center}
+.ytcard__th .play{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.4);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px}
+.ytcard__dur{position:absolute;bottom:7px;inset-inline-start:7px;background:rgba(6,32,60,.82);color:#fff;font-size:10.5px;padding:2px 6px;border-radius:6px}
+.ytcard__lvl{position:absolute;top:7px;inset-inline-end:7px;background:rgba(209,171,123,.92);color:#3F2C13;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px}
+.ytcard__meta{display:flex;gap:9px}
+.ytcard__meta i{width:32px;height:32px;border-radius:50%;background:#0A2B51;color:#F5E9D6;font-style:normal;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none}
+.ytcard__meta b{font-size:13px;line-height:1.7;display:block}
+.ytcard__meta p{font-size:11px;color:#647587}
+/* استوری */
+.storygrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:16px 10px}
+.sstory{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center}
+.sstory__ring{width:72px;height:72px;border-radius:50%;padding:2px;background:linear-gradient(135deg,#D1AB7B,#8B6335)}
+.sstory__ring.vo{background:linear-gradient(135deg,#B9C9DA,#647587)}
+.sstory__ring.seen{background:#DCE4EE}
+.sstory__in{width:100%;height:100%;border-radius:50%;background:linear-gradient(160deg,#164A7C,#06203C);display:flex;align-items:center;justify-content:center;color:#F5E9D6;font-size:11px;font-weight:800}
+.sstory b{font-size:11.5px;line-height:1.6}
+.sstory span{font-size:10.5px;color:#647587}
+/* بنر استوری */
+.storybanner{aspect-ratio:16/6;border-radius:22px;background:linear-gradient(135deg,#06203C,#164A7C 60%,#0A2B51);display:flex;align-items:center;justify-content:center;color:rgba(245,233,214,.35);font-family:'Inter',sans-serif;font-size:clamp(20px,3.4vw,44px);font-weight:900;letter-spacing:.16em}
+.justtext{text-align:justify;font-size:13.5px;line-height:2.25;color:#26313D}
+/* کتاب زیگزاگ */
+.bookrow{display:grid;grid-template-columns:290px 1fr;gap:26px;background:#fff;border:1px solid #E4EAF1;border-radius:22px;padding:18px;margin-bottom:16px;align-items:start}
+.bookrow:nth-child(even){grid-template-columns:1fr 290px}
+.bookrow:nth-child(even) .bookcov{order:2}
+.bookcov{aspect-ratio:3/4;border-radius:14px;background:linear-gradient(160deg,#164A7C,#04162A);color:#F5E9D6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:18px;text-align:center;box-shadow:0 18px 34px -22px rgba(6,32,60,.6)}
+.bookcov b{font-size:13px;letter-spacing:.1em;line-height:1.6}
+.bookcov span{font-size:10px;color:rgba(245,233,214,.7)}
+.coll{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.coll span{font-size:10.5px;background:#F3F6FA;border:1px solid #E4EAF1;color:#3B4E63;padding:3px 9px;border-radius:999px}
+.bookprice{font-size:17px;font-weight:900;color:#0A2B51}
+@media(max-width:860px){
+ .cgrid,.ytgrid{grid-template-columns:1fr}
+ .bookrow,.bookrow:nth-child(even){grid-template-columns:1fr}
+ .bookrow .bookcov{order:0 !important;max-width:220px}
+ .storybanner{aspect-ratio:16/9}
+}
+/* ===== FOUNDATION — کلاس‌های مشترک چیدمان (v4) ===== */
+html,body{overflow-x:hidden}
+.wrap{width:100%;max-width:1360px;margin:0 auto;padding:0 22px}
+.xnav{display:block;padding:0;background:#06203C}
+.xnav>.wrap,.xnav__in{display:flex;align-items:center;gap:20px;height:58px}
+.xnav__brand{display:flex;align-items:center;gap:9px;color:#F5E9D6;font-weight:800;font-size:13.5px;line-height:1.35}
+.xnav__mark{width:27px;height:27px;border-radius:9px;background:linear-gradient(140deg,#E3CFA9,#8B6335);color:#3F2C13;display:grid;place-items:center;font-size:12px;font-weight:900}
+.xnav__brand small{display:block;font-size:8px;letter-spacing:.2em;color:#9FB3C8;font-weight:600}
+.xnav__links{display:flex;align-items:center;gap:16px;margin-inline-start:auto;flex-wrap:wrap}
+.xnav__links a{font-size:12.5px;color:#C6D4E3}
+.xnav__links a:hover,.xnav__links a.on{color:#fff}
+.cardx{background:#fff;border:1px solid #E4EAF1;border-radius:20px;overflow:hidden}
+.cardx__h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 16px;border-bottom:1px solid #E4EAF1;background:#FBFCFE}
+.cardx__h h3{font-size:13.5px}
+.cardx__b{padding:16px;font-size:12.5px;line-height:1.95;color:#333F4C}
+.xbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:12px;padding:9px 16px;font-size:12.5px;font-weight:700;background:#0A2B51;color:#fff}
+.xbtn--sm{padding:6px 12px;font-size:11.5px;border-radius:10px}
+.xbtn--ghost{background:#fff;border:1px solid #E4EAF1;color:#0A2B51}
+.xbtn--gold{background:linear-gradient(180deg,#E3CFA9,#D1AB7B);color:#3F2C13}
+.badge-mode{font-size:10.5px;padding:3px 9px;border-radius:999px;font-weight:800;white-space:nowrap}
+.badge-mode.a{background:#EEF2F7;color:#3B4E63;border:1px solid #D8E2EC}
+.badge-mode.b{background:#F5E9D6;color:#4A3517;border:1px solid #E3CFA9}
+.crumb{display:flex;gap:8px;align-items:center;font-size:11.5px;color:#647587;margin-bottom:12px;flex-wrap:wrap}
+.crumb .sep{opacity:.5}
+.eyebrow{font-size:10.5px;letter-spacing:.14em;color:#8A6A3E;font-weight:800}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.cap{height:8px;border-radius:999px;background:#EEF2F7;overflow:hidden}
+.cap i{display:block;height:100%;background:linear-gradient(90deg,#D1AB7B,#8B6335)}
+.prog{height:6px;border-radius:999px;background:#EEF2F7;overflow:hidden}
+.prog span{display:block;height:100%;background:#0A2B51}
+.playbtn{width:42px;height:42px;border-radius:50%;background:#0A2B51;color:#fff;display:grid;place-items:center;font-size:13px;flex:none;border:0}
+.miniframe{background:#fff;border:1px solid #E4EAF1;border-radius:14px;overflow:hidden}
+.minibar{display:flex;gap:5px;align-items:center;padding:7px 10px;background:#F3F6FA;border-bottom:1px solid #E4EAF1}
+.minibar i{width:7px;height:7px;border-radius:50%;background:#C6D4E3;display:block}
+/* نوار استوری افقی */
+.storystrip,.strip,.circles{display:flex;gap:14px;overflow-x:auto;padding:14px 16px;scroll-snap-type:x mandatory}
+.storystrip>*,.strip>*,.circles>*{scroll-snap-align:start;flex:0 0 auto}
+/* ردیف رسانه */
+.pod__body{min-width:0}
+.pod__body h4,.pod__body h3{font-size:13px;font-weight:800;margin:0 0 3px;line-height:1.7}
+.pod__body .meta,.pod__meta{font-size:11px;color:#647587}
+.pod__art{display:grid;place-items:center;color:#3F2C13;font-size:15px;font-weight:800}
+/* جدول */
+table{width:100%;border-collapse:collapse}
+th,td{padding:9px 10px;border-bottom:1px solid #E4EAF1;font-size:11.5px;text-align:start;vertical-align:middle}
+th{background:#F7F9FC;color:#3B4E63;font-weight:800;font-size:11px}
+tr:hover td{background:#FAFBFD}
+/* کشو: در ماکاپ درون‌جریان است تا حالت باز بدون هم‌پوشانی دیده شود */
+.trx{position:relative;top:auto;right:auto;height:auto;max-height:620px;width:min(440px,100%);transform:none;border-radius:18px;border:1px solid #E4EAF1;box-shadow:0 24px 48px -34px rgba(6,32,60,.55)}
+.trx--fixed{position:fixed;top:0;right:0;height:100%;max-height:none;border-radius:0;transform:translateX(100%)}
+.trx--fixed.is-open{transform:translateX(0)}
+@media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+</style>
+</head><body>
+<div class="plat">
+  <aside class="pside">
+    <div class="pside__brand"><span>ا</span><div>اساطیر آینده<small style="display:block;font-size:8.5px;color:rgba(255,255,255,.5)">پنل مدیر</small></div></div>
+    <a class="pnav" href="43-admin-dash.html"><i>◫</i> داشبورد</a>
+    <div class="pgrp">ساخت محتوا</div>
+    <a class="pnav on" href="#"><i>⊞</i> قالب‌های آماده</a>
+    <a class="pnav" href="44-admin-library-form.html"><i>🎙</i> کتابخانهٔ سایت</a>
+    <a class="pnav" href="45-admin-course-form.html"><i>🎼</i> دوره‌ها</a>
+  </aside>
+  <main class="pmain">
+    <header class="ptop"><h1>قالب‌های آماده</h1><span style="font-size:11px;color:var(--muted);margin-inline-start:6px">قالب را انتخاب کن؛ فقط دیتا وارد می‌شود</span>
+      <div style="margin-inline-start:auto"><input class="xbtn xbtn--ghost xbtn--sm" style="width:180px;color:var(--muted)" placeholder="جست‌وجوی قالب…"></div></header>
+    <div class="pbody">
+      <div class="fchips" style="margin-bottom:16px"><button class="on">همه (۱۲)</button><button>رسانه</button><button>دوره</button><button>سایت</button><button>ارزیابی</button><button>سیستم</button></div>
+
+      <div class="stgrid" style="grid-template-columns:repeat(auto-fill,minmax(228px,1fr))">
+        <a class="stn" href="44-admin-library-form.html" style="padding:14px"><em>🎙</em><b>پادکست — فقط صدا</b><span>۳ فیلد · بدون متن · پخش درجا<br>کاربر کشو نمی‌بیند</span><div style="margin-top:8px"><span class="chip chip--lime" style="font-size:9px">سریع</span></div></a>
+        <a class="stn" href="44-admin-library-form.html" style="padding:14px;border-color:#0A2B51;box-shadow:0 0 0 2px #EAF0F7 inset"><em>🎙</em><b>پادکست — صدا + متن</b><span>۵ فیلد · متن + ترجمه + واژگان<br>دکمهٔ متن + کشوی راست</span><div style="margin-top:8px"><span class="chip chip--gold" style="font-size:9px">پرجستجو</span></div></a>
+        <a class="stn" href="44-admin-library-form.html" style="padding:14px"><em>🎵</em><b>قطعهٔ موسیقی</b><span>۴ فیلد · هنرمند + متن آهنگ<br>همان قاعدهٔ کشو</span></a>
+        <a class="stn" href="44-admin-library-form.html" style="padding:14px"><em>📖</em><b>داستان کوتاه</b><span>۶ فیلد · متن + صوت + سطح<br>صفحهٔ جزئیات با بنر</span></a>
+        <a class="stn" href="44-admin-library-form.html" style="padding:14px"><em>🎬</em><b>ویدیوی آموزشی</b><span>۵ فیلد · فایل/لینک + زیرنویس<br>صفحهٔ تماشا</span></a>
+        <a class="stn" href="44-admin-library-form.html" style="padding:14px"><em>📚</em><b>کتاب</b><span>۷ فیلد · جلد + قیمت + مجموعه<br>نمایش زیگزاگ</span></a>
+        <a class="stn" href="45-admin-course-form.html" style="padding:14px;border-color:#D8E2EC"><em>🎼</em><b>دوره (۴ دپارتمان)</b><span>۱۲ فیلد · استوری + برنامه + رضایت<br>یک قالب، دپارتمان پارامتری</span></a>
+        <a class="stn" href="#" style="padding:14px"><em>👤</em><b>مدرس</b><span>۶ فیلد · تخصص + سابقه + عکس</span></a>
+        <a class="stn" href="#" style="padding:14px"><em>🏫</em><b>کلاس</b><span>۵ فیلد · دوره + مدرس + ظرفیت</span></a>
+        <a class="stn" href="#" style="padding:14px"><em>🗓</em><b>جلسهٔ هفتگی</b><span>۵ فیلد · روز + تاریخ + ساعت</span></a>
+        <a class="stn" href="#" style="padding:14px"><em>✎</em><b>آزمون</b><span>۴ نوع سؤال · نمره‌دهی خودکار</span></a>
+        <a class="stn" href="#" style="padding:14px"><em>📄</em><b>صفحهٔ سایت</b><span>بلوک‌های آماده: هیرو، گرید، CTA</span></a>
+        <div class="stn" style="padding:14px;border-style:dashed;display:grid;place-items:center;color:var(--muted);font-size:11px;min-height:110px">+ قالب سفارشی<br><span style="font-size:9.5px">برای توسعه‌دهنده</span></div>
+      </div>
+
+      <div class="cardx" style="margin-top:18px;background:#F3F6FA"><div class="cardx__h"><h3>چرا قالب؟</h3></div><div class="cardx__b" style="font-size:11.5px;line-height:2;color:var(--ink-soft);display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div><b style="display:block;margin-bottom:4px">بدون قالب</b>مدیر باید بداند کدام فیلد را پر کند؛ خطر خالی‌ماندن متن یا اشتباه در حالت رسانه.</div>
+        <div><b style="display:block;margin-bottom:4px;color:#0A2B51">با قالب</b>فرم از پیش ساخته با فیلدهای اجباری/اختیاری مشخص، پیش‌نمایش زنده و اعتبارسنجی سرور؛ انتشار بدون خطا.</div>
+      </div></div>
+    </div>
+  </main>
+</div>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
+</body></html>

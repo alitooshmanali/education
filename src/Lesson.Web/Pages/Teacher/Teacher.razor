@@ -5,52 +5,95 @@
 @inject ICurrentUserContext Current
 @implements IDisposable
 
-<section class="page">
-    <PageHeader Title="داشبورد مدرس" Subtitle="سطح و کلاس از هدر انتخاب می‌شود؛ فقط دادهٔ همان کلاس بارگذاری می‌شود." />
-    
-    @if (Session.SelectedClassId is null)
-    {
-        <div class="card pad"><p class="muted">از هدر بالا سطح و کلاس را انتخاب کنید.</p></div>
-    }
-    else if (_dash is null)
-    {
-        <p class="muted">در حال بارگذاری…</p>
-    }
-    else
-    {
-        <section class="teacher-welcome panel-spaced">
-            <div>
-                <span class="eyebrow">پنل مدرس</span>
-                <h2>کلاس انتخاب‌شده، مرکز فعالیت امروز توست</h2>
-                <p>محتوا و گزارش‌ها بر اساس همان کلاسی نمایش داده می‌شوند که از سربرگ انتخاب کرده‌ای.</p>
-            </div>
-            <div class="teacher-welcome__mark" aria-hidden="true">آ</div>
-        </section>
-        <section class="grid stats">
-            <StatCard Label="دانش‌آموزان سطح" Value="@_dash.StudentCount.ToString()" Icon="users" IconTone="navy" />
-            <StatCard Label="پوشه‌ها" Value="@_dash.FolderCount.ToString()" Icon="folder" IconTone="gold" />
-            <StatCard Label="ویدیوها" Value="@_dash.VideoCount.ToString()" Icon="video" IconTone="navy" />
-            <StatCard Label="پادکست‌ها" Value="@_dash.PodcastCount.ToString()" Icon="audit" IconTone="violet" />
-            <StatCard Label="داستان‌ها" Value="@_dash.StoryCount.ToString()" Icon="folder" IconTone="jade" />
-            <StatCard Label="آزمون‌ها" Value="@_dash.QuizCount.ToString()" Icon="audit" IconTone="gold" />
-        </section>
-        <div class="toolbar" style="margin-top:20px;display:flex;flex-wrap:wrap;gap:10px">
-            <a class="btn btn-primary" href="/teacher/folders">پوشه‌ها</a>
-            <a class="btn btn-secondary" href="/teacher/videos">ویدیو</a>
-            <a class="btn btn-secondary" href="/teacher/podcasts">پادکست</a>
-            <a class="btn btn-secondary" href="/teacher/stories">داستان</a>
-            <a class="btn btn-secondary" href="/teacher/quizzes">آزمون‌ها</a>
-            <a class="btn btn-ghost" href="/teacher/students">دانش‌آموزان</a>
-            <a class="btn btn-ghost" href="/teacher/reports">گزارش‌ها</a>
+<PageHeader Eyebrow="TEACHER WORKSPACE" Title="داشبورد مدرس" Subtitle="نمای کلی کلاس انتخاب‌شده، منابع آموزشی و وضعیت یادگیری زبان‌آموزان" />
+
+@if (Session.SelectedClassId is null)
+{
+    <section class="teacher-v4-empty panel pad">
+        <div class="teacher-v4-empty__icon"><AppIcon Name="book-open" /></div>
+        <h2>ابتدا یک کلاس انتخاب کنید</h2>
+        <p>کلاس و سطح فعال را از انتخاب‌گر بالای صفحه مشخص کنید تا اطلاعات همان کلاس بارگذاری شود.</p>
+    </section>
+}
+else if (_loading)
+{
+    <section class="panel pad teacher-v4-empty" aria-live="polite"><span class="loading-spinner"></span><p>در حال دریافت اطلاعات کلاس…</p></section>
+}
+else if (!string.IsNullOrWhiteSpace(_error))
+{
+    <section class="panel pad teacher-v4-empty" role="alert"><AppIcon Name="alert" /><h2>بارگذاری اطلاعات ناموفق بود</h2><p>@_error</p><button class="btn btn-primary" @onclick="LoadAsync">تلاش دوباره</button></section>
+}
+else if (_dash is not null)
+{
+    <section class="teacher-v4-hero panel-spaced">
+        <div><span class="eyebrow">کلاس انتخاب‌شده</span><h2>@_dash.ClassTitle</h2><p>کد کلاس: <b class="mono">@_dash.ClassCode</b> <span class="teacher-v4-separator">·</span> سطح: <b>@_dash.Level</b></p></div>
+        <div class="teacher-v4-hero__actions">
+            <a class="btn btn-secondary" href="/teacher/students"><AppIcon Name="users" /> زبان‌آموزان کلاس</a>
+            <a class="btn btn-ghost-light" href="/teacher/reports">گزارش پیشرفت</a>
         </div>
-    }
-</section>
+    </section>
+
+    <section class="teacher-v4-stats panel-spaced" aria-label="آمار کلاس">
+        <StatCard Label="زبان‌آموزان سطح" Value="@_dash.StudentCount.ToString()" Icon="users" IconTone="navy" />
+        <StatCard Label="پوشه‌های آموزشی" Value="@_dash.FolderCount.ToString()" Icon="folder" IconTone="gold" />
+        <StatCard Label="ویدیوهای آموزشی" Value="@_dash.VideoCount.ToString()" Icon="video" IconTone="navy" />
+        <StatCard Label="پادکست‌ها" Value="@_dash.PodcastCount.ToString()" Icon="music" IconTone="violet" />
+        <StatCard Label="داستان‌ها" Value="@_dash.StoryCount.ToString()" Icon="book-open" IconTone="jade" />
+        <StatCard Label="آزمون‌ها" Value="@_dash.QuizCount.ToString()" Icon="audit" IconTone="gold" />
+    </section>
+
+    <div class="teacher-v4-columns">
+        <section class="panel pad panel-spaced">
+            <div class="toolbar"><div><span class="eyebrow">LEARNER OVERVIEW</span><h2>وضعیت زبان‌آموزان</h2><p class="hint">فهرست اعضای سطح این کلاس و وضعیت حساب آن‌ها</p></div><a class="btn btn-ghost btn-compact" href="/teacher/students">مدیریت زبان‌آموزان</a></div>
+            @if (_students.Count > 0)
+            {
+                <div class="teacher-v4-student-list">
+                    @foreach (var student in _students.Take(8))
+                    {
+                        <div class="teacher-v4-student"><span class="teacher-v4-student__avatar">@Initials(student.Username)</span><span class="teacher-v4-student__name"><strong>@student.Username</strong><small>سطح @student.Level</small></span><span class="teacher-v4-student__status @(student.IsActive ? "is-active" : "is-inactive")">@(student.IsActive ? "فعال" : "غیرفعال")</span></div>
+                    }
+                </div>
+            }
+            else
+            {
+                <EmptyState Icon="users" Title="گزارش فعالیتی موجود نیست" Message="در حال حاضر زبان‌آموزی برای سطح انتخاب‌شده ثبت نشده است." />
+            }
+        </section>
+
+        <aside class="teacher-v4-side">
+            <section class="panel pad panel-spaced">
+                <div class="toolbar"><div><span class="eyebrow">CLASS TOOLS</span><h2>دسترسی سریع</h2></div></div>
+                <div class="teacher-v4-links">
+                    <a href="/teacher/folders"><AppIcon Name="folder" /><span><b>پوشه‌های کلاس</b><small>مدیریت ساختار آموزشی</small></span><AppIcon Name="chevron-right" /></a>
+                    <a href="/teacher/videos"><AppIcon Name="video" /><span><b>ویدیوها</b><small>@_dash.VideoCount محتوای ویدیویی</small></span><AppIcon Name="chevron-right" /></a>
+                    <a href="/teacher/podcasts"><AppIcon Name="video" /><span><b>پادکست‌ها</b><small>@_dash.PodcastCount محتوای صوتی</small></span><AppIcon Name="chevron-right" /></a>
+                    <a href="/teacher/stories"><AppIcon Name="book-open" /><span><b>داستان‌ها</b><small>@_dash.StoryCount داستان</small></span><AppIcon Name="chevron-right" /></a>
+                    <a href="/teacher/quizzes"><AppIcon Name="audit" /><span><b>آزمون‌ها</b><small>@_dash.QuizCount آزمون</small></span><AppIcon Name="chevron-right" /></a>
+                </div>
+            </section>
+            <section class="teacher-v4-note"><AppIcon Name="info" /><div><strong>دامنهٔ آمار</strong><p>تعداد زبان‌آموزان بر اساس سطح کلاس و محتوای فعال بر اساس کلاس یا سطح محاسبه می‌شود. نمره و رضایت فقط در صورت وجود دادهٔ ثبت‌شده نمایش داده می‌شود.</p></div></section>
+        </aside>
+    </div>
+}
+else
+{
+    <section class="teacher-v4-empty panel pad">
+        <div class="teacher-v4-empty__icon"><AppIcon Name="info" /></div>
+        <h2>اطلاعاتی برای نمایش وجود ندارد</h2>
+        <p>کلاس انتخاب‌شده در حال حاضر داشبورد قابل‌نمایشی ندارد. یک کلاس دیگر انتخاب کنید یا دوباره تلاش کنید.</p>
+        <button class="btn btn-primary" @onclick="LoadAsync">بارگذاری دوباره</button>
+    </section>
+}
 
 @code {
     private TeacherDashboardDto? _dash;
+    private IReadOnlyList<TeacherClassStudentDto> _students = [];
+    private bool _loading;
+    private string? _error;
 
     protected override async Task OnInitializedAsync()
     {
+        await Current.EnsureInitializedAsync();
         Session.Changed += OnChanged;
         await LoadAsync();
     }
@@ -64,8 +107,27 @@
     private async Task LoadAsync()
     {
         _dash = null;
-        if (Current.UserId is long uid && Session.SelectedClassId is long cid)
+        _students = [];
+        _error = null;
+        if (Current.UserId is not long uid || Session.SelectedClassId is not long cid) return;
+        _loading = true;
+        try
+        {
             _dash = await Workspace.GetDashboardAsync(uid, cid);
+            _students = await Workspace.GetClassStudentsAsync(uid, cid);
+        }
+        catch (Exception)
+        {
+            _error = "دریافت اطلاعات این کلاس با خطا مواجه شد. دوباره تلاش کنید.";
+        }
+        finally { _loading = false; }
+    }
+
+    private static string Initials(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return "؟";
+        var parts = value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length > 1 ? $"{parts[0][0]}{parts[1][0]}" : value[..Math.Min(2, value.Length)];
     }
 
     public void Dispose() => Session.Changed -= OnChanged;

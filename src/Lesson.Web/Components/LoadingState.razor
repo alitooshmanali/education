@@ -1,15 +1,35 @@
-<section class="state-card state-card--loading" role="status" aria-live="polite" aria-busy="true">
-    <span class="state-card__spinner" aria-hidden="true"></span>
-    <div class="state-card__body">
-        <h3>@Title</h3>
-        @if (!string.IsNullOrWhiteSpace(Message))
+@if (Skeleton)
+{
+    <section class="list-skeleton" role="status" aria-live="polite" aria-busy="true" aria-label="@Title">
+        <span class="visually-hidden">@Title</span>
+        <div class="list-skeleton__heading"></div>
+        @for (var row = 0; row < Rows; row++)
         {
-            <p>@Message</p>
+            <div class="list-skeleton__row" @key="row">
+                <span class="list-skeleton__thumb"></span>
+                <span class="list-skeleton__line"></span>
+                <span class="list-skeleton__line list-skeleton__line--short"></span>
+            </div>
         }
-    </div>
-</section>
+    </section>
+}
+else
+{
+    <section class="state-card state-card--loading" role="status" aria-live="polite" aria-busy="true">
+        <span class="state-card__spinner" aria-hidden="true"></span>
+        <div class="state-card__body">
+            <h3>@Title</h3>
+            @if (!string.IsNullOrWhiteSpace(Message))
+            {
+                <p>@Message</p>
+            }
+        </div>
+    </section>
+}
 
 @code {
     [Parameter] public string Title { get; set; } = "در حال بارگذاری اطلاعات";
     [Parameter] public string Message { get; set; } = "لطفاً چند لحظه صبر کنید.";
+    [Parameter] public bool Skeleton { get; set; }
+    [Parameter] public int Rows { get; set; } = 4;
 }

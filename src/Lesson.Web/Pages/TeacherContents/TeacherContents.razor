@@ -4,6 +4,7 @@
 @inject IContentService Contents
 @inject ICurrentUserContext Current
 
+<section class="page workspace-page teacher-page teacher-contents-page">
 <div class="page-header">
     <h1>محتوا / داستان / پادکست</h1>
     <p class="muted">فقط برای کلاس‌های اختصاص‌یافته به شما. ادمین کلاس و سطح را تعریف می‌کند؛ بارگذاری محتوا با شماست.</p>
@@ -40,12 +41,15 @@ else
     }
 }
 
+</section>
+
 @code {
     private List<ClassRoomDto> _classes = new();
     private List<ContentDto> _contents = new();
 
     protected override async Task OnInitializedAsync()
     {
+        await Current.EnsureInitializedAsync();
         if (Current.UserId is not long uid) return;
         _classes = (await Classes.GetByTeacherAsync(uid)).ToList();
         var all = await Contents.GetAllAsync();

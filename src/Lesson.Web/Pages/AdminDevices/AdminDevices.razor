@@ -5,15 +5,23 @@
 <PageHeader Eyebrow="Admin" Title="مدیریت دستگاه‌ها" Subtitle="مشاهده و ابطال دستگاه‌های فعال" />
 
 <section class="panel pad">
-    <DataTable TItem="UserDevice" Items="_devices" Columns="_columns">
+    <DataTable TItem="UserDevice" Items="_devices" Columns="_columns"
+               Loading="_loading" ErrorMessage="_loadError" OnRetry="ReloadAsync"
+               EmptyTitle="دستگاهی ثبت نشده است"
+               EmptyMessage="پس از ورود کاربران با دستگاه‌هایشان، اطلاعات اینجا نمایش داده می‌شود.">
         <ActionsTemplate Context="device">
-            <button class="btn btn-danger" type="button" @onclick="() => Revoke(device)">ابطال</button>
+            <button class="btn btn-danger" type="button"
+                    @onclick="() => Revoke(device)">
+                ابطال
+            </button>
         </ActionsTemplate>
     </DataTable>
 </section>
 
 @code {
     private IReadOnlyList<UserDevice> _devices = [];
+    private bool _loading = true;
+    private string? _loadError;
     private readonly IReadOnlyList<TableColumn<UserDevice>> _columns =
     [
         new() { Header = "کاربر", Template = x => (RenderFragment)(b => b.AddContent(0, x.User?.Username)) },
@@ -22,14 +30,20 @@
         new() { Header = "وضعیت", Template = x => (RenderFragment)(b => b.AddContent(0, x.RevokedAt.HasValue ? "ابطال شده" : "فعال")) }
     ];
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => ReloadAsync();
+
+    private async Task ReloadAsync()
     {
-        _devices = await Devices.GetAllAsync();
+        _loading = true;
+        _loadError = null;
+        try { _devices = await Devices.GetAllAsync(); }
+        catch { _loadError = "بارگذاری فهرست دستگاه‌ها ناموفق بود. اطلاعات ذخیره‌شده تغییری نکرده‌اند."; }
+        finally { _loading = false; }
     }
 
     private async Task Revoke(UserDevice device)
     {
-        await Devices.RevokeDeviceAsync(device.Id);
-        _devices = await Devices.GetAllAsync();
+        try { await Devices.RevokeDeviceAsync(device.Id); await ReloadAsync(); }
+        catch { _loadError = "ابطال دستگاه انجام نشد. دوباره تلاش کنید."; }
     }
 }

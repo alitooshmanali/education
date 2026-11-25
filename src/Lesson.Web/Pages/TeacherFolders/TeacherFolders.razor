@@ -48,6 +48,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await Current.EnsureInitializedAsync();
         Session.Changed += OnChanged;
         await LoadAsync();
     }

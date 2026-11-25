@@ -6,7 +6,7 @@
 @inject ICurrentUserContext Current
 @implements IDisposable
 
-<section class="page">
+<section class="page workspace-page teacher-page teacher-quizzes-page">
     <PageHeader Title="آزمون‌ها"
                 Subtitle="گرامر: توضیح + تصویر اختیاری + سوال ۲ تا ۴ گزینه‌ای + زمان‌سنج. جامع: تعیین سطح با سوال/جواب و زمان. شرکت مجدد فقط با GrantRetake." />
     
@@ -69,6 +69,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await Current.EnsureInitializedAsync();
         Session.Changed += OnChanged;
         await LoadAsync();
     }

@@ -69,11 +69,19 @@
     <div class="cand-card">
         @if (_busy && _items.Count == 0)
         {
-            <div class="cand-empty">در حال بارگذاری…</div>
+            <LoadingState Skeleton="true" Rows="4" Title="در حال بارگذاری داوطلبان" />
+        }
+        else if (_loadError is not null)
+        {
+            <ErrorState Title="فهرست داوطلبان بارگذاری نشد" Message="@_loadError" OnRetry="Reload" />
+        }
+        else if (Filtered.Count == 0 && _items.Count > 0)
+        {
+            <NoResultsState Title="داوطلبی با این فیلتر پیدا نشد" Message="عبارت جست‌وجو یا وضعیت را تغییر دهید." OnClear="ClearFilters" />
         }
         else if (Filtered.Count == 0)
         {
-            <div class="cand-empty">داوطلبی با این فیلتر پیدا نشد. عبارت جست‌وجو یا وضعیت را تغییر بده.</div>
+            <EmptyState Icon="users" Title="هنوز داوطلبی ثبت نشده است" Message="درخواست‌های تعیین سطح پس از ثبت در این بخش نمایش داده می‌شوند." />
         }
         else
         {
@@ -129,6 +137,7 @@
 @code {
     private List<CandidateUserAdminDto> _items = new();
     private bool _busy;
+    private string? _loadError;
     private string _q = "";
     private string _statusFilter = "";
 
@@ -153,8 +162,16 @@
     private async Task Reload()
     {
         _busy = true;
+        _loadError = null;
         try { _items = (await Candidates.GetAllAdminAsync()).ToList(); }
+        catch { _loadError = "دریافت داوطلبان با خطا مواجه شد. دوباره تلاش کنید."; }
         finally { _busy = false; }
+    }
+
+    private void ClearFilters()
+    {
+        _q = string.Empty;
+        _statusFilter = string.Empty;
     }
 
     private static string Fmt(decimal? v) => v is null ? "—" : v.Value.ToString("0.#");

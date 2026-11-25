@@ -4,104 +4,147 @@
 @inject IQuizService Quizzes
 @inject ICurrentUserContext CurrentUser
 @inject NavigationManager Nav
+@inject ILogger<Student> Logger
 
-<PageHeader Eyebrow="Student" Title="داشبورد" Subtitle="پیشرفت شما در سطح زبانی">
-    <a class="btn btn-ghost" href="/student/videos"><AppIcon Name="video" /> محتوا</a>
-    <a class="btn btn-secondary" href="/student/quizzes"><AppIcon Name="audit" /> آزمون‌ها</a>
+<PageHeader Eyebrow="STUDENT SPACE" Title="داشبورد یادگیری" Subtitle="مسیر یادگیری، محتوای تازه و آزمون‌های شما در یک نگاه">
+    <a class="btn btn-ghost" href="/student/videos"><AppIcon Name="video" /> کتابخانه محتوا</a>
+    <a class="btn btn-primary" href="/student/quizzes"><AppIcon Name="audit" /> آزمون‌های من</a>
 </PageHeader>
 
-@if (_summary is not null)
+@if (_loading)
 {
-    <section class="student-welcome panel-spaced">
-        <div class="student-welcome__copy">
-            <span class="eyebrow">مسیر یادگیری تو</span>
-            <h2>هر جلسه، یک قدم جلوتر</h2>
-            <p>محتوای تازه را ادامه بده و پیشرفت مهارت‌هایت را دنبال کن.</p>
-            <div class="student-welcome__actions">
-                <a class="btn btn-secondary" href="/student/videos"><AppIcon Name="play" /> ادامه یادگیری</a>
-                <a class="btn btn-ghost-light" href="/student/quizzes">رفتن به آزمون‌ها</a>
-            </div>
-        </div>
-        <div class="student-welcome__progress" aria-label="پیشرفت کلی @_summary.OverallProgressPercent درصد">
-            <div class="gauge" style="--pct: @(_summary.OverallProgressPercent)">
-                <span>@_summary.OverallProgressPercent٪</span>
-            </div>
-            <small>پیشرفت کلی مسیر</small>
-        </div>
-    </section>
-
-
-    <section class="grid stats panel-spaced">
-        <StatCard Label="ویدیوهای تکمیل‌شده" Value="@($"{_summary.CompletedVideos} / {_summary.TotalVideos}")" Hint="@($"{_summary.VideoProgressPercent}٪ تکمیل")" Icon="video" IconTone="navy" />
-        <StatCard Label="داستان‌های تکمیل‌شده" Value="@($"{_summary.CompletedStories} / {_summary.TotalStories}")" Hint="@($"{_summary.StoryProgressPercent}٪ تکمیل")" Icon="folder" IconTone="gold" />
-        <StatCard Label="آزمون‌های تکمیل‌شده" Value="@($"{_summary.CompletedQuizzes} / {_summary.TotalQuizzes}")" Hint="@($"{_summary.QuizProgressPercent}٪ تکمیل")" Icon="audit" IconTone="violet" />
+    <section class="student-v4-loading panel-spaced" aria-live="polite">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <span>در حال آماده‌سازی داشبورد شما…</span>
     </section>
 }
-
-<section class="panel pad panel-spaced">
-    <div class="toolbar">
-        <h3>آخرین محتواها</h3>
-        <a class="btn btn-ghost" href="/student/videos">همه</a>
-    </div>
-
-    @if (_items.Any())
-    {
-        <div class="video-grid">
-            @foreach (var item in _items.Take(6))
-            {
-                <VideoCard Content="item" Href="@($"/student/videos/{item.Id}")" />
-            }
-        </div>
-    }
-    else
-    {
-        <EmptyState Icon="video" Title="محتوایی یافت نشد" Message="هنوز محتوایی برای سطح شما تعریف نشده است." />
-    }
-</section>
-
-@if (_quizzes.Any())
+else if (!string.IsNullOrWhiteSpace(_error))
 {
-    <section class="panel pad panel-spaced">
-        <div class="toolbar">
-            <h3>آزمون‌های شما</h3>
-            <a class="btn btn-ghost" href="/student/quizzes">همه</a>
+    <section class="panel pad student-v4-state" role="alert">
+        <AppIcon Name="alert" />
+        <h2>بارگذاری داشبورد انجام نشد</h2>
+        <p>@_error</p>
+        <button class="btn btn-primary" @onclick="LoadAsync">تلاش دوباره</button>
+    </section>
+}
+else if (_summary is not null)
+{
+    <section class="student-v4-hero panel-spaced">
+        <div class="student-v4-hero__copy">
+            <span class="eyebrow">YOUR LEARNING JOURNEY</span>
+            <h2>هر جلسه، یک قدم به هدفت نزدیک‌تر</h2>
+            <p>پیشرفت واقعی محتوای آموزشی و آزمون‌هایت را دنبال کن و از آخرین محتوای منتشرشده ادامه بده.</p>
+            <div class="student-welcome__actions">
+                <a class="btn btn-secondary" href="/student/videos"><AppIcon Name="play" /> ادامه یادگیری</a>
+                <a class="btn btn-ghost-light" href="/student/quizzes">مشاهده آزمون‌ها</a>
+            </div>
         </div>
-        <div class="grid two-col">
-            @foreach (var q in _quizzes.Take(4))
+        <div class="student-v4-hero__progress" aria-label="پیشرفت کلی @_summary.OverallProgressPercent درصد">
+            <div class="gauge" style="--pct: @Progress(_summary.OverallProgressPercent)">
+                <span>@Progress(_summary.OverallProgressPercent)٪</span>
+            </div>
+            <small>پیشرفت کلی ثبت‌شده</small>
+        </div>
+    </section>
+
+    <section class="student-v4-stats panel-spaced" aria-label="خلاصه پیشرفت">
+        <StatCard Label="ویدیوهای تکمیل‌شده" Value="@($"{_summary.CompletedVideos} / {_summary.TotalVideos}")" Hint="@($"{Progress(_summary.VideoProgressPercent)}٪ تکمیل")" Icon="video" IconTone="navy" />
+        <StatCard Label="داستان‌های تکمیل‌شده" Value="@($"{_summary.CompletedStories} / {_summary.TotalStories}")" Hint="@($"{Progress(_summary.StoryProgressPercent)}٪ تکمیل")" Icon="folder" IconTone="gold" />
+        <StatCard Label="آزمون‌های تکمیل‌شده" Value="@($"{_summary.CompletedQuizzes} / {_summary.TotalQuizzes}")" Hint="@($"{Progress(_summary.QuizProgressPercent)}٪ تکمیل")" Icon="audit" IconTone="violet" />
+    </section>
+
+    <div class="student-v4-columns">
+        <section class="panel pad panel-spaced student-v4-content">
+            <div class="toolbar">
+                <div><span class="eyebrow">KEEP LEARNING</span><h2>محتوای در دسترس شما</h2><p class="hint">آخرین محتواهای مجاز برای سطح شما</p></div>
+                <a class="btn btn-ghost btn-compact" href="/student/videos">مشاهده همه</a>
+            </div>
+            @if (_items.Count > 0)
             {
-                <div class="panel pad">
-                    <strong>@q.Title</strong>
-                    <p class="hint">@q.Type · @q.TimeLimitMinutes دقیقه · نمره کل @q.TotalScore</p>
-                    @if (q.HasAttempted && !q.CanRetake)
+                <div class="student-v4-content__grid">
+                    @foreach (var item in _items.Take(6))
                     {
-                        <StatusBadge Text="@($"نمره: {q.LastScore}")" Tone="success" />
-                    }
-                    else
-                    {
-                        <a class="btn btn-primary btn-compact" href="/student/quizzes/@q.Id">شروع آزمون</a>
+                        <VideoCard Content="item" Href="@($"/student/videos/{item.Id}")" />
                     }
                 </div>
             }
-        </div>
-    </section>
+            else
+            {
+                <EmptyState Icon="video" Title="هنوز محتوایی در دسترس نیست" Message="با تخصیص محتوا به سطح شما، این بخش به‌روزرسانی می‌شود." />
+            }
+        </section>
+
+        <aside class="student-v4-side">
+            <section class="panel pad panel-spaced">
+                <div class="toolbar"><div><span class="eyebrow">ASSESSMENT</span><h2>آزمون‌های شما</h2></div><a class="btn btn-ghost btn-compact" href="/student/quizzes">همه</a></div>
+                @if (_quizzes.Count > 0)
+                {
+                    <div class="student-v4-quiz-list">
+                        @foreach (var q in _quizzes.Take(5))
+                        {
+                            <article class="student-v4-quiz">
+                                <div class="student-v4-quiz__icon"><AppIcon Name="audit" /></div>
+                                <div class="student-v4-quiz__body"><strong>@q.Title</strong><span>@q.Type · @q.TimeLimitMinutes دقیقه · نمره کل @q.TotalScore</span>
+                                    @if (q.HasAttempted && !q.CanRetake) { <StatusBadge Text="@FormatScore(q.LastScore)" Tone="success" /> }
+                                    else { <a href="/student/quizzes/@q.Id">مشاهده و شروع آزمون</a> }
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <EmptyState Icon="clipboard" Title="آزمونی تعریف نشده" Message="در حال حاضر آزمون فعالی برای شما ثبت نشده است." />
+                }
+            </section>
+            <section class="student-v4-note">
+                <AppIcon Name="info" />
+                <div><strong>درباره آمار پیشرفت</strong><p>درصدها فقط از فعالیت‌هایی محاسبه می‌شوند که در سامانه ثبت شده‌اند؛ اطلاعاتی مانند حضور کلاسی یا نمره‌ای که ثبت نشده باشد نمایش داده نمی‌شود.</p></div>
+            </section>
+        </aside>
+    </div>
 }
 
 @code {
     private IReadOnlyList<ContentDto> _items = [];
     private IReadOnlyList<QuizListItemDto> _quizzes = [];
     private UserProgressSummaryDto? _summary;
+    private bool _loading = true;
+    private string? _error;
 
     protected override async Task OnInitializedAsync()
     {
+        await CurrentUser.EnsureInitializedAsync();
         if (CurrentUser.UserId is null)
         {
             Nav.NavigateTo("/login", true);
             return;
         }
-
-        var userId = CurrentUser.UserId.Value;
-        _items = await Contents.GetForUserAsync(userId, false);
-        _summary = await Contents.GetUserProgressSummaryAsync(userId);
-        _quizzes = await Quizzes.GetForStudentAsync(userId);
+        await LoadAsync();
     }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            var userId = CurrentUser.UserId;
+            if (userId is null) { Nav.NavigateTo("/login", true); return; }
+            _items = await Contents.GetForUserAsync(userId.Value, false);
+            _summary = await Contents.GetUserProgressSummaryAsync(userId.Value);
+            _quizzes = await Quizzes.GetForStudentAsync(userId.Value);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load student dashboard for user {UserId}", CurrentUser.UserId);
+            _error = "دریافت اطلاعات داشبورد ناموفق بود. جزئیات خطا در گزارش برنامه ثبت شده است؛ لطفاً دوباره تلاش کنید.";
+        }
+        finally { _loading = false; }
+    }
+
+    private static int Progress(double value) => Math.Clamp((int)Math.Round(value), 0, 100);
+
+    private static string FormatScore(decimal? score)
+        => score.HasValue ? $"نمره: {score.Value:0.##}" : "نمره ثبت نشده";
 }

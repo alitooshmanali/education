@@ -1,10 +1,12 @@
 @page "/admin/videos"
 @page "/admin/contents"
+@page "/admin/media"
 @attribute [Authorize(Roles = nameof(UserRole.Admin))]
 @inject IContentService Contents
 @inject IFolderService Folders
+@inject MediaAssetCatalog MediaCatalog
 
-<PageHeader Eyebrow="Admin" Title="مدیریت محتوا" Subtitle="بارگذاری، انتقال و حذف (حداکثر ۲۰ مگابایت)" />
+<PageHeader Eyebrow="Admin · Media Center" Title="مرکز یکپارچه رسانه و محتوا" Subtitle="یک مخزن برای تصویر، ویدئو، صوت و فایل‌های آموزشی؛ مقصد انتشار را هنگام بارگذاری مشخص کنید." />
 
 <section class="grid two-col">
     <section class="panel pad">
@@ -24,7 +26,12 @@
             <button class="btn btn-outline" type="button" @onclick="ApplyFilters">اعمال فیلتر</button>
         </div>
 
-        <DataTable TItem="ContentDto" Items="_filtered" Columns="_columns">
+        <DataTable TItem="ContentDto" Items="_filtered" Columns="_columns"
+                   Loading="_isLoading" ErrorMessage="_loadError" OnRetry="RetryReloadAsync"
+                   HasSourceItems="@(_items.Count > 0)" NoResultsTitle="رسانه‌ای با این فیلتر پیدا نشد"
+                   NoResultsMessage="عبارت جست‌وجو یا پوشه مقصد را تغییر دهید." OnClearFilters="ClearFilters"
+                   EmptyTitle="هنوز محتوایی بارگذاری نشده است" EmptyMessage="اولین تصویر، ویدئو، صوت یا سند را بارگذاری کنید.">
+            <EmptyAction><a class="btn btn-primary" href="#media-upload">بارگذاری محتوای جدید</a></EmptyAction>
             <ActionsTemplate Context="item">
                 <a class="btn btn-secondary" href="/api/admin/contents/@item.Id/download"><AppIcon Name="download" /> دانلود</a>
                 <a class="btn btn-ghost" href="/admin/contents/@item.Id"><AppIcon Name="play" /> مشاهده</a>
@@ -34,9 +41,9 @@
         </DataTable>
     </section>
 
-    <section class="panel pad">
+    <section class="panel pad" id="media-upload">
         <h3>بارگذاری جدید</h3>
-        <p class="hint">حداکثر حجم: ۲۰ مگابایت — همه پسوندها مجاز هستند.</p>
+        <p class="hint">حداکثر حجم: ۲۰۰ مگابایت — تصویر، ویدئو، صوت و اسناد.</p>
 
         @if (_statusMessage is not null)
         {
@@ -63,16 +70,45 @@
             </div>
 
             <div class="field">
-                <label>گروه مقصد</label>
-                <select @bind="_uploadFolderIdString" disabled="@_isBusy">
-                    <option value="">انتخاب گروه</option>
-                    @foreach (var folder in _folderOptions)
-                    {
-                        <option value="@folder.Id">[@folder.Level] @folder.RelativePath</option>
-                    }
+                <label>محل استفاده از رسانه</label>
+                <select value="@_uploadDestination" @onchange="OnUploadDestinationChanged" disabled="@_isBusy">
+                    <option value="platform">پلتفرم آموزشی (کلاس‌ها و محتوای مدرس/دانش‌آموز)</option>
+                    <option value="site:home">وب‌سایت · صفحه اصلی</option>
+                    <option value="site:english">وب‌سایت · صفحه انگلیسی</option>
+                    <option value="site:english-videos">وب‌سایت · فیلم‌های آموزشی انگلیسی</option>
+                    <option value="site:english-podcast">وب‌سایت · پادکست انگلیسی</option>
+                    <option value="site:english-stories">وب‌سایت · داستان‌های انگلیسی</option>
+                    <option value="site:english-music">وب‌سایت · موسیقی انگلیسی</option>
+                    <option value="site:english-books">وب‌سایت · کتاب‌های انگلیسی</option>
+                    <option value="site:painting">وب‌سایت · نقاشی</option>
+                    <option value="site:computer">وب‌سایت · کامپیوتر</option>
+                    <option value="site:music-skill">وب‌سایت · آموزش موسیقی</option>
+                    <option value="site:books">وب‌سایت · کتاب‌های فروشگاه</option>
+                    <option value="site:courses">وب‌سایت · دوره‌ها</option>
+                    <option value="site:placement">وب‌سایت · تعیین سطح</option>
                 </select>
+                <span class="hint">فایل در مخزن مرکزی ذخیره می‌شود و شناسه آن برای اتصال به صفحه یا محتوای مربوط استفاده خواهد شد.</span>
             </div>
+            @if (_uploadDestination == "platform")
+            {
+                <div class="field">
+                    <label>پوشه آموزشی مقصد</label>
+                    <select @bind="_uploadFolderIdString" disabled="@_isBusy">
+                        <option value="">انتخاب پوشه</option>
+                        @foreach (var folder in _folderOptions.Where(x => !IsSystemPath(x.RelativePath)))
+                        {
+                            <option value="@folder.Id">[@folder.Level] @folder.RelativePath</option>
+                        }
+                    </select>
+                </div>
+            }
+            else
+            {
+                <div class="note note--info">مقصد انتخاب‌شده به‌صورت خودکار به پوشه رسانه وب‌سایت متصل می‌شود. پس از بارگذاری، شناسه رسانه را در صفحه مدیریت مربوط انتخاب کنید.</div>
+            }
 
+            @if (_uploadDestination == "platform")
+            {
             <div class="field">
                 <label>سطح‌های نمایش (حداقل یکی)</label>
                 <div class="level-checks">
@@ -86,6 +122,7 @@
                     }
                 </div>
             </div>
+            }
         </div>
 
         @if (_isBusy || _uploadPercent > 0)
@@ -104,7 +141,7 @@
 
         <div class="toolbar">
             <button class="btn btn-primary" type="button" @onclick="UploadAsync"
-                    disabled="@(string.IsNullOrWhiteSpace(_displayName) || _selectedFile is null || string.IsNullOrWhiteSpace(_uploadFolderIdString) || _uploadLevels.Count == 0 || _isBusy)">
+                    disabled="@(string.IsNullOrWhiteSpace(_displayName) || _selectedFile is null || string.IsNullOrWhiteSpace(_uploadFolderIdString) || (_uploadDestination == "platform" && _uploadLevels.Count == 0) || _isBusy)">
                 بارگذاری
             </button>
             @if (_isBusy)
@@ -154,7 +191,7 @@
                OnConfirm="DeleteConfirmed" />
 
 @code {
-    private const long MaxUploadBytes = 20L * 1024 * 1024;
+    private const long MaxUploadBytes = 200L * 1024 * 1024;
 
     private IReadOnlyList<ContentDto> _items = [];
     private IReadOnlyList<ContentDto> _filtered = [];
@@ -164,12 +201,14 @@
     private string _uploadFolderIdString = string.Empty;
     private string _moveFolderIdString = string.Empty;
     private string _displayName = string.Empty;
+    private string _uploadDestination = "platform";
     private HashSet<LanguageLevel> _uploadLevels = new();
     private IBrowserFile? _selectedFile;
     private ContentDto? _movingItem;
     private string? _statusMessage;
     private string? _errorMessage;
-    private bool _isBusy;
+    private string? _loadError;
+    private bool _isBusy, _isLoading = true;
     private long? _deleteId;
     private bool _showDeleteConfirm;
 
@@ -196,15 +235,79 @@
 
     protected override async Task OnInitializedAsync() => await ReloadAsync();
 
-    private async Task ReloadAsync()
+    private Task RetryReloadAsync() => ReloadAsync();
+
+    private async Task ReloadAsync(bool clearMessages = true)
     {
-        var folders = await Folders.GetTreeAsync();
-        _folderOptions = Flatten(folders).ToList();
-        _items = await Contents.GetAllAsync();
-        _filtered = _items;
-        _statusMessage = null;
-        _errorMessage = null;
+        _isLoading = true;
+        _loadError = null;
+        try
+        {
+            var folders = await Folders.GetTreeAsync();
+            _folderOptions = Flatten(folders).ToList();
+            await MediaCatalog.RefreshAsync();
+            _items = await MediaCatalog.GetAsync();
+            _filtered = _items;
+            if (clearMessages)
+            {
+                _statusMessage = null;
+                _errorMessage = null;
+            }
+        }
+        catch
+        {
+            _loadError = "بارگذاری فهرست رسانه‌ها ناموفق بود. فایل‌های ذخیره‌شده حذف یا تغییر نکرده‌اند.";
+        }
+        finally { _isLoading = false; }
     }
+
+    private void ClearFilters()
+    {
+        _query = string.Empty;
+        _folderFilterIdString = string.Empty;
+        ApplyFilters();
+    }
+
+    private async Task OnUploadDestinationChanged(ChangeEventArgs args)
+    {
+        _uploadDestination = args.Value?.ToString() ?? "platform";
+        _uploadFolderIdString = string.Empty;
+        if (_uploadDestination == "platform") return;
+
+        var destination = _uploadDestination switch
+        {
+            "site:english-videos" => (SystemFolders.PageVideos, "English-Videos"),
+            "site:english-podcast" => (SystemFolders.PagePodcast, "English-Podcast"),
+            "site:english-stories" => (SystemFolders.PageStories, "English-Stories"),
+            "site:english-music" => (SystemFolders.PagePodcast, "English-Music"),
+            "site:placement" => (SystemFolders.PagePlacement, "Placement"),
+            "site:english-books" => (SystemFolders.PageSiteImages, "English-Books"),
+            "site:english" => (SystemFolders.PageSiteImages, "English"),
+            "site:painting" => (SystemFolders.PageSiteImages, "Painting"),
+            "site:computer" => (SystemFolders.PageSiteImages, "Computer"),
+            "site:music-skill" => (SystemFolders.PageSiteImages, "Music-Skill"),
+            "site:books" => (SystemFolders.PageSiteImages, "Site-Books"),
+            "site:courses" => (SystemFolders.PageSiteImages, "Site-Courses"),
+            _ => (SystemFolders.PageSiteImages, "Home")
+        };
+
+        try
+        {
+            var root = await Folders.GetSystemFolderAsync(destination.Item1);
+            var folders = await Folders.GetFlatAsync();
+            var target = folders.FirstOrDefault(x => x.ParentFolderId == root.Id &&
+                string.Equals(x.Name, destination.Item2, StringComparison.OrdinalIgnoreCase));
+            target ??= await Folders.CreateAsync(destination.Item2, root.Id, LanguageLevel.A1);
+            _uploadFolderIdString = target.Id.ToString();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "پوشه مقصد رسانه در دسترس نیست: " + ex.Message;
+        }
+    }
+
+    private static bool IsSystemPath(string path) =>
+        path.Contains("_Page", StringComparison.OrdinalIgnoreCase);
 
     private static IEnumerable<FolderFlat> Flatten(IEnumerable<FolderNodeDto> nodes)
     {
@@ -245,12 +348,12 @@
     private async Task UploadAsync()
     {
         if (_selectedFile is null) { _errorMessage = "فایلی انتخاب نشده است."; return; }
-        if (_uploadLevels.Count == 0) { _errorMessage = "حداقل یک سطح زبانی انتخاب کنید."; return; }
+        if (_uploadDestination == "platform" && _uploadLevels.Count == 0) { _errorMessage = "حداقل یک سطح زبانی انتخاب کنید."; return; }
         if (!long.TryParse(_uploadFolderIdString, out var folderId)) { _errorMessage = "گروه مقصد را انتخاب کنید."; return; }
         if (string.IsNullOrWhiteSpace(_displayName)) { _errorMessage = "نام نمایش را وارد کنید."; return; }
         if (_selectedFile.Size > MaxUploadBytes)
         {
-            _errorMessage = $"حداکثر حجم مجاز ۲۰ مگابایت است. حجم فایل: {_selectedFile.Size / 1024d / 1024d:0.0} MB";
+            _errorMessage = $"حداکثر حجم مجاز ۲۰۰ مگابایت است. حجم فایل: {_selectedFile.Size / 1024d / 1024d:0.0} MB";
             return;
         }
 
@@ -295,13 +398,16 @@
             await InvokeAsync(StateHasChanged);
 
             bufferStream.Position = 0;
+            IReadOnlyList<LanguageLevel> uploadLevels = _uploadDestination == "platform"
+                ? _uploadLevels.ToList()
+                : new[] { LanguageLevel.A1 };
             var request = new UploadContentRequest(
                 folderId,
                 _selectedFile.Name,
                 _displayName.Trim(),
                 bufferStream,
                 bufferStream.Length,
-                _uploadLevels.ToList());
+                uploadLevels);
 
             var entity = await Contents.UploadAsync(request, cancellationToken: ct);
             _uploadedContentId = entity.Id;
@@ -313,7 +419,7 @@
             _statusMessage = "محتوا با موفقیت بارگذاری شد.";
             _errorMessage = null;
             ResetUploadFields();
-            await ReloadAsync();
+            await ReloadAsync(clearMessages: false);
         }
         catch (OperationCanceledException)
         {
@@ -369,6 +475,7 @@
         _selectedFile = null;
         _displayName = string.Empty;
         _uploadFolderIdString = string.Empty;
+        _uploadDestination = "platform";
         _uploadPercent = 0;
         _uploadPhase = "آماده";
     }

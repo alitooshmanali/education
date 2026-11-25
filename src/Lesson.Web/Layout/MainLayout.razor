@@ -1,4 +1,5 @@
 @inherits LayoutComponentBase
+@implements IDisposable
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.JSInterop
 @using Lesson.Web
@@ -62,7 +63,7 @@
             </div>
         </div>
 
-        <nav aria-label="Primary" @onclick="OnNavClick">
+        <nav aria-label="Primary">
             @if (_isStudent)
             {
                 <section class="nav-section">
@@ -78,6 +79,7 @@
                     <div class="nav-label">پنل مدرس</div>
                     <NavLink class="nav-item" href="/teacher" Match="NavLinkMatch.All"><AppIcon Name="dashboard" /> داشبورد</NavLink>
                     <NavLink class="nav-item" href="/teacher/students"><AppIcon Name="users" /> دانش‌آموزان</NavLink>
+                    <NavLink class="nav-item" href="/teacher/contents"><AppIcon Name="folder" /> محتوای آموزشی</NavLink>
                     <NavLink class="nav-item" href="/teacher/folders"><AppIcon Name="folder" /> پوشه‌ها</NavLink>
                     <NavLink class="nav-item" href="/teacher/videos"><AppIcon Name="video" /> ویدیو</NavLink>
                     <NavLink class="nav-item" href="/teacher/podcasts"><AppIcon Name="video" /> پادکست</NavLink>
@@ -88,30 +90,62 @@
             }
             else if (_isAdmin)
             {
-                <section class="nav-section">
-                    <div class="nav-label">صفحه اصلی</div>
-                    <NavLink class="nav-item" href="/admin" Match="NavLinkMatch.All"><AppIcon Name="dashboard" /> داشبورد</NavLink>
+                <section class="nav-section nav-section--home">
+                    <div class="nav-label">نمای کلی</div>
+                    <NavLink class="nav-item" href="/admin" Match="NavLinkMatch.All"><AppIcon Name="dashboard" /> داشبورد مدیریت</NavLink>
                 </section>
 
-                <section class="nav-section">
-                    <div class="nav-label">مدیریت آموزشگاه</div>
-                    <NavLink class="nav-item" href="/admin/users"><AppIcon Name="users" /> کاربران</NavLink>
-                <NavLink class="nav-item" href="/admin/candidates"><AppIcon Name="users" /> داوطلبان تعیین سطح</NavLink>
-                <NavLink class="nav-item" href="/admin/placement-bank"><AppIcon Name="quiz" /> بانک تعیین سطح</NavLink>
-                    <NavLink class="nav-item" href="/admin/teachers"><AppIcon Name="users" /> مدرسان</NavLink>
-                    <NavLink class="nav-item" href="/admin/classes"><AppIcon Name="folder" /> کلاس‌ها</NavLink>
-                    <NavLink class="nav-item" href="/admin/site-pages"><AppIcon Name="dashboard" /> صفحات سایت</NavLink>
-                    <NavLink class="nav-item" href="/admin/site-library"><AppIcon Name="folder" /> کتابخانه سایت</NavLink>
-                <NavLink class="nav-item" href="/admin/site-books"><AppIcon Name="folder" /> کتاب‌های سایت</NavLink>
-                <NavLink class="nav-item" href="/admin/site-courses"><AppIcon Name="folder" /> دوره‌های سایت</NavLink>
-                    <NavLink class="nav-item" href="/admin/schedule"><AppIcon Name="audit" /> برنامهٔ هفتگی</NavLink>
-                </section>
-                <section class="nav-section">
-                    <div class="nav-label">سیستم</div>
-                    <NavLink class="nav-item" href="/admin/permissions"><AppIcon Name="permission" /> دسترسی‌ها</NavLink>
-                    <NavLink class="nav-item" href="/admin/devices"><AppIcon Name="device" /> دستگاه‌ها</NavLink>
-                    <NavLink class="nav-item" href="/admin/audit"><AppIcon Name="audit" /> لاگ‌ها</NavLink>
-                </section>
+                <details class="nav-group" open>
+                    <summary><AppIcon Name="users" /> مدیریت آموزشگاه <span class="nav-group__chevron">⌄</span></summary>
+                    <div class="nav-group__links">
+                        <NavLink class="nav-item" href="/admin/users"><AppIcon Name="users" /> کاربران و حساب‌ها</NavLink>
+                        <NavLink class="nav-item" href="/admin/teachers"><AppIcon Name="users" /> مدرسان</NavLink>
+                        <NavLink class="nav-item" href="/admin/classes"><AppIcon Name="folder" /> کلاس‌ها</NavLink>
+                        <NavLink class="nav-item" href="/admin/schedule"><AppIcon Name="audit" /> برنامهٔ هفتگی</NavLink>
+                        <NavLink class="nav-item nav-item--report" href="/admin/reports#academy"><AppIcon Name="chart" /> گزارش آموزشگاه</NavLink>
+                    </div>
+                </details>
+
+                <details class="nav-group">
+                    <summary><AppIcon Name="globe" /> مدیریت وب‌سایت <span class="nav-group__chevron">⌄</span></summary>
+                    <div class="nav-group__links">
+                        <NavLink class="nav-item" href="/admin/site-pages"><AppIcon Name="dashboard" /> صفحات و چیدمان سایت</NavLink>
+                        <NavLink class="nav-item" href="/admin/site-library"><AppIcon Name="folder" /> کتابخانه و رسانه سایت</NavLink>
+                        <NavLink class="nav-item" href="/admin/site-books"><AppIcon Name="folder" /> کتاب‌های سایت</NavLink>
+                        <NavLink class="nav-item" href="/admin/site-courses"><AppIcon Name="folder" /> دوره‌های سایت</NavLink>
+                        <NavLink class="nav-item nav-item--report" href="/admin/reports#website"><AppIcon Name="chart" /> گزارش وب‌سایت</NavLink>
+                    </div>
+                </details>
+
+                <details class="nav-group">
+                    <summary><AppIcon Name="layers" /> محتوا و آموزش <span class="nav-group__chevron">⌄</span></summary>
+                    <div class="nav-group__links">
+                        <NavLink class="nav-item" href="/admin/media"><AppIcon Name="upload" /> مرکز یکپارچه رسانه</NavLink>
+                        <NavLink class="nav-item" href="/admin/contents"><AppIcon Name="video" /> محتوای پلتفرم</NavLink>
+                        <NavLink class="nav-item" href="/admin/folders"><AppIcon Name="folder" /> پوشه‌های آموزشی</NavLink>
+                        <NavLink class="nav-item" href="/admin/quizzes"><AppIcon Name="quiz" /> آزمون‌ها</NavLink>
+                        <NavLink class="nav-item nav-item--report" href="/admin/reports#platform"><AppIcon Name="chart" /> گزارش محتوا و آموزش</NavLink>
+                    </div>
+                </details>
+
+                <details class="nav-group">
+                    <summary><AppIcon Name="chart" /> گزارش‌ها و ارزیابی <span class="nav-group__chevron">⌄</span></summary>
+                    <div class="nav-group__links">
+                        <NavLink class="nav-item" href="/admin/candidates"><AppIcon Name="users" /> گزارش داوطلبان تعیین سطح</NavLink>
+                        <NavLink class="nav-item" href="/admin/audit"><AppIcon Name="audit" /> گزارش فعالیت‌های سیستم</NavLink>
+                        <NavLink class="nav-item" href="/admin/placement-bank"><AppIcon Name="quiz" /> بانک سؤالات تعیین سطح</NavLink>
+                        <NavLink class="nav-item nav-item--report" href="/admin/reports#assessment"><AppIcon Name="chart" /> گزارش ارزیابی‌ها</NavLink>
+                    </div>
+                </details>
+
+                <details class="nav-group">
+                    <summary><AppIcon Name="settings" /> تنظیمات و امنیت <span class="nav-group__chevron">⌄</span></summary>
+                    <div class="nav-group__links">
+                        <NavLink class="nav-item" href="/admin/permissions"><AppIcon Name="permission" /> نقش‌ها و دسترسی‌ها</NavLink>
+                        <NavLink class="nav-item" href="/admin/devices"><AppIcon Name="device" /> دستگاه‌های متصل</NavLink>
+                        <NavLink class="nav-item nav-item--report" href="/admin/reports#security"><AppIcon Name="chart" /> گزارش امنیت و فعالیت</NavLink>
+                    </div>
+                </details>
             }
             else
             {
@@ -166,6 +200,10 @@
                 </div>
             </div>
         </header>
+        @if (_navigationPending)
+        {
+            <div class="route-progress" role="status" aria-live="polite"><span></span><small>در حال باز کردن بخش…</small></div>
+        }
 
         <main class="content">
             @Body
@@ -185,18 +223,64 @@
     private string _pageTitle = "Lesson";
     private string _themePreference = DefaultTheme;
     private bool _initializedTheme;
+    private bool _navigationPending;
+    private IDisposable? _locationChangingRegistration;
 
     private string ThemeClass => _isDarkMode ? "theme-dark" : string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
+        Nav.LocationChanged += HandleLocationChanged;
+        _locationChangingRegistration = Nav.RegisterLocationChangingHandler(HandleLocationChanging);
         var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = auth.User;
         _isAdmin = user.IsInRole(nameof(UserRole.Admin));
         _isStudent = user.IsInRole(nameof(UserRole.Student));
         _isTeacher = user.IsInRole(nameof(UserRole.Teacher));
         _displayName = user.Identity?.Name ?? "کاربر";
-        _pageTitle = _isAdmin ? "داشبورد مدیریت" : _isTeacher ? "پنل مدرس" : _isStudent ? "داشبورد دانشجو" : "Lesson";
+        _pageTitle = ResolvePageTitle(new Uri(Nav.Uri).AbsolutePath);
+    }
+
+    private ValueTask HandleLocationChanging(LocationChangingContext context)
+    {
+        _navigationPending = true;
+        return new ValueTask(InvokeAsync(StateHasChanged));
+    }
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs args)
+    {
+        _ = InvokeAsync(() =>
+        {
+            _navigationPending = false;
+            _isNavOpen = false;
+            _userMenuOpen = false;
+            _pageTitle = ResolvePageTitle(new Uri(args.Location).AbsolutePath);
+            StateHasChanged();
+        });
+    }
+
+    private string ResolvePageTitle(string path)
+    {
+        if (path.Equals("/admin", StringComparison.OrdinalIgnoreCase)) return "داشبورد مدیریت";
+        if (path.StartsWith("/admin/media", StringComparison.OrdinalIgnoreCase) || path.StartsWith("/admin/contents", StringComparison.OrdinalIgnoreCase)) return "مرکز رسانه و محتوا";
+        if (path.StartsWith("/admin/site-", StringComparison.OrdinalIgnoreCase)) return "مدیریت وب‌سایت";
+        if (path.StartsWith("/admin/users", StringComparison.OrdinalIgnoreCase)) return "کاربران و حساب‌ها";
+        if (path.StartsWith("/admin/teachers", StringComparison.OrdinalIgnoreCase)) return "مدرسان";
+        if (path.StartsWith("/admin/classes", StringComparison.OrdinalIgnoreCase)) return "کلاس‌ها";
+        if (path.StartsWith("/admin/audit", StringComparison.OrdinalIgnoreCase)) return "گزارش فعالیت سیستم";
+        if (path.StartsWith("/admin/reports", StringComparison.OrdinalIgnoreCase)) return "مرکز گزارش‌های پلتفرم";
+        if (path.StartsWith("/admin/", StringComparison.OrdinalIgnoreCase)) return "مدیریت پلتفرم";
+        if (path.Equals("/teacher", StringComparison.OrdinalIgnoreCase)) return "داشبورد مدرس";
+        if (path.StartsWith("/teacher/", StringComparison.OrdinalIgnoreCase)) return "فضای کاری مدرس";
+        if (path.Equals("/student", StringComparison.OrdinalIgnoreCase)) return "داشبورد دانش‌آموز";
+        if (path.StartsWith("/student/", StringComparison.OrdinalIgnoreCase)) return "فضای یادگیری";
+        return _isAdmin ? "پنل مدیریت" : _isTeacher ? "پنل مدرس" : _isStudent ? "پنل دانش‌آموز" : "پلتفرم";
+    }
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= HandleLocationChanged;
+        _locationChangingRegistration?.Dispose();
     }
 
     private bool IsThemeActive(string theme) => string.Equals(_themePreference, theme, StringComparison.OrdinalIgnoreCase);
@@ -252,12 +336,6 @@
         _userMenuOpen = false;
         Logout();
     }
-
-    private void OnNavClick()
-    {
-        if (_isNavOpen) _isNavOpen = false;
-    }
-
 
     private sealed record ThemeState(bool IsDark, string Preference);
 }

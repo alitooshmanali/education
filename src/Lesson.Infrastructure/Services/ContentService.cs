@@ -10,7 +10,7 @@ namespace Lesson.Infrastructure.Services;
 
 public sealed class ContentService : IContentService
 {
-    public const long MaxUploadBytes = 20L * 1024 * 1024; // 20 MB
+    public const long MaxUploadBytes = 200L * 1024 * 1024; // 200 MB for public video uploads
 
     private readonly LessonDbContext _db;
 
@@ -165,7 +165,7 @@ public sealed class ContentService : IContentService
         }
 
         if (bytes.Length > MaxUploadBytes)
-            throw new InvalidOperationException("حداکثر حجم مجاز ۲۰ مگابایت است.");
+            throw new InvalidOperationException("حداکثر حجم مجاز ۲۰۰ مگابایت است.");
 
         var mime = GuessMime(ext);
         var type = request.PreferredType ?? GuessType(ext, mime);
@@ -353,9 +353,12 @@ public sealed class ContentService : IContentService
     private static string GuessMime(string ext) => ext.ToLowerInvariant() switch
     {
         ".mp4" or ".m4v" => "video/mp4",
+        ".mov" => "video/quicktime",
         ".webm" => "video/webm",
         ".mkv" => "video/x-matroska",
         ".mp3" => "audio/mpeg",
+        ".m4a" or ".aac" => "audio/mp4",
+        ".flac" => "audio/flac",
         ".wav" => "audio/wav",
         ".ogg" => "audio/ogg",
         ".jpg" or ".jpeg" => "image/jpeg",

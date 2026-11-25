@@ -1,0 +1,23 @@
+/* Asatir Platform shell refinements */
+.app-sidebar .nav-group { margin:5px 0; border:1px solid rgba(255,255,255,.055); border-radius:12px; overflow:hidden; background:rgba(255,255,255,.018); }
+.app-sidebar .nav-group > summary { list-style:none; display:flex; align-items:center; gap:10px; padding:11px 12px; cursor:pointer; color:rgba(242,245,249,.82); font-size:12px; font-weight:800; user-select:none; }
+.app-sidebar .nav-group > summary::-webkit-details-marker { display:none; }
+.app-sidebar .nav-group > summary:hover { background:rgba(255,255,255,.055); color:#fff; }
+.app-sidebar .nav-group > summary .app-icon { width:16px; height:16px; flex:none; }
+.nav-group__chevron { margin-inline-start:auto; color:rgba(242,245,249,.48); font-size:15px; transition:transform .16s ease; }
+.nav-group[open] > summary .nav-group__chevron { transform:rotate(180deg); }
+.nav-group__links { padding:2px 7px 8px; }
+.app-sidebar .nav-group .nav-item { padding:8px 10px; margin-block:2px; font-size:12px; }
+.app-sidebar .nav-group .nav-item .app-icon { width:15px; height:15px; }
+.app-sidebar .nav-section--home { margin-bottom:10px; }
+.app-sidebar .nav-section--home .nav-item { background:rgba(209,171,123,.12); color:#F2DCB6; font-weight:800; }
+.app-sidebar .nav-group .nav-item[aria-current="page"] { background:rgba(209,171,123,.16); }
+@media(max-width:900px) { .app-sidebar .nav-group { min-width:100%; } .app-sidebar .nav-group__links { padding-inline:10px; } }
+
+.route-progress { position:relative; display:flex; align-items:center; gap:10px; min-height:28px; padding:0 26px; background:rgba(255,255,255,.88); color:var(--muted); font-size:10px; }
+.route-progress::before { content:""; position:absolute; inset-inline:0; top:0; height:2px; background:var(--line); }
+.route-progress span { position:absolute; top:0; inset-inline-start:0; height:2px; width:34%; background:var(--sand-500); animation:route-progress-move 1s ease-in-out infinite alternate; }
+@keyframes route-progress-move { from { transform:translateX(-8%); } to { transform:translateX(210%); } }
+@media(prefers-reduced-motion:reduce) { .route-progress span { animation:none; width:100%; } }
+
+.app-sidebar .nav-group .nav-item--report { margin-block-start:6px; border-top:1px solid rgba(255,255,255,.08); border-radius:0 0 9px 9px; color:var(--sand-300); font-weight:800; }

@@ -1,166 +1,250 @@
 @page "/admin/site-courses"
 @attribute [Authorize(Roles = nameof(UserRole.Admin))]
 @inject ISiteCourseService Courses
-@inject IContentService Contents
-@inject IFolderService Folders
 @inject ICurrentUserContext Current
+@inject NavigationManager Navigation
+
+<PageTitle>دوره‌های سایت | مدیریت آکادمی</PageTitle>
 
 <style>
-    .sc { max-width: 1100px; width: 100%; }
-    .sc__head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; margin-bottom:16px; align-items:flex-start; }
-    .sc__title { margin:0; font-size:24px; font-weight:900; color:var(--navy-800); }
-    .sc__sub { margin:4px 0 0; color:var(--muted); font-size:13px; }
-    .sc-form { background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px; }
-    .sc-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
-    .sc-field label { display:block; font-size:12px; font-weight:700; color:var(--muted); margin-bottom:4px; }
-    .sc-field input, .sc-field select, .sc-field textarea {
-        width:100%; box-sizing:border-box; border:1px solid var(--line); border-radius:10px; padding:9px 12px; font:inherit;
-    }
-    .sc-field.full { grid-column:1/-1; }
-    .sc-card { background:var(--paper); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
-    .sc-table { width:100%; border-collapse:collapse; font-size:13px; }
-    .sc-table th { text-align:start; font-size:11px; font-weight:800; color:var(--muted); padding:10px 12px; background:var(--sand-50); border-bottom:1px solid var(--line); }
-    .sc-table td { padding:10px 12px; border-bottom:1px solid var(--navy-50); vertical-align:middle; }
-    .sc-alert { padding:10px 12px; border-radius:10px; margin-bottom:12px; font-size:13px; }
-    .sc-alert.err { background:var(--coral-bg); color:var(--coral); }
-    .sc-alert.ok { background:var(--jade-bg); color:var(--jade); }
-    .sc-thumb { width:48px; height:36px; object-fit:cover; border-radius:6px; background:var(--sand-50); }
-    @@media (max-width:900px){ .sc-grid { grid-template-columns:1fr 1fr; } }
-    @@media (max-width:560px){ .sc-grid { grid-template-columns:1fr; } }
+    .site-courses { width:100%; max-width:1440px; margin:0 auto; }
+    .site-courses__head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px; }
+    .site-courses__title { margin:0; color:var(--navy-800); font-size:24px; font-weight:900; }
+    .site-courses__subtitle { margin:5px 0 0; color:var(--muted); font-size:13px; }
+    .site-courses__meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .site-courses__toolbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+    .site-courses__tabs { display:flex; align-items:center; gap:3px; padding:4px; background:#F1F5F9; border:1px solid var(--line); border-radius:11px; }
+    .site-courses__tab { display:inline-flex; align-items:center; min-height:32px; padding:0 12px; border-radius:8px; color:var(--muted); font-size:12px; font-weight:700; text-decoration:none; white-space:nowrap; }
+    .site-courses__tab:hover { color:var(--navy-800); background:rgba(255,255,255,.65); }
+    .site-courses__tab.is-active { color:var(--navy-800); background:#fff; box-shadow:0 1px 3px rgba(10,43,81,.10); }
+    .site-courses__search { width:min(260px,100%); }
+    .site-courses__count { color:var(--muted); font-size:11px; white-space:nowrap; }
+    .site-courses__table-wrap { overflow-x:auto; background:var(--paper); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow-sm,0 1px 3px rgba(10,43,81,.05)); }
+    .site-courses__table { width:100%; min-width:940px; border-collapse:collapse; font-size:12.5px; }
+    .site-courses__table th { padding:11px 13px; text-align:start; white-space:nowrap; color:var(--muted); background:#F7F9FC; border-bottom:1px solid var(--line); font-size:10.5px; font-weight:800; }
+    .site-courses__table td { padding:11px 13px; vertical-align:middle; border-bottom:1px solid #EDF1F6; }
+    .site-courses__table tbody tr:last-child td { border-bottom:0; }
+    .site-courses__table tbody tr:hover { background:#FBFCFE; }
+    .site-courses__thumb { width:46px; height:56px; display:block; object-fit:cover; border-radius:8px; border:1px solid var(--line); background:var(--navy-50); }
+    .site-courses__thumb-placeholder { width:46px; height:56px; display:grid; place-items:center; border-radius:8px; color:var(--muted); background:#F1F5F9; border:1px solid var(--line); }
+    .site-courses__course-title { color:var(--ink); font-weight:800; }
+    .site-courses__course-meta { margin-top:3px; color:var(--muted); font-size:10.5px; }
+    .site-courses__subject { display:inline-flex; padding:4px 9px; border:1px solid var(--line); border-radius:999px; background:#F7F9FC; color:var(--navy-800); font-size:10.5px; font-weight:800; white-space:nowrap; }
+    .site-courses__subject--english { border-color:#A9BDD4; color:#0A2B51; background:#F0F5FA; }
+    .site-courses__subject--music { border-color:#C9BCE4; color:#5B4B8A; background:#F5F1FB; }
+    .site-courses__subject--computer { border-color:#A9D7C6; color:#0F7A57; background:#EFF8F4; }
+    .site-courses__subject--painting { border-color:#E5D2A9; color:#8A6A2F; background:#FBF6EA; }
+    .site-courses__status { display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:999px; font-size:10.5px; font-weight:800; white-space:nowrap; }
+    .site-courses__status--active { color:#0F7A57; background:#E7F5EF; border:1px solid #C6E7D8; }
+    .site-courses__status--inactive { color:#8A6A2F; background:#FBF3E2; border:1px solid #EBD9B0; }
+    .site-courses__actions { display:flex; align-items:center; justify-content:flex-end; gap:6px; white-space:nowrap; }
+    .site-courses__form { margin-bottom:16px; padding:18px; background:var(--paper); border:1px solid var(--line); border-radius:16px; box-shadow:0 1px 3px rgba(10,43,81,.05); }
+    .site-courses__form-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
+    .site-courses__form-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+    .site-courses__field { min-width:0; display:flex; flex-direction:column; gap:5px; }
+    .site-courses__field--full { grid-column:1/-1; }
+    .site-courses__field label { color:var(--muted); font-size:11.5px; font-weight:700; }
+    .site-courses__field input,.site-courses__field select,.site-courses__field textarea { width:100%; min-width:0; box-sizing:border-box; padding:9px 11px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); font:inherit; font-size:12.5px; }
+    .site-courses__field input:focus,.site-courses__field select:focus,.site-courses__field textarea:focus { outline:2px solid rgba(10,43,81,.18); border-color:var(--navy-800); }
+    .site-courses__form-actions { display:flex; align-items:center; gap:8px; margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
+    .site-courses__alert { margin-bottom:12px; padding:10px 12px; border-radius:10px; font-size:12px; }
+    .site-courses__alert--error { color:var(--coral); background:var(--coral-bg); border:1px solid #F3D6D0; }
+    .site-courses__alert--success { color:var(--jade); background:var(--jade-bg); border:1px solid #C6E7D8; }
+    .site-courses__switch { display:flex; align-items:center; gap:8px; min-height:38px; color:var(--ink); font-size:12px; }
+    .site-courses__switch input { width:17px; height:17px; accent-color:var(--jade); }
+    @@media(max-width:1050px) { .site-courses__form-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @@media(max-width:760px) { .site-courses__head { flex-direction:column; } .site-courses__toolbar { align-items:stretch; } .site-courses__tabs { width:100%; overflow-x:auto; } .site-courses__search { width:100%; max-width:none; } .site-courses__form-grid { grid-template-columns:1fr; } .site-courses__field--full { grid-column:auto; } }
 </style>
 
-<section class="sc">
-    <div class="sc__head">
+<section class="site-courses">
+    <header class="site-courses__head">
         <div>
-            <h1 class="sc__title">دوره‌های سایت</h1>
-            <p class="sc__sub">زبان · کامپیوتر · نقاشی · موسیقی</p>
+            <h1 class="site-courses__title">دوره‌های سایت</h1>
+            <p class="site-courses__subtitle">همه دپارتمان‌ها در یک فهرست؛ هر دوره در صفحه دپارتمان خودش نمایش داده می‌شود.</p>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-ghost" type="button" disabled="@_busy" @onclick="ReactivateAllAsync">فعال‌سازی همه</button>
-            <button class="btn btn-primary" type="button" @onclick="StartCreate">دوره جدید</button>
+        <div class="site-courses__meta">
+            @if (!_loading && _loadError is null)
+            {
+                <span class="site-courses__count">@_items.Count دوره · @_items.Select(x => x.Subject).Distinct().Count() دپارتمان</span>
+            }
+            <button class="btn btn-primary" type="button" @onclick="StartCreate">+ دوره جدید</button>
         </div>
-    </div>
+    </header>
 
-    @if (!string.IsNullOrEmpty(_error)) { <div class="sc-alert err">@_error</div> }
-    @if (!string.IsNullOrEmpty(_ok)) { <div class="sc-alert ok">@_ok</div> }
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="site-courses__alert site-courses__alert--error" role="alert">@_error</div>
+    }
+    @if (!string.IsNullOrWhiteSpace(_ok))
+    {
+        <div class="site-courses__alert site-courses__alert--success" role="status">@_ok</div>
+    }
 
     @if (_showForm)
     {
-        <div class="sc-form">
-            <div class="sc-grid">
-                <div class="sc-field full">
-                    <label>عنوان</label>
-                    <input @bind="_title" />
+        <EditForm Model="_formModel" OnSubmit="SaveAsync" class="site-courses__form">
+            <div class="site-courses__form-head">
+                <div>
+                    <h2 style="margin:0;font-size:16px;font-weight:900">@(_editId is null ? "ایجاد دوره جدید" : "ویرایش دوره")</h2>
+                    <p style="margin:4px 0 0;color:var(--muted);font-size:11px">اطلاعاتی که در مدل فعلی دوره پشتیبانی می‌شوند.</p>
                 </div>
-                <div class="sc-field full">
-                    <label>توضیح</label>
-                    <textarea rows="2" @bind="_desc"></textarea>
+                <button class="btn btn-ghost btn-sm" type="button" @onclick="CloseForm">بستن</button>
+            </div>
+            <div class="site-courses__form-grid">
+                <div class="site-courses__field site-courses__field--full">
+                    <label for="sc-title">عنوان دوره *</label>
+                    <InputText id="sc-title" @bind-Value="_title" maxlength="180" />
                 </div>
-                <div class="sc-field">
-                    <label>حوزه</label>
-                    <select value="@_subject.ToString()" @onchange="OnSubjectChange">
-                        @foreach (var s in Enum.GetValues<SubjectArea>())
+                <div class="site-courses__field site-courses__field--full">
+                    <label for="sc-desc">توضیحات</label>
+                    <InputTextArea id="sc-desc" @bind-Value="_desc" rows="2" />
+                </div>
+                <div class="site-courses__field">
+                    <label for="sc-subject">دپارتمان</label>
+                    <select id="sc-subject" value="@_subject" @onchange="OnSubjectChange">
+                        @foreach (var subject in Enum.GetValues<SubjectArea>())
                         {
-                            <option value="@s.ToString()">@SubjectFa(s)</option>
+                            <option value="@subject">@SubjectFa(subject)</option>
                         }
                     </select>
                 </div>
-                <div class="sc-field">
-                    <label>سطح</label>
-                    <select value="@_level.ToString()" @onchange="OnLevelChange">
-                        @foreach (var lv in Enum.GetValues<CourseOfferLevel>())
+                <div class="site-courses__field">
+                    <label for="sc-level">سطح</label>
+                    <select id="sc-level" value="@_level" @onchange="OnLevelChange">
+                        @foreach (var level in Enum.GetValues<CourseOfferLevel>())
                         {
-                            <option value="@lv.ToString()">@lv</option>
+                            <option value="@level">@LevelFa(level)</option>
                         }
                     </select>
                 </div>
-                <div class="sc-field">
-                    <label>شهریه (تومان)</label>
-                    <input type="number" @bind="_tuition" />
+                <div class="site-courses__field">
+                    <label for="sc-tuition">شهریه (تومان)</label>
+                    <InputNumber id="sc-tuition" @bind-Value="_tuition" min="0" />
                 </div>
-                <div class="sc-field">
-                    <label>تعداد جلسه</label>
-                    <input type="number" @bind="_sessions" />
+                <div class="site-courses__field">
+                    <label for="sc-sessions">تعداد جلسه</label>
+                    <InputNumber id="sc-sessions" @bind-Value="_sessions" min="0" />
                 </div>
-                <div class="sc-field">
-                    <label>مدت هر جلسه (دقیقه)</label>
-                    <input type="number" @bind="_duration" />
+                <div class="site-courses__field">
+                    <label for="sc-duration">مدت هر جلسه (دقیقه)</label>
+                    <InputNumber id="sc-duration" @bind-Value="_duration" min="0" />
                 </div>
-                <div class="sc-field">
-                    <label>ترتیب نمایش</label>
-                    <input type="number" @bind="_sort" />
+                <div class="site-courses__field">
+                    <label for="sc-sort">ترتیب نمایش</label>
+                    <InputNumber id="sc-sort" @bind-Value="_sort" />
                 </div>
-                <div class="sc-field">
-                    <label>تاریخ برگزاری (جلالی)</label>
-                    <input @bind="_jalaliDate" placeholder="1404/08/15" dir="ltr" />
+                <div class="site-courses__field">
+                    <label for="sc-date">تاریخ شروع (جلالی)</label>
+                    <InputText id="sc-date" @bind-Value="_jalaliDate" placeholder="۱۴۰۵/۰۹/۰۷" dir="ltr" />
                 </div>
-                <div class="sc-field">
-                    <label>ساعت (مثلاً 18:30)</label>
-                    <input @bind="_jalaliTime" placeholder="18:30" dir="ltr" />
+                <div class="site-courses__field">
+                    <label for="sc-time">ساعت شروع</label>
+                    <InputText id="sc-time" @bind-Value="_jalaliTime" placeholder="18:30" dir="ltr" />
                 </div>
-                <div class="sc-field full">
-                    <label>تصویر کارت</label>
-                    <InputFile OnChange="OnImageFile" accept="image/*" />
-                    @if (_imageId is long iid)
+                <div class="site-courses__field site-courses__field--full">
+                    <ContentAssetPicker Label="تصویر کارت دوره" TypeFilter="ContentType.Image" FolderPathContains="_PageSiteImages" @bind-Value="_imageId" />
+                    @if (_imageId is long imageId)
                     {
-                        <div style="margin-top:8px"><img class="sc-thumb" src="/api/site/media/@iid" alt="" /></div>
+                        <img src="/api/site/media/@imageId" alt="پیش‌نمایش تصویر دوره" style="width:110px;height:76px;object-fit:cover;border:1px solid var(--line);border-radius:9px;margin-top:8px" />
                     }
                 </div>
-                <div class="sc-field full">
-                    <label>ویدیو معرفی (اختیاری)</label>
-                    <InputFile OnChange="OnVideoFile" accept="video/*" />
-                    @if (_videoId is long vid)
+                <div class="site-courses__field site-courses__field--full">
+                    <ContentAssetPicker Label="ویدئوی معرفی (اختیاری)" TypeFilter="ContentType.Video" FolderPathContains="_PageSiteImages" @bind-Value="_videoId" />
+                    @if (_videoId is long videoId)
                     {
-                        <p style="margin:6px 0 0;font-size:12px;color:var(--muted)">ویدیو ✓ #@vid</p>
+                        <span style="font-size:11px;color:var(--muted);margin-top:5px">ویدئوی انتخاب‌شده: #@videoId</span>
                     }
                 </div>
+                <div class="site-courses__field">
+                    <label>وضعیت انتشار</label>
+                    <label class="site-courses__switch"><input type="checkbox" @bind="_isActive" /> نمایش دوره در سایت</label>
+                </div>
             </div>
-            <div style="display:flex;gap:8px;margin-top:14px">
-                <button class="btn btn-primary" type="button" disabled="@_busy" @onclick="SaveAsync">ذخیره</button>
-                <button class="btn btn-ghost" type="button" @onclick="() => _showForm = false">لغو</button>
+            <div class="site-courses__form-actions">
+                <button class="btn btn-primary" type="submit" disabled="@_busy">@(_busy ? "در حال ذخیره…" : "ذخیره دوره")</button>
+                <button class="btn btn-ghost" type="button" disabled="@_busy" @onclick="CloseForm">انصراف</button>
             </div>
-        </div>
+        </EditForm>
     }
 
-    <div class="sc-card">
-        <table class="sc-table">
+    <div class="site-courses__toolbar">
+        <nav class="site-courses__tabs" aria-label="فیلتر دپارتمان">
+            <a class="site-courses__tab @TabClass(null)" href="/admin/site-courses">همه دپارتمان‌ها</a>
+            @foreach (var subject in Enum.GetValues<SubjectArea>())
+            {
+                <a class="site-courses__tab @TabClass(subject)" href="/admin/site-courses?Subject=@subject">@SubjectShort(subject)</a>
+            }
+        </nav>
+        <input class="input site-courses__search" type="search" placeholder="جست‌وجوی عنوان دوره…" aria-label="جست‌وجوی دوره" @bind="_search" @bind:event="oninput" />
+        <span class="site-courses__count">@VisibleItems.Count از @FilteredBySubject.Count دوره</span>
+    </div>
+
+    <div class="site-courses__table-wrap">
+        <table class="site-courses__table">
             <thead>
                 <tr>
-                    <th></th>
-                    <th>عنوان</th>
-                    <th>حوزه</th>
+                    <th>دپارتمان</th>
+                    <th>عنوان دوره</th>
                     <th>سطح</th>
                     <th>شهریه</th>
                     <th>شروع</th>
-                    <th>فعال</th>
-                    <th></th>
+                    <th>وضعیت</th>
+                    <th style="width:150px"></th>
                 </tr>
             </thead>
             <tbody>
-                @if (_items.Count == 0)
+                @if (_loading)
                 {
-                    <tr><td colspan="8" style="padding:20px;text-align:center;color:var(--muted)">دوره‌ای ثبت نشده.</td></tr>
+                    <tr><td colspan="7"><LoadingState Skeleton="true" Rows="4" Title="در حال بارگذاری دوره‌ها" /></td></tr>
+                }
+                else if (_loadError is not null)
+                {
+                    <tr><td colspan="7"><ErrorState Title="فهرست دوره‌ها بارگذاری نشد" Message="@_loadError" OnRetry="Reload" /></td></tr>
+                }
+                else if (_items.Count == 0)
+                {
+                    <tr><td colspan="7">
+                        <EmptyState Icon="graduation-cap" Title="هنوز دوره‌ای ثبت نشده است" Message="اولین دوره را ایجاد کنید تا در دپارتمان مربوط به خودش در سایت نمایش داده شود.">
+                            <Action><button class="btn btn-primary" type="button" @onclick="StartCreate">+ افزودن اولین دوره</button></Action>
+                        </EmptyState>
+                    </td></tr>
+                }
+                else if (VisibleItems.Count == 0)
+                {
+                    <tr><td colspan="7"><NoResultsState Title="دوره‌ای با این جست‌وجو پیدا نشد" Message="عبارت جست‌وجو یا دپارتمان انتخاب‌شده را تغییر دهید." OnClear="ClearFilters" /></td></tr>
                 }
                 else
                 {
-                    @foreach (var it in _items)
+                    @foreach (var item in VisibleItems)
                     {
-                        <tr>
+                        <tr @key="item.Id">
+                            <td><span class="site-courses__subject site-courses__subject--@SubjectCss(item.Subject)">@SubjectShort(item.Subject)</span></td>
                             <td>
-                                @if (it.ImageUrl is not null)
-                                {
-                                    <img class="sc-thumb" src="@it.ImageUrl" alt="" />
-                                }
+                                <div style="display:flex;align-items:center;gap:10px;min-width:220px">
+                                    @if (item.ImageUrl is not null)
+                                    {
+                                        <img class="site-courses__thumb" src="@item.ImageUrl" alt="جلد @item.Title" />
+                                    }
+                                    else
+                                    {
+                                        <span class="site-courses__thumb-placeholder"><AppIcon Name="image" /></span>
+                                    }
+                                    <div>
+                                        <div class="site-courses__course-title">@item.Title</div>
+                                        <div class="site-courses__course-meta">@item.SessionCount جلسه · @(item.SessionDurationMinutes is > 0 ? $"{item.SessionDurationMinutes} دقیقه" : "مدت نامشخص")</div>
+                                    </div>
+                                </div>
                             </td>
-                            <td><strong>@it.Title</strong></td>
-                            <td>@it.SubjectLabel</td>
-                            <td>@it.LevelLabel</td>
-                            <td>@it.TuitionAmount.ToString("N0")</td>
-                            <td>@(it.StartsAtPersian ?? "—")</td>
-                            <td>@(it.IsActive ? "بله" : "خیر")</td>
-                            <td style="text-align:end;white-space:nowrap">
-                                <button class="btn btn-sm btn-ghost" type="button" @onclick="() => StartEdit(it)">ویرایش</button>
-                                <button class="btn btn-sm btn-outline" type="button" disabled="@_busy" @onclick="() => DeleteAsync(it.Id)">حذف</button>
+                            <td><span class="site-courses__subject">@item.LevelLabel</span></td>
+                            <td style="white-space:nowrap">@item.TuitionAmount.ToString("N0") <span class="site-courses__course-meta">تومان</span></td>
+                            <td style="white-space:nowrap">@(item.StartsAtPersian ?? "—")</td>
+                            <td><span class="site-courses__status @(item.IsActive ? "site-courses__status--active" : "site-courses__status--inactive")">@(item.IsActive ? "فعال" : "پیش‌نویس / غیرفعال")</span></td>
+                            <td>
+                                <div class="site-courses__actions">
+                                    <button class="btn btn-sm btn-ghost" type="button" disabled="@_busy" @onclick="() => StartEdit(item)">ویرایش</button>
+                                    <button class="btn btn-sm btn-ghost" type="button" disabled="@_busy" @onclick="() => ToggleActiveAsync(item)">@(item.IsActive ? "غیرفعال‌سازی" : "فعال‌سازی")</button>
+                                    <button class="btn btn-sm btn-outline" type="button" disabled="@_busy" @onclick="() => DeleteAsync(item.Id)">حذف</button>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -168,68 +252,111 @@
             </tbody>
         </table>
     </div>
+
+    <div style="margin-top:13px;padding:11px 13px;border:1px solid #D5E3F5;border-radius:12px;background:#F1F6FD;color:#1B3557;font-size:11.5px">
+        <strong>نکته:</strong> فهرست مدیریت یکپارچه است؛ فیلتر دپارتمان از پارامتر <code dir="ltr">Subject</code> در مسیر <code dir="ltr">/admin/site-courses</code> استفاده می‌کند. اطلاعات مدرس، برنامه هفتگی و امتیاز رضایت در مدل فعلی دوره ذخیره نمی‌شوند و در این فهرست مقدار ساختگی نمایش داده نمی‌شود.
+    </div>
 </section>
 
 @code {
+    [SupplyParameterFromQuery(Name = "Subject")]
+    public string? SubjectQuery { get; set; }
+
+    private readonly object _formModel = new();
     private List<SiteCourseDto> _items = new();
-    private bool _showForm, _busy;
+    private bool _showForm, _busy, _loading = true, _isActive = true;
+    private string? _loadError;
     private long? _editId, _imageId, _videoId;
-    private string _title = "", _desc = "", _jalaliDate = "", _jalaliTime = "";
+    private string _title = "", _desc = "", _jalaliDate = "", _jalaliTime = "", _search = "";
     private SubjectArea _subject = SubjectArea.English;
     private CourseOfferLevel _level = CourseOfferLevel.A1;
     private decimal _tuition;
     private int _sessions = 12, _duration = 90, _sort;
     private string? _error, _ok;
 
-    protected override async Task OnInitializedAsync() => await Reload();
+    private SubjectArea? SelectedSubject => Enum.TryParse<SubjectArea>(SubjectQuery, true, out var value) && Enum.IsDefined(value) ? value : null;
+    private IReadOnlyList<SiteCourseDto> FilteredBySubject => SelectedSubject is { } subject
+        ? _items.Where(x => x.Subject == subject).ToList()
+        : _items;
+    private IReadOnlyList<SiteCourseDto> VisibleItems => string.IsNullOrWhiteSpace(_search)
+        ? FilteredBySubject
+        : FilteredBySubject.Where(x => x.Title.Contains(_search.Trim(), StringComparison.CurrentCultureIgnoreCase)
+            || (x.Description?.Contains(_search.Trim(), StringComparison.CurrentCultureIgnoreCase) ?? false)).ToList();
 
-    private async Task Reload() => _items = (await Courses.GetAllAdminAsync()).ToList();
+    protected override async Task OnInitializedAsync()
+    {
+        await Current.EnsureInitializedAsync();
+        await Reload();
+    }
+
+    private async Task Reload()
+    {
+        _loading = true;
+        _loadError = null;
+        try
+        {
+            _items = (await Courses.GetAllAdminAsync()).ToList();
+        }
+        catch
+        {
+            _loadError = "بارگذاری فهرست دوره‌ها ناموفق بود. اطلاعات ذخیره‌شده تغییری نکرده‌اند.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
 
     private void StartCreate()
     {
         _editId = null;
         _title = ""; _desc = "";
-        _subject = SubjectArea.English;
+        _subject = SelectedSubject ?? SubjectArea.English;
         _level = CourseOfferLevel.A1;
         _tuition = 0; _sessions = 12; _duration = 90; _sort = _items.Count;
         _jalaliDate = ""; _jalaliTime = "";
-        _imageId = null; _videoId = null;
+        _imageId = null; _videoId = null; _isActive = true;
         _showForm = true; _error = _ok = null;
     }
 
-    private void StartEdit(SiteCourseDto it)
+    private void StartEdit(SiteCourseDto item)
     {
-        _editId = it.Id;
-        _title = it.Title;
-        _desc = it.Description ?? "";
-        _subject = it.Subject;
-        _level = it.Level;
-        _tuition = it.TuitionAmount;
-        _sessions = it.SessionCount;
-        _duration = it.SessionDurationMinutes ?? 90;
-        _sort = it.SortOrder;
-        _imageId = it.ImageContentId;
-        _videoId = it.VideoContentId;
-        if (it.StartsAt is { } st)
+        _editId = item.Id;
+        _title = item.Title;
+        _desc = item.Description ?? "";
+        _subject = item.Subject;
+        _level = item.Level;
+        _tuition = item.TuitionAmount;
+        _sessions = item.SessionCount;
+        _duration = item.SessionDurationMinutes ?? 90;
+        _sort = item.SortOrder;
+        _imageId = item.ImageContentId;
+        _videoId = item.VideoContentId;
+        _isActive = item.IsActive;
+        if (item.StartsAt is { } start)
         {
-            // نمایش ساده — ادمین می‌تواند دوباره وارد کند
-            _jalaliDate = it.StartsAtPersian?.Split('،').FirstOrDefault()?.Trim() ?? "";
-            _jalaliTime = "";
+            _jalaliDate = Lesson.Domain.PersianDate.Format(start, includeTime: false);
+            _jalaliTime = Lesson.Domain.PersianDate.ToIran(start).ToString("HH:mm");
         }
         else { _jalaliDate = ""; _jalaliTime = ""; }
         _showForm = true; _error = _ok = null;
     }
 
-    private void OnSubjectChange(ChangeEventArgs e)
+    private void CloseForm()
     {
-        if (Enum.TryParse<SubjectArea>(e.Value?.ToString(), out var s))
-            _subject = s;
+        if (_busy) return;
+        _showForm = false;
+        _error = null;
     }
 
-    private void OnLevelChange(ChangeEventArgs e)
+    private void OnSubjectChange(ChangeEventArgs args)
     {
-        if (Enum.TryParse<CourseOfferLevel>(e.Value?.ToString(), out var lv))
-            _level = lv;
+        if (Enum.TryParse<SubjectArea>(args.Value?.ToString(), out var subject)) _subject = subject;
+    }
+
+    private void OnLevelChange(ChangeEventArgs args)
+    {
+        if (Enum.TryParse<CourseOfferLevel>(args.Value?.ToString(), out var level)) _level = level;
     }
 
     private DateTimeOffset? ParseStarts()
@@ -238,10 +365,37 @@
         return Lesson.Domain.PersianDate.ParseJalaliToUtc(_jalaliDate, _jalaliTime);
     }
 
-    private async Task SaveAsync()
+    private async Task SaveAsync(EditContext _)
     {
         _error = _ok = null;
-        if (string.IsNullOrWhiteSpace(_title)) { _error = "عنوان لازم است."; return; }
+        if (string.IsNullOrWhiteSpace(_title)) { _error = "عنوان دوره الزامی است."; return; }
+        if (_tuition < 0) { _error = "شهریه نمی‌تواند منفی باشد."; return; }
+        if (_sessions < 0 || _duration < 0) { _error = "تعداد جلسه و مدت آن نمی‌توانند منفی باشند."; return; }
+        DateTimeOffset? startsAt;
+        if (string.IsNullOrWhiteSpace(_jalaliDate) && !string.IsNullOrWhiteSpace(_jalaliTime))
+        {
+            _error = "برای ثبت ساعت شروع، ابتدا تاریخ شروع را وارد کنید.";
+            return;
+        }
+        try
+        {
+            startsAt = ParseStarts();
+            if (!string.IsNullOrWhiteSpace(_jalaliDate) && startsAt is null)
+            {
+                _error = "تاریخ شروع معتبر نیست. تاریخ را به شکل ۱۴۰۵/۰۹/۰۷ وارد کنید.";
+                return;
+            }
+        if (!string.IsNullOrWhiteSpace(_jalaliTime)
+            && !TimeOnly.TryParse(
+            Lesson.Domain.PersianDate.FromPersianDigits(_jalaliTime.Trim()),
+            out var parsedTime))
+        {
+            _error = "ساعت شروع معتبر نیست. ساعت را به شکل 18:30 وارد کنید.";
+            return;
+        }
+        }
+        catch { _error = "تاریخ یا ساعت شروع معتبر نیست. تاریخ را به شکل ۱۴۰۵/۰۹/۰۷ و ساعت را به شکل 18:30 وارد کنید."; return; }
+
         _busy = true;
         try
         {
@@ -254,18 +408,46 @@
                 tuitionAmount: _tuition,
                 sessionCount: _sessions,
                 sessionDurationMinutes: _duration > 0 ? _duration : null,
-                startsAt: ParseStarts(),
+                startsAt: startsAt,
                 imageContentId: _imageId,
                 videoContentId: _videoId,
                 sortOrder: _sort,
-                isActive: true);
-            _ok = "ذخیره شد.";
+                isActive: _isActive);
+            _ok = "دوره با موفقیت ذخیره شد.";
             _showForm = false;
             await Reload();
         }
         catch (Exception ex) { _error = ex.Message; }
         finally { _busy = false; }
     }
+
+    private async Task ToggleActiveAsync(SiteCourseDto item)
+    {
+        _error = _ok = null;
+        _busy = true;
+        try
+        {
+            await Courses.UpsertAsync(
+                id: item.Id,
+                title: item.Title,
+                description: item.Description,
+                subject: item.Subject,
+                level: item.Level,
+                tuitionAmount: item.TuitionAmount,
+                sessionCount: item.SessionCount,
+                sessionDurationMinutes: item.SessionDurationMinutes,
+                startsAt: item.StartsAt,
+                imageContentId: item.ImageContentId,
+                videoContentId: item.VideoContentId,
+                sortOrder: item.SortOrder,
+                isActive: !item.IsActive);
+            _ok = item.IsActive ? "دوره از سایت غیرفعال شد." : "دوره دوباره در سایت فعال شد.";
+            await Reload();
+        }
+        catch (Exception ex) { _error = ex.Message; }
+        finally { _busy = false; }
+    }
+
 
     private async Task DeleteAsync(long id)
     {
@@ -274,120 +456,53 @@
         try
         {
             await Courses.HardDeleteAsync(id);
-            _ok = "حذف شد.";
+            _ok = "دوره حذف شد.";
             await Reload();
         }
         catch (Exception ex) { _error = ex.Message; }
         finally { _busy = false; }
     }
 
-    private async Task OnImageFile(InputFileChangeEventArgs e)
-        => await UploadAndAttachAsync(e, ContentType.Image, 12 * 1024 * 1024, isImage: true);
-
-    private async Task OnVideoFile(InputFileChangeEventArgs e)
-        => await UploadAndAttachAsync(e, ContentType.Video, 200 * 1024 * 1024, isImage: false);
-
-    private async Task UploadAndAttachAsync(InputFileChangeEventArgs e, ContentType type, long max, bool isImage)
+    private void ClearFilters()
     {
-        _error = _ok = null;
-        var file = e.File;
-        if (file is null) return;
-        if (file.Size <= 0) { _error = "فایل خالی است."; return; }
-        if (file.Size > max) { _error = "حجم فایل زیاد است."; return; }
-        _busy = true;
-        try
-        {
-            if (_editId is null)
-            {
-                if (string.IsNullOrWhiteSpace(_title))
-                    _title = "دوره جدید";
-                var created = await Courses.UpsertAsync(
-                    id: null,
-                    title: _title.Trim(),
-                    description: string.IsNullOrWhiteSpace(_desc) ? null : _desc.Trim(),
-                    subject: _subject,
-                    level: _level,
-                    tuitionAmount: _tuition,
-                    sessionCount: _sessions,
-                    sessionDurationMinutes: _duration > 0 ? _duration : null,
-                    startsAt: ParseStarts(),
-                    imageContentId: _imageId,
-                    videoContentId: _videoId,
-                    sortOrder: _sort,
-                    isActive: true);
-                _editId = created.Id;
-            }
-
-            var folder = await Folders.GetSystemFolderAsync(Lesson.Domain.SystemFolders.PageSiteImages);
-            await using var stream = file.OpenReadStream(maxAllowedSize: max);
-            await using var ms = new MemoryStream();
-            await stream.CopyToAsync(ms);
-            ms.Position = 0;
-            var req = new UploadContentRequest(folder.Id, file.Name, file.Name, ms, ms.Length, new[] { LanguageLevel.A1 }, type);
-            var entity = await Contents.UploadAsync(req, Current.UserId, isAdmin: true);
-            if (isImage) _imageId = entity.Id;
-            else _videoId = entity.Id;
-
-            await Courses.UpsertAsync(
-                id: _editId,
-                title: _title.Trim(),
-                description: string.IsNullOrWhiteSpace(_desc) ? null : _desc.Trim(),
-                subject: _subject,
-                level: _level,
-                tuitionAmount: _tuition,
-                sessionCount: _sessions,
-                sessionDurationMinutes: _duration > 0 ? _duration : null,
-                startsAt: ParseStarts(),
-                imageContentId: _imageId,
-                videoContentId: _videoId,
-                sortOrder: _sort,
-                isActive: true);
-
-            _ok = isImage ? "تصویر ذخیره و به دوره متصل شد." : "ویدیو ذخیره و به دوره متصل شد.";
-            await Reload();
-        }
-        catch (Exception ex) { _error = "خطا در آپلود: " + ex.Message; }
-        finally { _busy = false; }
+        _search = "";
+        Navigation.NavigateTo("/admin/site-courses", replace: true);
     }
 
-    private async Task ReactivateAllAsync()
+    private string TabClass(SubjectArea? subject) => SelectedSubject == subject ? "is-active" : "";
+    private static string SubjectShort(SubjectArea subject) => subject switch
     {
-        _error = _ok = null;
-        _busy = true;
-        try
-        {
-            var n = 0;
-            foreach (var it in _items.Where(x => !x.IsActive).ToList())
-            {
-                await Courses.UpsertAsync(
-                    id: it.Id,
-                    title: it.Title,
-                    description: it.Description,
-                    subject: it.Subject,
-                    level: it.Level,
-                    tuitionAmount: it.TuitionAmount,
-                    sessionCount: it.SessionCount,
-                    sessionDurationMinutes: it.SessionDurationMinutes,
-                    startsAt: it.StartsAt,
-                    imageContentId: it.ImageContentId,
-                    videoContentId: it.VideoContentId,
-                    sortOrder: it.SortOrder,
-                    isActive: true);
-                n++;
-            }
-            await Reload();
-            _ok = n > 0 ? $"{n} دوره فعال شد." : "همه دوره‌ها فعال هستند.";
-        }
-        catch (Exception ex) { _error = ex.Message; }
-        finally { _busy = false; }
-    }
-
-    private static string SubjectFa(SubjectArea s) => s switch
+        SubjectArea.English => "English",
+        SubjectArea.Music => "Music",
+        SubjectArea.Computer => "Computer",
+        SubjectArea.Painting => "Painting",
+        _ => subject.ToString()
+    };
+    private static string SubjectFa(SubjectArea subject) => subject switch
     {
         SubjectArea.English => "زبان انگلیسی",
         SubjectArea.Computer => "کامپیوتر",
         SubjectArea.Painting => "نقاشی",
         SubjectArea.Music => "موسیقی",
-        _ => s.ToString()
+        _ => subject.ToString()
+    };
+    private static string SubjectCss(SubjectArea subject) => subject switch
+    {
+        SubjectArea.English => "english",
+        SubjectArea.Music => "music",
+        SubjectArea.Computer => "computer",
+        SubjectArea.Painting => "painting",
+        _ => "english"
+    };
+    private static string LevelFa(CourseOfferLevel level) => level switch
+    {
+        CourseOfferLevel.A1 => "A1 — مبتدی",
+        CourseOfferLevel.A2 => "A2 — پایه",
+        CourseOfferLevel.B1 => "B1 — متوسط",
+        CourseOfferLevel.B2 => "B2 — متوسط رو به بالا",
+        CourseOfferLevel.C1 => "C1 — پیشرفته",
+        CourseOfferLevel.C2 => "C2 — مسلط",
+        CourseOfferLevel.IELTS => "IELTS",
+        _ => level.ToString()
     };
 }

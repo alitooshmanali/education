@@ -12,7 +12,10 @@
         }
         else if (OnRetry.HasDelegate)
         {
-            <button type="button" class="btn btn-primary" @onclick="OnRetry">تلاش دوباره</button>
+            <button type="button" class="btn btn-primary" @onclick="OnRetry" disabled="@Retrying">
+                @if (Retrying) { <span class="btn__spinner" aria-hidden="true"></span> }
+                @(Retrying ? "در حال تلاش…" : RetryText)
+            </button>
         }
     </div>
 </section>
@@ -20,6 +23,8 @@
 @code {
     [Parameter] public string Title { get; set; } = "دریافت اطلاعات با مشکل روبه‌رو شد";
     [Parameter] public string Message { get; set; } = "لطفاً اتصال خود را بررسی کنید و دوباره تلاش کنید.";
+    [Parameter] public string RetryText { get; set; } = "تلاش مجدد";
+    [Parameter] public bool Retrying { get; set; }
     [Parameter] public EventCallback OnRetry { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
 }

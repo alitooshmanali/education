@@ -66,8 +66,7 @@
                     <input type="number" @bind="_sort" />
                 </div>
                 <div class="sl-field full">
-                    <label>آپلود تصویر جلد (پوشهٔ سیستمی بر اساس دسته)</label>
-                    <InputFile OnChange="OnImageFile" accept="image/*" />
+                    <ContentAssetPicker Label="تصویر / کاور" TypeFilter="ContentType.Image" FolderPathContains="@LibraryImageFolder" @bind-Value="_imageContentId" />
                     @if (_imageContentId is long ic)
                     {
                         <p style="margin-top:6px;font-size:12px;color:var(--muted)">تصویر ذخیره شد · <a href="/api/site/media/@ic" target="_blank">پیش‌نمایش</a></p>
@@ -76,8 +75,7 @@
                 @if (_category != SiteLibraryCategory.Video)
                 {
                     <div class="sl-field full">
-                        <label>آپلود فایل صوت</label>
-                        <InputFile OnChange="OnAudioFile" accept="audio/*,.mp3,.m4a,.wav,.ogg" />
+                        <ContentAssetPicker Label="فایل صوتی" TypeFilter="ContentType.Audio" FolderPathContains="@LibraryAudioFolder" @bind-Value="_audioId" />
                         @if (_audioId is long aid)
                         {
                             <p style="margin-top:6px;font-size:12px;color:var(--muted)">صوت ذخیره شد · <a href="/api/site/media/@aid" target="_blank">پخش آزمایشی</a></p>
@@ -94,8 +92,7 @@
                 else
                 {
                     <div class="sl-field full">
-                        <label>آپلود فایل ویدیو</label>
-                        <InputFile OnChange="OnVideoFile" accept="video/*,.mp4,.webm,.mov" />
+                        <ContentAssetPicker Label="فایل ویدئویی" TypeFilter="ContentType.Video" FolderPathContains="_PageVideos" @bind-Value="_videoId" />
                         @if (_videoId is long vid)
                         {
                             <p style="margin-top:6px;font-size:12px;color:var(--muted)">ویدیو ذخیره شد · <a href="/api/site/media/@vid" target="_blank">پخش آزمایشی</a></p>
@@ -192,9 +189,17 @@
                 </tr>
             </thead>
             <tbody>
-                @if (_items.Count == 0)
+                @if (_loading)
                 {
-                    <tr><td colspan="5" style="padding:24px;text-align:center;color:var(--muted)">موردی نیست.</td></tr>
+                    <tr><td colspan="5"><LoadingState Skeleton="true" Rows="4" Title="در حال بارگذاری کتابخانه سایت" /></td></tr>
+                }
+                else if (_loadError is not null)
+                {
+                    <tr><td colspan="5"><ErrorState Title="کتابخانه سایت بارگذاری نشد" Message="@_loadError" OnRetry="Reload" /></td></tr>
+                }
+                else if (_items.Count == 0)
+                {
+                    <tr><td colspan="5"><EmptyState Icon="library" Title="هنوز محتوایی در کتابخانه ثبت نشده است" Message="اولین داستان، پادکست، موسیقی یا ویدئو را اضافه کنید."><Action><button class="btn btn-primary" type="button" @onclick="StartCreate">+ افزودن محتوا</button></Action></EmptyState></td></tr>
                 }
                 else
                 {
@@ -218,8 +223,19 @@
 </section>
 
 @code {
+    private string LibraryImageFolder => _category switch
+    {
+        SiteLibraryCategory.Story => "_PageStories",
+        SiteLibraryCategory.Podcast => "_PagePodcast",
+        SiteLibraryCategory.Music => "_PagePodcast",
+        SiteLibraryCategory.Video => "_PageVideos",
+        _ => "_PageSiteImages"
+    };
+    private string LibraryAudioFolder => _category is SiteLibraryCategory.Podcast or SiteLibraryCategory.Music ? "_PagePodcast" : "_PageSiteImages";
+
     private List<SiteLibraryItemDto> _items = new();
-    private bool _showForm, _busy;
+    private bool _showForm, _busy, _loading = true;
+    private string? _loadError;
     private long? _editId;
     private string _title = "", _summary = "", _body = "", _imagePath = "", _voiceOnlyStr = "false";
     private string? _error, _ok;
@@ -230,11 +246,19 @@
     private HashSet<long> _relatedIds = new();
     private HashSet<long> _suggestedIds = new();
 
-    protected override async Task OnInitializedAsync() => await Reload();
+    protected override async Task OnInitializedAsync()
+    {
+        await Current.EnsureInitializedAsync();
+        await Reload();
+    }
 
     private async Task Reload()
     {
-        _items = (await Library.GetAllAdminAsync()).ToList();
+        _loading = true;
+        _loadError = null;
+        try { _items = (await Library.GetAllAdminAsync()).ToList(); }
+        catch { _loadError = "بارگذاری کتابخانه سایت ناموفق بود. دوباره تلاش کنید."; }
+        finally { _loading = false; }
     }
 
     private void StartCreate()

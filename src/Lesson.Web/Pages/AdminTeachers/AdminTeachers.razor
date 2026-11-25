@@ -51,9 +51,19 @@
         <div class="tch-kpi"><span>کلاس‌های تحت تدریس</span><b>@_rows.Sum(r => r.Classes.Count)</b></div>
     </div>
     <div class="tch-card">
-        @if (_rows.Count == 0)
+        @if (_loading)
         {
-            <div class="tch-empty">مدرسی ثبت نشده. از بخش کاربران یک کاربر با نقش Teacher بسازید.</div>
+            <LoadingState Skeleton="true" Rows="4" Title="در حال بارگذاری مدرسان" />
+        }
+        else if (_loadError is not null)
+        {
+            <ErrorState Title="فهرست مدرسان بارگذاری نشد" Message="@_loadError" OnRetry="ReloadAsync" />
+        }
+        else if (_rows.Count == 0)
+        {
+            <EmptyState Icon="users" Title="هنوز مدرسی ثبت نشده است" Message="از بخش کاربران، یک کاربر با نقش Teacher بسازید.">
+                <Action><a class="btn btn-primary" href="/admin/users">مدیریت کاربران</a></Action>
+            </EmptyState>
         }
         else
         {
@@ -110,18 +120,30 @@
 @code {
     private sealed record TeacherRow(string Username, bool IsActive, List<LanguageLevel> Levels, List<ClassRoomDto> Classes);
     private List<TeacherRow> _rows = new();
+    private bool _loading = true;
+    private string? _loadError;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => ReloadAsync();
+
+    private async Task ReloadAsync()
     {
-        var teachers = await Users.GetTeachersAsync();
-        var allClasses = await Classes.GetAllAsync();
-        _rows = new List<TeacherRow>();
-        foreach (var t in teachers)
+        _loading = true;
+        _loadError = null;
+        try
         {
-            var levels = (await Users.GetTeacherLevelsAsync(t.Id)).ToList();
-            var cls = allClasses.Where(c => c.TeacherId == t.Id && c.Status != ClassStatus.Inactive).ToList();
-            _rows.Add(new TeacherRow(t.Username, t.IsActive, levels, cls));
+            var teachers = await Users.GetTeachersAsync();
+            var allClasses = await Classes.GetAllAsync();
+            var rows = new List<TeacherRow>();
+            foreach (var t in teachers)
+            {
+                var levels = (await Users.GetTeacherLevelsAsync(t.Id)).ToList();
+                var cls = allClasses.Where(c => c.TeacherId == t.Id && c.Status != ClassStatus.Inactive).ToList();
+                rows.Add(new TeacherRow(t.Username, t.IsActive, levels, cls));
+            }
+            _rows = rows;
         }
+        catch { _loadError = "بارگذاری اطلاعات مدرسان ناموفق بود. دوباره تلاش کنید."; }
+        finally { _loading = false; }
     }
 
     private static string Fmt(TimeSpan t) => $"{t.Hours:00}:{t.Minutes:00}";

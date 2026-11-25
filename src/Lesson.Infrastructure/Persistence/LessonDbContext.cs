@@ -96,6 +96,7 @@ public sealed class LessonDbContext : DbContext, Abstractions.IApplicationDbCont
             entity.Property(x => x.Title).HasMaxLength(300).IsRequired();
             entity.Property(x => x.Price).HasPrecision(18, 0);
             entity.HasOne(x => x.ImageContent).WithMany().HasForeignKey(x => x.ImageContentId).OnDelete(DeleteBehavior.NoAction);
+            entity.HasOne(x => x.FileContent).WithMany().HasForeignKey(x => x.FileContentId).OnDelete(DeleteBehavior.NoAction);
         });
 
         base.OnModelCreating(modelBuilder);

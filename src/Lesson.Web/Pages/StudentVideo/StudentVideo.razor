@@ -2,79 +2,109 @@
 @attribute [Authorize(Roles = nameof(UserRole.Student))]
 @inject IContentService Contents
 @inject ICurrentUserContext CurrentUser
+@inject NavigationManager Nav
 
-<PageHeader Eyebrow="Student" Title="مشاهده محتوا" Subtitle="پخش امن با احراز دسترسی و ادامه از نقطه قطع‌شده" />
-
-@if (_content is null)
+@if (_loading)
 {
-    <EmptyState Icon="video" Title="در دسترس نیست" Message="این محتوا برای شما قابل پخش نیست یا حذف شده.">
-        <Action>
-            <a class="btn btn-primary" href="/student/videos">بازگشت</a>
-        </Action>
+    <section class="v4-watch-state panel pad" aria-live="polite"><span class="loading-spinner" aria-hidden="true"></span><strong>در حال آماده‌سازی محتوای آموزشی…</strong></section>
+}
+else if (!string.IsNullOrWhiteSpace(_error))
+{
+    <section class="panel pad v4-watch-state" role="alert">
+        <AppIcon Name="alert" /><h2>پخش محتوا ممکن نیست</h2><p>@_error</p>
+        <div class="v4-watch-actions"><button class="btn btn-primary" @onclick="LoadAsync">تلاش دوباره</button><a class="btn btn-ghost" href="/student/videos">بازگشت به کتابخانه</a></div>
+    </section>
+}
+else if (_content is null)
+{
+    <EmptyState Icon="video" Title="محتوا در دسترس نیست" Message="این محتوا برای حساب شما مجاز نیست یا حذف شده است.">
+        <Action><a class="btn btn-primary" href="/student/videos">بازگشت به کتابخانه</a></Action>
     </EmptyState>
 }
 else
 {
-    <section class="media-shell">
-        <section class="video-player-shell panel pad">
-            <div class="video-info">
-                <h3>@_content.DisplayName</h3>
-                <div class="meta ltr">@_content.FolderPath</div>
-                <p class="meta">نوع: @_content.Type — پسوند: @_content.FileExtension.ToUpperInvariant() — حجم: @FormatSize(_content.FileSize)</p>
-                @if (_progress is not null)
+    <div class="v4-watch-topline">
+        <a class="v4-watch-back" href="/student/videos"><AppIcon Name="arrow-right" /> کتابخانهٔ من</a>
+        <div class="v4-watch-breadcrumb">محتوای آموزشی <span>/</span> @_content.FolderPath</div>
+    </div>
+
+    <div class="v4-watch-layout">
+        <main class="v4-watch-main">
+            <section class="v4-watch-player panel">
+                @if (_content.Type is Lesson.Domain.Enums.ContentType.Video or Lesson.Domain.Enums.ContentType.Audio)
                 {
-                    <p class="meta">
-                        پیشرفت شما: <strong>@_progress.ProgressPercent.ToString("0.0")%</strong>
-                        @if (_progress.IsCompleted)
-                        {
-                            <span class="status-badge tone-success">تکمیل شده</span>
-                        }
-                    </p>
+                    <VideoPlayer @key="ContentId" StreamUrl="@($"/api/contents/{ContentId}/stream")" ContentId="ContentId" ResumePosition="@GetResumeSeconds()" TrackProgress="true" />
                 }
-            </div>
-
-            @if (_content.Type is Lesson.Domain.Enums.ContentType.Video or Lesson.Domain.Enums.ContentType.Audio)
-            {
-                <VideoPlayer StreamUrl="@($"/api/contents/{ContentId}/stream")"
-                             ContentId="ContentId"
-                             ResumePosition="@GetResumeSeconds()"
-                             TrackProgress="true" />
-            }
-            else if (_content.Type is Lesson.Domain.Enums.ContentType.Image)
-            {
-                <div class="panel pad">
-                    <img src="@($"/api/contents/{ContentId}/stream")" alt="@_content.DisplayName" style="max-width:100%;border-radius:8px;" />
-                </div>
-            }
-            else
-            {
-                <div class="panel pad">
-                    <p>این فایل قابل پخش آنلاین نیست. می‌توانید آن را دانلود کنید.</p>
-                    <a class="btn btn-primary" href="@($"/api/contents/{ContentId}/stream")" target="_blank">دانلود / مشاهده</a>
-                    <button class="btn btn-secondary" type="button" @onclick="MarkAsRead">علامت‌گذاری به‌عنوان خوانده‌شده</button>
-                </div>
-            }
-        </section>
-
-        <section class="panel pad">
-            <h4>محتوای مرتبط</h4>
-            <div class="sidebar-list">
-                @if (_related.Any())
+                else if (_content.Type is Lesson.Domain.Enums.ContentType.Image)
                 {
-                    @foreach (var item in _related)
-                    {
-                        <a class="video-link" href="/student/videos/@item.Id">
-                            <AppIcon Name="play" /><span>@item.DisplayName</span>
-                        </a>
-                    }
+                    <div class="v4-watch-image"><img src="@($"/api/contents/{ContentId}/stream")" alt="@_content.DisplayName" /></div>
                 }
                 else
                 {
-                    <EmptyState Icon="video" Title="دیگری موجود نیست" Message="برای این گروه مورد دیگری وجود ندارد." />
+                    <div class="v4-watch-document">
+                        <span><AppIcon Name="@IconFor(_content.Type)" /></span>
+                        <strong>@_content.DisplayName</strong>
+                        <p>این نوع فایل در پخش‌کنندهٔ ویدیو اجرا نمی‌شود.</p>
+                        <a class="btn btn-primary" href="@($"/api/contents/{ContentId}/stream")" target="_blank" rel="noopener">باز کردن / دریافت فایل <AppIcon Name="external-link" /></a>
+                        <button class="btn btn-ghost" @onclick="MarkAsRead">علامت‌گذاری به‌عنوان مطالعه‌شده</button>
+                    </div>
                 }
-            </div>
-        </section>
-    </section>
+            </section>
+
+            <section class="v4-watch-details">
+                <div class="v4-watch-title-row">
+                    <div><span class="eyebrow">YOUR LESSON</span><h1>@_content.DisplayName</h1></div>
+                    <span class="v4-watch-type"><AppIcon Name="@IconFor(_content.Type)" /> @TypeLabel(_content.Type)</span>
+                </div>
+                <p class="v4-watch-folder"><AppIcon Name="folder" /> <span>@_content.FolderPath</span></p>
+                <div class="v4-watch-meta">
+                    <span>فرمت <b class="ltr">@_content.FileExtension.ToUpperInvariant()</b></span>
+                    <span>حجم <b>@FormatSize(_content.FileSize)</b></span>
+                    @if (_content.DurationSeconds is > 0) { <span>مدت <b>@FormatDuration(_content.DurationSeconds.Value)</b></span> }
+                    @if (_content.Levels.Count > 0) { <span>سطح <b>@string.Join(" · ", _content.Levels)</b></span> }
+                    @if (_progress is not null)
+                    {
+                        <span>پیشرفت ثبت‌شده <b>@Progress(_progress.ProgressPercent)٪</b></span>
+                        @if (_progress.IsCompleted) { <StatusBadge Text="تکمیل شده" Tone="success" /> }
+                    }
+                </div>
+                @if (_progress is not null)
+                {
+                    <div class="v4-watch-progress" role="progressbar" aria-label="پیشرفت تماشای محتوا" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@Progress(_progress.ProgressPercent)">
+                        <span style="width:@(Progress(_progress.ProgressPercent))%"></span>
+                    </div>
+                    <p class="v4-watch-progress-note">پیشرفت شما با تماشای محتوا ذخیره می‌شود و در مراجعهٔ بعدی از آخرین نقطهٔ ثبت‌شده ادامه می‌دهید.</p>
+                }
+                <div class="v4-watch-actions">
+                    @if (_previous is not null) { <a class="btn btn-ghost" href="/student/videos/@_previous.Id"><AppIcon Name="chevron-right" /> محتوای قبلی</a> }
+                    @if (_next is not null) { <a class="btn btn-primary" href="/student/videos/@_next.Id">محتوای بعدی <AppIcon Name="chevron-left" /></a> }
+                </div>
+            </section>
+        </main>
+
+        <aside class="v4-watch-sidebar">
+            <section class="panel pad v4-watch-sidecard">
+                <div class="v4-watch-sidehead"><div><span class="eyebrow">UP NEXT</span><h2>محتوای مرتبط</h2></div><span class="v4-watch-sidecount">@_related.Count</span></div>
+                @if (_related.Count > 0)
+                {
+                    <div class="v4-watch-related">
+                        @foreach (var item in _related)
+                        {
+                            <a class="v4-watch-related-item" href="/student/videos/@item.Id">
+                                <span class="v4-watch-related-thumb"><AppIcon Name="@IconFor(item.Type)" /><i><AppIcon Name="play" /></i></span>
+                                <span class="v4-watch-related-copy"><strong>@item.DisplayName</strong><small>@TypeLabel(item.Type) · @FormatSize(item.FileSize)</small></span>
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <EmptyState Icon="folder" Title="مورد دیگری نیست" Message="در حال حاضر محتوای دیگری در این پوشه در دسترس نیست." />
+                }
+            </section>
+            <section class="v4-watch-tip"><AppIcon Name="info" /><p>برای ذخیرهٔ پیشرفت، ویدیو را از همین صفحه تماشا کنید. وضعیت پخش به حساب کاربری شما متصل است.</p></section>
+        </aside>
+    </div>
 }
 
 @code {
@@ -82,36 +112,54 @@ else
     private ContentDto? _content;
     private ContentProgressDto? _progress;
     private IReadOnlyList<ContentDto> _related = [];
+    private ContentDto? _previous;
+    private ContentDto? _next;
+    private bool _loading = true;
+    private string? _error;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        if (CurrentUser.UserId is null) return;
+        await CurrentUser.EnsureInitializedAsync();
+        await LoadAsync();
+    }
 
-        var userId = CurrentUser.UserId.Value;
-        var all = await Contents.GetForUserAsync(userId, false);
-        _content = all.FirstOrDefault(x => x.Id == ContentId);
-        if (_content is null) return;
+    private async Task LoadAsync()
+    {
+        _loading = true; _error = null; _content = null; _progress = null; _related = []; _previous = null; _next = null;
+        try
+        {
+            if (CurrentUser.UserId is null) { Nav.NavigateTo("/login", true); return; }
+            var userId = CurrentUser.UserId.Value;
+            var all = await Contents.GetForUserAsync(userId, false);
+            _content = all.FirstOrDefault(x => x.Id == ContentId);
+            if (_content is null) return;
 
-        _related = all.Where(x => x.FolderPath == _content.FolderPath && x.Id != _content.Id).ToList();
-        _progress = await Contents.GetProgressAsync(userId, ContentId);
+            var siblings = all.Where(x => x.FolderPath == _content.FolderPath && x.Id != _content.Id).OrderBy(x => x.DisplayName).ToList();
+            _related = siblings.Take(8).ToList();
+            var ordered = all.Where(x => x.FolderPath == _content.FolderPath).OrderBy(x => x.DisplayName).ToList();
+            var index = ordered.FindIndex(x => x.Id == _content.Id);
+            if (index > 0) _previous = ordered[index - 1];
+            if (index >= 0 && index < ordered.Count - 1) _next = ordered[index + 1];
+            _progress = await Contents.GetProgressAsync(userId, ContentId);
+        }
+        catch
+        {
+            _error = "خطا در دریافت محتوا یا وضعیت پیشرفت رخ داد. لطفاً دوباره تلاش کنید.";
+        }
+        finally { _loading = false; }
     }
 
     private async Task MarkAsRead()
     {
         if (CurrentUser.UserId is null || _content is null) return;
-        await Contents.UpdateProgressAsync(CurrentUser.UserId.Value, ContentId, 0, null);
-        _progress = await Contents.GetProgressAsync(CurrentUser.UserId.Value, ContentId);
+        try { await Contents.UpdateProgressAsync(CurrentUser.UserId.Value, ContentId, 0, null); _progress = await Contents.GetProgressAsync(CurrentUser.UserId.Value, ContentId); }
+        catch { _error = "ثبت وضعیت مطالعه انجام نشد. دوباره تلاش کنید."; }
     }
 
-    private static string FormatSize(long size)
-        => size > 1024 * 1024 * 1024 ? $"{size / 1024d / 1024d / 1024d:0.0} GB" :
-           size > 1024 * 1024 ? $"{size / 1024d / 1024d:0.0} MB" :
-           $"{size / 1024d:0.0} KB";
-
-    private double GetResumeSeconds()
-    {
-        if (_progress is null) return 0;
-        if (_progress.IsCompleted) return 0;
-        return _progress.LastPositionSeconds > 0.5 ? _progress.LastPositionSeconds : 0;
-    }
+    private double GetResumeSeconds() => _progress is null || _progress.IsCompleted ? 0 : Math.Max(0, _progress.LastPositionSeconds);
+    private static int Progress(double value) => Math.Clamp((int)Math.Round(value), 0, 100);
+    private static string TypeLabel(Lesson.Domain.Enums.ContentType type) => type switch { Lesson.Domain.Enums.ContentType.Video => "ویدیو", Lesson.Domain.Enums.ContentType.Audio => "صوت", Lesson.Domain.Enums.ContentType.Image => "تصویر", Lesson.Domain.Enums.ContentType.Document => "سند", Lesson.Domain.Enums.ContentType.Story => "داستان", _ => "محتوا" };
+    private static string IconFor(Lesson.Domain.Enums.ContentType type) => type switch { Lesson.Domain.Enums.ContentType.Video => "video", Lesson.Domain.Enums.ContentType.Audio => "volume-2", Lesson.Domain.Enums.ContentType.Image => "image", Lesson.Domain.Enums.ContentType.Document => "file-text", Lesson.Domain.Enums.ContentType.Story => "book-open", _ => "folder" };
+    private static string FormatDuration(double seconds) { var span = TimeSpan.FromSeconds(Math.Max(0, seconds)); return span.TotalHours >= 1 ? span.ToString(@"h\:mm\:ss") : span.ToString(@"m\:ss"); }
+    private static string FormatSize(long size) => size >= 1024L * 1024 * 1024 ? $"{size / 1024d / 1024d / 1024d:0.0} GB" : size >= 1024L * 1024 ? $"{size / 1024d / 1024d:0.0} MB" : $"{size / 1024d:0.0} KB";
 }

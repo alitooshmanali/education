@@ -185,9 +185,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (_items.Count == 0)
+                    @if (_loading)
                     {
-                        <tr><td colspan="10"><div class="cls-empty">کلاسی ثبت نشده است.</div></td></tr>
+                        <tr><td colspan="10"><LoadingState Skeleton="true" Rows="4" Title="در حال بارگذاری کلاس‌ها" /></td></tr>
+                    }
+                    else if (_loadError is not null)
+                    {
+                        <tr><td colspan="10"><ErrorState Title="فهرست کلاس‌ها بارگذاری نشد" Message="@_loadError" OnRetry="ReloadAsync" /></td></tr>
+                    }
+                    else if (_items.Count == 0)
+                    {
+                        <tr><td colspan="10"><EmptyState Icon="school" Title="هنوز کلاسی ثبت نشده است" Message="برای شروع، اولین کلاس را ایجاد کنید."><Action><button class="btn btn-primary" type="button" @onclick="StartCreate">+ ایجاد اولین کلاس</button></Action></EmptyState></td></tr>
                     }
                     else
                     {
@@ -225,8 +233,9 @@
     private List<ClassRoomDto> _items = new();
     private List<User> _teachers = new();
     private string? _error;
+    private string? _loadError;
     private string? _status;
-    private bool _busy;
+    private bool _busy, _loading = true;
     private bool _showForm;
     private long? _editId;
 
@@ -247,8 +256,15 @@
 
     private async Task ReloadAsync()
     {
-        _items = (await Classes.GetAllAsync()).Where(x => x.Status != ClassStatus.Inactive).ToList();
-        _teachers = (await Users.GetTeachersAsync()).Where(t => t.IsActive).ToList();
+        _loading = true;
+        _loadError = null;
+        try
+        {
+            _items = (await Classes.GetAllAsync()).Where(x => x.Status != ClassStatus.Inactive).ToList();
+            _teachers = (await Users.GetTeachersAsync()).Where(t => t.IsActive).ToList();
+        }
+        catch { _loadError = "بارگذاری کلاس‌ها ناموفق بود. دوباره تلاش کنید."; }
+        finally { _loading = false; }
     }
 
     private void StartCreate()

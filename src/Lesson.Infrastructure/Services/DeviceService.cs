@@ -13,7 +13,7 @@ public sealed class DeviceService : IDeviceService
     public Task<List<UserDevice>> GetAllAsync(CancellationToken cancellationToken = default)
         => _db.UserDevices.Include(x => x.User).OrderByDescending(x => x.LastSeenAt).ToListAsync(cancellationToken);
 
-    public async Task<DeviceValidationResult> ValidateOrRegisterAsync(long userId, string deviceIdentifier, CancellationToken cancellationToken = default)
+    public async Task<DeviceValidationResult> ValidateOrRegisterAsync(long userId, string deviceIdentifier, CancellationToken cancellationToken = default, bool saveChanges = true)
     {
         var device = await _db.UserDevices.FirstOrDefaultAsync(x => x.UserId == userId && x.DeviceIdentifier == deviceIdentifier, cancellationToken);
         if (device is not null)
@@ -24,7 +24,8 @@ public sealed class DeviceService : IDeviceService
             }
 
             device.LastSeenAt = DateTimeOffset.UtcNow;
-            await _db.SaveChangesAsync(cancellationToken);
+            if (saveChanges)
+                await _db.SaveChangesAsync(cancellationToken);
             return new DeviceValidationResult(true, null, device);
         }
 
@@ -45,7 +46,8 @@ public sealed class DeviceService : IDeviceService
             LastSeenAt = DateTimeOffset.UtcNow
         };
         _db.UserDevices.Add(device);
-        await _db.SaveChangesAsync(cancellationToken);
+        if (saveChanges)
+            await _db.SaveChangesAsync(cancellationToken);
         return new DeviceValidationResult(true, null, device);
     }
 

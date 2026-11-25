@@ -9,15 +9,31 @@
 <link rel="stylesheet" href="/site/css/public-shell.css">
 <link rel="stylesheet" href="/site/css/design-system.css">
     <link rel="stylesheet" href="/css/ds/fonts.css">
+    <link rel="stylesheet" href="/site/css/asatir-v4-kit.css">
+    <link rel="stylesheet" href="/site/css/asatir-v4-courses.css">
 </head>
 <body>
 <div class="shell">
-  <a class="brand-ribbon" href="#/" title="اساطیر آینده" id="site-brand-ribbon">
-    <span class="brand-ribbon__flag">
-      <img src="/site/img/logo.png" onerror="this.onerror=null;this.src='/site/img/logo.svg'" alt="اساطیر آینده" width="88" height="88">
-      <div class="brand-ribbon__name">اساطیر آینده<span>asatir-e ayande</span></div>
-    </span>
-  </a>
+  <header class="site-nav" id="site-nav">
+    <div class="site-nav__inner">
+      <a class="site-nav__brand" href="#/" title="اساطیر آینده">
+        <img src="/site/img/logo.png" onerror="this.onerror=null;this.src='/site/img/logo.svg'" alt="" width="42" height="42">
+        <span><strong>اساطیر آینده</strong><small>ACADEMY</small></span>
+      </a>
+      <nav class="site-nav__links" aria-label="ناوبری اصلی">
+        <a href="#/" data-site-route="home">خانه</a>
+        <a href="#/english" data-site-route="english">زبان انگلیسی</a>
+        <a href="#/" data-site-route="academy">آکادمی</a>
+        <a href="#site-about">اساتید</a>
+        <a href="#site-about">درباره ما</a>
+        <a href="#site-contact">تماس</a>
+      </nav>
+      <div class="site-nav__actions">
+        <a class="site-nav__login" href="/login">ورود به پلتفرم</a>
+        <button type="button" class="site-nav__cta" onclick="openPlacementModal()">تعیین سطح رایگان</button>
+      </div>
+    </div>
+  </header>
   <div id="app"></div>
   <div class="site-player" id="site-player">
     <div class="site-player__meta">
@@ -29,13 +45,13 @@
   </div>
   <footer class="footer">
     <div class="footer__inner">
-      <div class="footer__brand">
+      <div class="footer__brand" id="site-about">
         <img src="/site/img/logo.png" onerror="this.onerror=null;this.src='/site/img/logo.svg'" alt="اساطیر آینده" class="footer__logo">
         <strong>اساطیر آینده</strong>
         <span class="footer__tag">آموزشگاه زبان و مهارت</span>
         <a class="footer__login" href="/login">ورود به پلتفرم</a>
       </div>
-      <div class="footer__info">
+      <div class="footer__info" id="site-contact">
         <h4>تماس با ما</h4>
         <p class="footer__addr">
           <span class="footer__ico">📍</span>
@@ -69,30 +85,6 @@
     </div>
   </div>
 
-  <!-- voice transcript drawer -->
-  <div id="voice-drawer-backdrop" class="voice-drawer-backdrop" hidden></div>
-  <aside id="voice-drawer" class="voice-drawer" aria-hidden="true" hidden>
-    <div class="voice-drawer__head">
-      <div>
-        <p class="voice-drawer__eyebrow">متن / متن آهنگ</p>
-        <h3 id="voice-drawer-title" class="voice-drawer__title">—</h3>
-      </div>
-      <button type="button" class="voice-drawer__close" id="voice-drawer-close" aria-label="بستن">×</button>
-    </div>
-    <div class="voice-drawer__tabs">
-      <button type="button" class="voice-drawer__tab is-on" data-tab="orig">متن اصلی</button>
-      <button type="button" class="voice-drawer__tab" data-tab="fa">ترجمه فارسی</button>
-    </div>
-    <div class="voice-drawer__body">
-      <div id="voice-drawer-loading" class="voice-drawer__loading" hidden>
-        <img class="site-loader__logo site-loader__logo--sm" src="/site/img/logo.png" onerror="this.onerror=null;this.src='/site/img/logo.svg'" alt="">
-        <span>در حال آماده‌سازی متن…</span>
-      </div>
-      <div id="voice-drawer-content" class="voice-drawer__content" dir="auto"></div>
-    </div>
-  </aside>
-
-
   <button type="button" class="place-sticky" id="place-sticky" onclick="openPlacementModal()">تعیین سطح</button>
   <div class="place-modal" id="place-modal" role="dialog" aria-modal="true" aria-labelledby="place-modal-title" aria-describedby="place-modal-description">
     <div class="place-modal__card" role="document">
@@ -117,6 +109,35 @@
     </div>
   </div>
 </div>
+
+  <!-- voice transcript drawer -->
+  <div id="voice-drawer-backdrop" class="voice-drawer-backdrop" hidden></div>
+  <aside id="voice-drawer" class="voice-drawer" role="dialog" aria-modal="true" aria-labelledby="voice-drawer-title" aria-hidden="true" hidden>
+    <div class="voice-drawer__head">
+      <div>
+        <p class="voice-drawer__eyebrow">متن / متن آهنگ</p>
+        <h3 id="voice-drawer-title" class="voice-drawer__title">—</h3>
+      </div>
+      <button type="button" class="voice-drawer__close" id="voice-drawer-close" aria-label="بستن">×</button>
+    </div>
+    <div class="voice-drawer__tabs" role="tablist" aria-label="زبان متن">
+      <button type="button" class="voice-drawer__tab is-on" role="tab" aria-selected="true" data-tab="orig">متن اصلی</button>
+      <button type="button" class="voice-drawer__tab" role="tab" aria-selected="false" data-tab="fa">ترجمه فارسی</button>
+    </div>
+    <div class="voice-drawer__body" id="voice-drawer-body" tabindex="0">
+      <div id="voice-drawer-loading" class="voice-drawer__loading" hidden>
+        <img class="site-loader__logo site-loader__logo--sm" src="/site/img/logo.png" onerror="this.onerror=null;this.src='/site/img/logo.svg'" alt="">
+        <span>در حال آماده‌سازی متن…</span>
+      </div>
+      <div id="voice-drawer-content" class="voice-drawer__content" dir="auto"></div>
+    </div>
+    <footer class="voice-drawer__foot">
+      <span class="voice-drawer__hint">متن ثبت‌شده برای این محتوا</span>
+      <button type="button" class="btn btn-ghost voice-drawer__copy" id="voice-drawer-copy">کپی متن</button>
+    </footer>
+  </aside>
+
+
 <script>
 /* —— image assets (Unsplash, thematic) —— */
 const IMG = {
@@ -360,6 +381,35 @@ function circlesHtml(items, sm=false){
     </a>`).join('')}</div>`;
 }
 
+async function renderEnglishStations(circles){
+  const meta={
+    podcast:{icon:'🎧',tone:'',desc:'گوش دادن و تقویت درک شنیداری'},
+    videos:{icon:'🎬',tone:'g',desc:'یادگیری با تصویر و مثال'},
+    stories:{icon:'📖',tone:'j',desc:'خواندن داستان با صدا و تصویر'},
+    musics:{icon:'♫',tone:'v',desc:'یادگیری زبان با متن آهنگ'},
+    books:{icon:'📚',tone:'',desc:'منابع و کتاب‌های آموزشی'}
+  };
+  const counts=await Promise.all(circles.map(async c=>{
+    const key=c.id==='music'?'musics':c.id;
+    const category=CAT[key];
+    if(!category) return 0;
+    const items=await fetchLibrary(category);
+    return items.length;
+  }));
+  return `<section class="sec station-section">
+    <div class="sec__head"><div><span class="eyebrow">ایستگاه‌ها</span><h2>پنج ایستگاه زبان انگلیسی</h2><p>هر ایستگاه یک نوع تمرین است؛ از شنیدن و دیدن تا خواندن و واژگان.</p></div></div>
+    <div class="stations">${circles.map((c,i)=>{
+      const m=meta[c.id]||{icon:'✦',tone:'',desc:'محتوای آموزشی'};
+      const count=counts[i]||0;
+      return `<a class="station" href="${c.route}" data-route="${c.route}">
+        <span class="station__ico ${m.tone}">${m.icon}</span>
+        <h3>${escapeHtml(c.label)}</h3><small>${m.desc}</small>
+        <span class="station__foot"><span>${count?`${count.toLocaleString('fa-IR')} مورد`:'به‌زودی'}</span><span class="arw" aria-hidden="true">←</span></span>
+      </a>`;
+    }).join('')}</div>
+  </section>`;
+}
+
 async function fetchLibrary(category){
   try{
     // category: عدد enum (Music=3) — چند شکل درخواست برای سازگاری
@@ -428,6 +478,9 @@ let _activeWrap = null;
 const _transcriptCache = new Map();
 let _drawerVoiceKey = null;
 let _drawerTab = 'orig';
+let _drawerLastFocus = null;
+let _drawerBodyOverflow = '';
+let _drawerBodyPadding = ''; 
 
 window.showSiteLoader = function(show, text){
   const el = document.getElementById('site-loader');
@@ -443,16 +496,21 @@ function openVoiceDrawerShell(title){
   const bd = document.getElementById('voice-drawer-backdrop');
   const titleEl = document.getElementById('voice-drawer-title');
   if(titleEl) titleEl.textContent = title || 'متن';
-  if(bd){
-    bd.hidden = false;
-    requestAnimationFrame(()=> bd.classList.add('is-open'));
-  }
+  _drawerLastFocus = document.activeElement;
+  _drawerBodyOverflow = document.body.style.overflow;
+  _drawerBodyPadding = document.body.style.paddingInlineEnd;
+  const scrollbarWidth = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+  document.body.style.overflow = 'hidden';
+  document.body.style.paddingInlineEnd = scrollbarWidth ? `${scrollbarWidth}px` : _drawerBodyPadding;
+  if(bd){ bd.hidden = false; requestAnimationFrame(()=> bd.classList.add('is-open')); }
   if(drawer){
     drawer.hidden = false;
     drawer.setAttribute('aria-hidden','false');
-    // force reflow then animate in
     void drawer.offsetWidth;
-    requestAnimationFrame(()=> drawer.classList.add('is-open'));
+    requestAnimationFrame(()=>{
+      drawer.classList.add('is-open');
+      drawer.querySelector('.voice-drawer__close')?.focus();
+    });
   }
 }
 
@@ -466,8 +524,13 @@ function closeVoiceDrawer(){
   }
   if(bd){
     bd.classList.remove('is-open');
-    setTimeout(()=>{ bd.hidden = true; }, 350);
+    setTimeout(()=>{ if(!bd.classList.contains('is-open')) bd.hidden = true; }, 350);
   }
+  document.body.style.overflow = _drawerBodyOverflow;
+  document.body.style.paddingInlineEnd = _drawerBodyPadding;
+  const focusTarget = _drawerLastFocus;
+  _drawerLastFocus = null;
+  if(focusTarget && typeof focusTarget.focus === 'function') setTimeout(()=>focusTarget.focus(), 0);
 }
 
 function setDrawerLoading(on){
@@ -505,28 +568,24 @@ async function translateToFa(text){
   }catch(_){ return ''; }
 }
 
-async function ensureTranscript(key, { id, title, audioUrl }){
-  if(_transcriptCache.has(key)) return _transcriptCache.get(key);
+async function ensureTranscript(key, { id, title = '', bodyText }){
+  const suppliedText = String(bodyText || '').trim();
+  if(_transcriptCache.has(key)){
+    const cached = _transcriptCache.get(key);
+    if(suppliedText && !String(cached.original || '').trim()){ cached.original = suppliedText; cached.fa = ''; }
+    return cached;
+  }
   setDrawerLoading(true);
-  let original = '';
-  if(id){
+  let original = suppliedText;
+  // Load the canonical library detail only when text was not supplied by the caller.
+  // Audio transcription is deliberately NOT used as a fallback: an item without BodyText
+  // is audio-only and must never expose an empty transcript drawer.
+  if(!original && id){
     try{
       const r = await fetch('/api/site/library/' + id, { cache:'no-store' });
       if(r.ok){
         const it = await r.json();
-        original = (it.bodyText || it.BodyText || it.summary || it.Summary || '').trim();
-      }
-    }catch(_){}
-  }
-  if(!original && audioUrl){
-    try{
-      const r = await fetch('/api/site/transcribe', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ audioUrl, contentId: id || null })
-      });
-      if(r.ok){
-        const data = await r.json();
-        original = (data && data.text) ? String(data.text).trim() : '';
+        original = String(it.bodyText || it.BodyText || '').trim();
       }
     }catch(_){}
   }
@@ -538,8 +597,14 @@ async function ensureTranscript(key, { id, title, audioUrl }){
   return entry;
 }
 
-async function openVoiceTranscript({ id, title, audioUrl }){
-  const key = id ? ('id:' + id) : ('url:' + (audioUrl || ''));
+async function openVoiceTranscript({ id, title, bodyText, audioUrl }){
+  const key = id ? ('id:' + id) : ('url:' + (audioUrl || title || 'unknown'));
+  const entry = await ensureTranscript(key, { id, title, bodyText });
+  // No transcript, no drawer. This rule applies to stories, music and podcasts alike.
+  if(!entry || !String(entry.original || '').trim()){
+    closeVoiceDrawer();
+    return false;
+  }
   if(_drawerVoiceKey && _drawerVoiceKey !== key){
     const ct = document.getElementById('voice-drawer-content');
     if(ct){ ct.textContent = ''; ct.classList.remove('is-empty'); }
@@ -547,22 +612,42 @@ async function openVoiceTranscript({ id, title, audioUrl }){
   _drawerVoiceKey = key;
   _drawerTab = 'orig';
   document.querySelectorAll('.voice-drawer__tab').forEach(t=>{
-    t.classList.toggle('is-on', t.getAttribute('data-tab') === 'orig');
+    const active=t.getAttribute('data-tab') === 'orig';
+    t.classList.toggle('is-on', active); t.setAttribute('aria-selected', String(active));
   });
   openVoiceDrawerShell(title);
-  await ensureTranscript(key, { id, title, audioUrl });
-  if(_drawerVoiceKey === key) paintDrawerContent();
+  paintDrawerContent();
+  return true;
 }
 
 function wireVoiceDrawerOnce(){
   if(window.__voiceDrawerWired) return;
   window.__voiceDrawerWired = true;
+  const drawer = document.getElementById('voice-drawer');
   document.getElementById('voice-drawer-close')?.addEventListener('click', closeVoiceDrawer);
   document.getElementById('voice-drawer-backdrop')?.addEventListener('click', closeVoiceDrawer);
+  document.getElementById('voice-drawer-copy')?.addEventListener('click', async ()=>{
+    const text = document.getElementById('voice-drawer-content')?.textContent || '';
+    if(!text.trim()) return;
+    const copyButton = document.getElementById('voice-drawer-copy');
+    try{ await navigator.clipboard.writeText(text); if(copyButton){ const old=copyButton.textContent; copyButton.textContent='کپی شد'; setTimeout(()=>copyButton.textContent=old,1600); } }
+    catch(_){ const range=document.createRange(); const node=document.getElementById('voice-drawer-content'); if(node){ range.selectNodeContents(node); const selection=window.getSelection(); selection.removeAllRanges(); selection.addRange(range); } }
+  });
+  document.addEventListener('keydown', e=>{
+    if(!drawer || drawer.hidden || !drawer.classList.contains('is-open')) return;
+    if(e.key === 'Escape'){ e.preventDefault(); e.stopPropagation(); closeVoiceDrawer(); return; }
+    if(e.key === 'Tab'){
+      const focusables = [...drawer.querySelectorAll('button:not([disabled]),[href],input:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(x=>x.offsetParent !== null);
+      if(!focusables.length) return;
+      const first=focusables[0], last=focusables[focusables.length-1];
+      if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+      else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+    }
+  });
   document.querySelectorAll('.voice-drawer__tab').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
       _drawerTab = btn.getAttribute('data-tab') || 'orig';
-      document.querySelectorAll('.voice-drawer__tab').forEach(t=> t.classList.toggle('is-on', t === btn));
+      document.querySelectorAll('.voice-drawer__tab').forEach(t=>{ const active=t===btn; t.classList.toggle('is-on',active); t.setAttribute('aria-selected',String(active)); });
       if(_drawerTab === 'fa' && _drawerVoiceKey){
         const c = _transcriptCache.get(_drawerVoiceKey);
         if(c && c.original && !c.fa){
@@ -576,6 +661,15 @@ function wireVoiceDrawerOnce(){
     });
   });
 }
+// The fixed drawer must live directly under body; transformed/overflowing shell ancestors
+// otherwise create a containing block and can move it outside the viewport.
+(function portalVoiceDrawer(){
+  const backdrop = document.getElementById('voice-drawer-backdrop');
+  const drawer = document.getElementById('voice-drawer');
+  if(backdrop && backdrop.parentElement !== document.body) document.body.appendChild(backdrop);
+  if(drawer && drawer.parentElement !== document.body) document.body.appendChild(drawer);
+})();
+
 wireVoiceDrawerOnce();
 
 
@@ -597,8 +691,7 @@ function playAudio(url, title, wrapEl, itemId){
     _activeWrap.classList.add('has-progress');
   }
   audioEl.play().catch(()=>{});
-  const id = itemId || (wrapEl && wrapEl.getAttribute('data-id')) || null;
-  openVoiceTranscript({ id, title: title || '', audioUrl: url });
+  // Audio playback is independent from transcript visibility.
 
 }
 
@@ -653,14 +746,15 @@ async function renderBooksGrid(){
   if(!items.length){
     return `<div class="lib-empty">هنوز کتابی ثبت نشده است.<br>از پنل ادمین → کتاب‌های سایت اضافه کنید.</div>`;
   }
-  return `<div class="book-grid">${items.map(it=>{
+  return `<div class="content-grid content-grid--books">${items.map(it=>{
     const img = it.imageUrl || CAT_HERO.books || IMG.oxford;
     const price = (it.price != null) ? Number(it.price).toLocaleString('fa-IR') : '—';
-    return `<article class="book-card">
-      <div class="book-card__img"><img src="${img}" alt="${escapeHtml(it.title||'')}" loading="lazy"></div>
-      <div class="book-card__body">
-        <h3 class="book-card__title">${escapeHtml(it.title||'')}</h3>
-        <p class="book-card__price">${price} <span>تومان</span></p>
+    return `<article class="content-card book-content-card">
+      <div class="content-card__media"><img src="${escapeHtml(img)}" alt="${escapeHtml(it.title||'')}" loading="lazy"></div>
+      <div class="content-card__body"><span class="content-card__eyebrow">کتاب آموزشی</span>
+        <h2>${escapeHtml(it.title||'')}</h2>
+        <p class="content-card__price">${price} <small>تومان</small></p>
+        ${it.fileUrl ? `<a class="content-card__action" href="${escapeHtml(it.fileUrl)}" target="_blank" rel="noopener">مشاهده / دریافت کتاب PDF ←</a>` : '<span class="content-card__note">فایل این کتاب هنوز بارگذاری نشده است.</span>'}
       </div>
     </article>`;
   }).join('')}</div>`;
@@ -670,80 +764,166 @@ async function renderLibraryList(key){
   const category = CAT[key];
   const items = await fetchLibrary(category);
   if(!items.length){
-    return `<div class="lib-empty">هنوز موردی ثبت نشده است.<br>از پنل ادمین → کتابخانه سایت اضافه کنید.</div>`;
+    return `<div class="lib-empty">هنوز محتوایی برای نمایش ثبت نشده است.<br>پس از انتشار محتوا، این بخش به‌روزرسانی می‌شود.</div>`;
   }
-  return `<div class="circles">${items.map(it=>{
-    const img = it.imageUrl || CAT_HERO[key];
-    const isVideo = key === 'videos';
-    const isMusic = key === 'musics';
-    // موسیقی و voice-only: پخش درجا + drawer متن/شعر
-    const playInline = !isVideo && (!!it.isVoiceOnly || isMusic) && !!it.audioUrl;
-    const href = isVideo ? `#/english/videos/${it.id}` : (playInline ? 'javascript:void(0)' : `#/english/${key}/${it.id}`);
-    const voice = playInline ? (it.audioUrl || '') : '';
-    const videoUrl = (isVideo && it.videoUrl) ? it.videoUrl : '';
-    const isVoice = playInline && voice;
-    return `<a class="circle-wrap" href="${href}" data-id="${it.id}"
-      data-audio="${voice}" data-video="${videoUrl}" data-title="${escapeHtml(it.title)}"
-      data-voice-only="${isVoice ? '1' : '0'}"
-      title="${escapeHtml(it.title)}">
-      <span class="circle-stage">
-        <svg class="circle-ring" viewBox="0 0 100 100" aria-hidden="true">
-          <circle class="ring-bg" cx="50" cy="50" r="46"></circle>
-          <circle class="ring-fg" cx="50" cy="50" r="46"></circle>
-        </svg>
-        <span class="circle circle--sm">
-          <img src="${img}" alt="${escapeHtml(it.title)}" loading="lazy">
-          <span class="circle__label">${escapeHtml(it.title)}</span>
-        </span>
-      </span>
-      <span class="circle-time" data-time>۰:۰۰</span>
-    </a>`;
+  if(key === 'videos') return renderPublicVideosGrid(items);
+  const isVideo = key === 'videos';
+  const isAudio = key === 'podcast' || key === 'musics';
+  return `<div class="content-grid content-grid--${key}">${items.map(it=>{
+    const img = it.imageUrl || CAT_HERO[key] || IMG.book;
+    const title = it.title || '';
+    const bodyText = String(it.bodyText || it.BodyText || '').trim();
+    const hasText = bodyText.length > 0;
+    const audioUrl = it.audioUrl || '';
+    const videoUrl = it.videoUrl || '';
+    const detailHref = isVideo ? `#/english/videos/${it.id}` : `#/english/${key}/${it.id}`;
+    const primaryAction = isVideo
+      ? `<a class="content-card__action" href="${detailHref}">مشاهده ویدیو <span aria-hidden="true">←</span></a>`
+      : (audioUrl ? `<button type="button" class="content-card__action" data-inline-play data-id="${it.id}" data-audio="${escapeHtml(audioUrl)}" data-title="${escapeHtml(title)}">▶ پخش ${key==='musics'?'موسیقی':'صوت'}</button>`
+        : `<a class="content-card__action" href="${detailHref}">مشاهده محتوا <span aria-hidden="true">←</span></a>`);
+    const textAction = hasText
+      ? `<button type="button" class="content-card__text-action" data-open-transcript data-id="${it.id}" data-title="${escapeHtml(title)}" data-transcript="${escapeHtml(bodyText)}">📄 ${key==='stories'?'خواندن متن داستان':key==='musics'?'متن آهنگ':'نمایش متن'}</button>`
+      : '';
+    const storyRead = key === 'stories' && hasText
+      ? `<a class="content-card__read" href="${detailHref}" aria-label="خواندن ${escapeHtml(title)}">خواندن داستان</a>` : '';
+    const storyAudioOnly = key === 'stories' && !hasText && !!audioUrl;
+    const mediaAction = storyAudioOnly
+      ? `<button type="button" class="content-card__media content-card__media-button" data-inline-play data-id="${it.id}" data-audio="${escapeHtml(audioUrl)}" data-title="${escapeHtml(title)}" aria-label="پخش ${escapeHtml(title)}"><img src="${escapeHtml(img)}" alt="${escapeHtml(title)}" loading="lazy"><span class="content-card__play-overlay">▶ پخش داستان</span></button>`
+      : `<a class="content-card__media" href="${detailHref}" aria-label="جزئیات ${escapeHtml(title)}"><img src="${escapeHtml(img)}" alt="${escapeHtml(title)}" loading="lazy"></a>`;
+    const titleAction = storyAudioOnly
+      ? `<button type="button" class="content-card__title-play" data-inline-play data-id="${it.id}" data-audio="${escapeHtml(audioUrl)}" data-title="${escapeHtml(title)}">${escapeHtml(title)}</button>`
+      : `<a href="${detailHref}">${escapeHtml(title)}</a>`;
+    return `<article class="content-card" data-content-id="${it.id}">
+      ${mediaAction}
+      <div class="content-card__body">
+        <span class="content-card__eyebrow">${escapeHtml(CAT_NAME[key]||'محتوای آموزشی')}</span>
+        <h2>${titleAction}</h2>
+        ${it.summary ? `<p class="content-card__summary">${escapeHtml(it.summary)}</p>` : ''}
+        <div class="content-card__actions">${primaryAction}${storyRead}${textAction}</div>
+        ${!hasText && !audioUrl && !isVideo ? '<span class="content-card__note">جزئیات این محتوا در دسترس نیست.</span>':''}
+      </div>
+    </article>`;
   }).join('')}</div>`;
 }
 
 
-function wireDetailAudio(root){
-  const a = (root || document).querySelector('#detail-audio');
-  if(!a || a.__drawerWired) return;
-  a.__drawerWired = true;
-  const open = ()=>{
-    openVoiceTranscript({
-      id: a.getAttribute('data-id'),
-      title: a.getAttribute('data-title') || '',
-      audioUrl: a.getAttribute('src') || a.src
+function renderPublicVideosGrid(items){
+  const cards = items.map(it=>{
+    const title = it.title || '';
+    const summary = String(it.summary || '').trim();
+    const image = it.imageUrl || '';
+    const videoUrl = it.videoUrl || '';
+    const href = `#/english/videos/${it.id}`;
+    const media = image
+      ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(title)}" loading="lazy">`
+      : `<span class="v4-public-videos__placeholder" aria-hidden="true">▶</span>`;
+    return `<article class="v4-public-video-card" data-video-card data-search="${escapeHtml((title+' '+summary).toLowerCase())}">
+      <a class="v4-public-video-card__media" href="${href}" data-id="${it.id}" ${videoUrl ? `data-video="${escapeHtml(videoUrl)}"` : ''} aria-label="مشاهدهٔ ${escapeHtml(title)}">
+        ${media}<span class="v4-public-video-card__play" aria-hidden="true">▶</span><span class="v4-public-video-card__tag">ویدیوی آموزشی</span>
+      </a>
+      <div class="v4-public-video-card__body">
+        <h2><a href="${href}">${escapeHtml(title)}</a></h2>
+        ${summary ? `<p>${escapeHtml(summary)}</p>` : ''}
+        <a class="v4-public-video-card__action" href="${href}">مشاهده ویدیو <span aria-hidden="true">←</span></a>
+      </div>
+    </article>`;
+  }).join('');
+  return `<section class="v4-public-videos" aria-label="فهرست فیلم‌های آموزشی">
+    <div class="v4-public-videos__toolbar">
+      <label for="public-video-search">جستجو در فیلم‌ها</label>
+      <input id="public-video-search" type="search" placeholder="عنوان یا توضیحات ویدیو…" autocomplete="off">
+      <span id="public-video-count">${items.length} ویدیو</span>
+    </div>
+    <div class="v4-public-videos__grid">${cards}</div>
+    <p class="v4-public-videos__empty" hidden>ویدیویی با این عبارت پیدا نشد.</p>
+  </section>`;
+}
+
+function bindPublicVideoSearch(root){
+  const input = root.querySelector('#public-video-search');
+  const count = root.querySelector('#public-video-count');
+  const empty = root.querySelector('.v4-public-videos__empty');
+  if(!input || input.__bound) return;
+  input.__bound = true;
+  input.addEventListener('input', ()=>{
+    const q = input.value.trim().toLocaleLowerCase();
+    let visible = 0;
+    root.querySelectorAll('[data-video-card]').forEach(card=>{
+      const match = !q || (card.getAttribute('data-search') || '').includes(q);
+      card.hidden = !match;
+      if(match) visible++;
     });
-  };
-  a.addEventListener('play', open);
+    if(count) count.textContent = `${visible} ویدیو`;
+    if(empty) empty.hidden = visible !== 0;
+  });
+}
+
+
+function wireDetailAudio(root){
+  const host = root || document;
+  const button = host.querySelector('[data-open-transcript]');
+  if(!button || button.__transcriptWired) return;
+  button.__transcriptWired = true;
+  button.addEventListener('click', ()=>openVoiceTranscript({
+    id: button.dataset.id,
+    title: button.dataset.title || '',
+    bodyText: button.dataset.transcript || ''
+  }));
 }
 
 async function renderDetail(key, id){
   try{
-    const r = await fetch('/api/site/library/' + id);
-    if(!r.ok) return `<div class="lib-empty">یافت نشد.</div>`;
+    const r = await fetch('/api/site/library/' + encodeURIComponent(id), { cache:'no-store' });
+    if(!r.ok) return `<div class="lib-empty">محتوا پیدا نشد.</div>`;
     const it = await r.json();
-    const img = it.imageUrl || CAT_HERO[key];
-    const player = it.audioUrl
-      ? `<div class="detail__player">
-           <audio id="detail-audio" controls controlsList="nodownload noplaybackrate" oncontextmenu="return false" src="${it.audioUrl}"
-             data-id="${it.id}" data-title="${escapeHtml(it.title)}"></audio>
-         </div>`
+    const imageId = it.imageContentId || it.ImageContentId;
+    const audioId = it.audioContentId || it.AudioContentId;
+    const img = it.imageUrl || it.ImageUrl || (imageId ? `/api/site/media/${imageId}` : CAT_HERO[key]);
+    const title = it.title || it.Title || '';
+    const summary = it.summary || it.Summary || '';
+    const bodyText = String(it.bodyText || it.BodyText || '').trim();
+    const audioUrl = it.audioUrl || it.AudioUrl || (audioId ? `/api/site/media/${audioId}` : '');
+    const level = it.level || it.Level || '';
+    const hasText = bodyText.length > 0;
+    const isAudio = key === 'podcast' || key === 'musics';
+    const player = audioUrl
+      ? `<section class="detail__player" aria-label="پخش صوت">
+           <div class="detail__player-label">${key === 'musics' ? 'پخش موسیقی' : 'پخش پادکست'}</div>
+           <audio id="detail-audio" controls preload="metadata" controlsList="nodownload noplaybackrate" oncontextmenu="return false" src="${escapeHtml(audioUrl)}">
+             مرورگر شما از پخش صوت پشتیبانی نمی‌کند.
+           </audio>
+         </section>`
       : '';
-    const body = (it.bodyText && String(it.bodyText).trim())
-      ? `<div class="detail__body-card"><div class="detail__body">${escapeHtml(it.bodyText)}</div></div>`
+    const bodySection = hasText
+      ? `<section class="detail__body-card ${key === 'stories' ? 'detail__story-text' : 'detail__transcript'}">
+           <h2>${key === 'stories' ? 'متن داستان' : key === 'musics' ? 'متن آهنگ' : 'متن پادکست'}</h2>
+           <div class="detail__body" dir="auto">${escapeHtml(bodyText)}</div>
+         </section>`
       : '';
+    const pageClass = ['stories','musics','podcast'].includes(key) ? ' detail--story' : ' detail--media';
+    const nextItem = it.next && it.next.id ? it.next : null;
+    const relatedItems = Array.isArray(it.related) ? it.related : [];
+    const relatedSection = (nextItem || relatedItems.length) ? `<section class="detail__related"><h2>برای ادامهٔ یادگیری</h2><div class="detail__related-grid">${nextItem ? `<a class="detail__related-card" href="#/english/${key}/${nextItem.id}"><span>مورد بعدی</span><b>${escapeHtml(nextItem.title||'ادامه محتوا')}</b></a>` : ''}${relatedItems.map(item=>`<a class="detail__related-card" href="#/english/${key}/${item.id}"><span>محتوای مرتبط</span><b>${escapeHtml(item.title||'مشاهده محتوا')}</b></a>`).join('')}</div></section>` : '';
     return `
-      <div class="detail">
-        <div class="detail__hero site-banner"><img src="${img}" alt="${escapeHtml(it.title)}"></div>
-        <h1 class="detail__title">${escapeHtml(it.title)}</h1>
-        ${it.summary ? `<p class="detail__summary">${escapeHtml(it.summary)}</p>` : ''}
-        ${player}
-        ${body}
-        <div style="text-align:center;margin-top:20px">
-          <a class="back" href="#/english/${key}">← بازگشت به ${CAT_NAME[key]||'لیست'}</a>
+      <article class="detail${pageClass}">
+        <div class="detail__hero site-banner">${img ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(title)}">` : ''}</div>
+        <div class="detail__content">
+          <div class="detail__heading"><div>
+            ${level ? `<span class="chip chip--lvl">${escapeHtml(level)}</span>` : ''}
+            <h1 class="detail__title" dir="auto">${escapeHtml(title)}</h1>
+            ${summary ? `<p class="detail__summary">${escapeHtml(summary)}</p>` : ''}
+          </div></div>
+          ${player}
+          ${bodySection}
+          ${relatedSection}
+          ${!audioUrl && !hasText ? `<div class="empty-state"><p class="empty-state__desc">هنوز محتوایی برای نمایش ثبت نشده است.</p></div>` : ''}
+          ${audioUrl && !hasText ? `<p class="detail__no-transcript">برای این فایل، متنی ثبت نشده است.</p>` : ''}
+          <div class="detail__back"><a class="back" href="#/english">→ زبان انگلیسی</a></div>
         </div>
-      </div>`;
-  }catch{
-    return `<div class="lib-empty">خطا در بارگذاری.</div>`;
+      </article>`;
+  }catch(error){
+    console.error('library detail load failed', error);
+    return `<div class="state-card state-card--error"><p>بارگذاری محتوا ناموفق بود.</p><button class="btn btn-secondary" type="button" onclick="route()">تلاش دوباره</button></div>`;
   }
 }
 
@@ -757,7 +937,7 @@ function stopVideoPreviews(){
 }
 
 function bindVideoHoverPreviews(root){
-  root.querySelectorAll('a.circle-wrap[data-video]').forEach(el=>{
+  root.querySelectorAll('a.circle-wrap[data-video], a.v4-public-video-card__media[data-video]').forEach(el=>{
     const url = (el.getAttribute('data-video') || '').trim();
     if(!url) return;
     let timer = null, stopTimer = null, touchTimer = null;
@@ -887,10 +1067,12 @@ async function buildVideoSideHtml(it){
 }
 
 async function buildVideoWatchHtml(it){
-  const img = it.imageUrl || CAT_HERO.videos || '';
-  const videoUrl = it.videoUrl || '';
+  const imageId = it.imageContentId || it.ImageContentId;
+  const videoId = it.videoContentId || it.VideoContentId;
+  const img = it.imageUrl || it.ImageUrl || (imageId ? `/api/site/media/${imageId}` : CAT_HERO.videos || '');
+  const videoUrl = it.videoUrl || it.VideoUrl || (videoId ? `/api/site/media/${videoId}` : '');
   const video = videoUrl
-    ? `<div class="video-watch__player"><video id="vw-player" controls playsinline controlsList="nodownload" src="${videoUrl}" poster="${img}"></video></div>`
+    ? `<div class="video-watch__player"><video id="vw-player" controls playsinline preload="metadata" controlsList="nodownload" src="${escapeHtml(videoUrl)}" poster="${escapeHtml(img)}">مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.</video></div>`
     : `<div class="lib-empty">برای این مورد فایل ویدیو ثبت نشده است.</div>`;
   const side = await buildVideoSideHtml(it);
   return `
@@ -899,7 +1081,7 @@ async function buildVideoWatchHtml(it){
         ${video}
         <h1 class="video-watch__title">${escapeHtml(it.title||'')}</h1>
         ${it.summary?`<p class="video-watch__sum">${escapeHtml(it.summary)}</p>`:''}
-        ${it.bodyText?`<div class="detail__body-card"><div class="detail__body">${escapeHtml(it.bodyText)}</div></div>`:''}
+        ${(it.bodyText || it.BodyText)?`<div class="detail__body-card"><h2>توضیحات و متن</h2><div class="detail__body" dir="auto">${escapeHtml(it.bodyText || it.BodyText)}</div></div>`:''}
       </div>
       <aside class="video-watch__side" id="vw-side">
         <h3>مسیر یادگیری</h3>
@@ -1035,41 +1217,35 @@ function formatToman(n){
 
 function courseCardsHtml(list){
   if(!list || !list.length){
-    return '<div class="course-empty">به‌زودی دوره‌ها از پنل ادمین اضافه می‌شوند.</div>';
+    return '<div class="v4-course-empty"><span>دوره‌ای برای نمایش پیدا نشد.</span><small>بعداً دوباره بررسی کن یا فیلتر دیگری انتخاب کن.</small></div>';
   }
-  return '<div class="course-grid">' + list.map(c => {
-    const hasVideo = !!(c.videoUrl || c.VideoUrl);
-    const img = c.imageUrl || c.ImageUrl || (c.imageContentId || c.ImageContentId ? ('/api/site/media/' + (c.imageContentId || c.ImageContentId)) : null) || '/site/img/circle-english.svg';
-    const videoUrl = c.videoUrl || c.VideoUrl || '';
-    const sessions = (c.sessionCount ?? c.SessionCount) ? ((c.sessionCount ?? c.SessionCount) + ' جلسه') : '';
-    const durMin = c.sessionDurationMinutes ?? c.SessionDurationMinutes;
-    const dur = durMin ? (' · ' + durMin + ' دقیقه') : '';
-    const when = c.startsAtPersian || c.StartsAtPersian || '';
-    const title = c.title || c.Title || '';
+  return '<div class="v4-course-grid">' + list.map(c => {
+    const img = c.imageUrl || c.ImageUrl || (c.imageContentId || c.ImageContentId ? ('/api/site/media/' + (c.imageContentId || c.ImageContentId)) : '');
+    const title = c.title || c.Title || 'دوره آموزشی';
     const badge = c.levelLabel || c.LevelLabel || c.level || c.Level || '';
-    const price = c.tuitionAmount ?? c.TuitionAmount ?? 0;
+    const price = c.tuitionAmount ?? c.TuitionAmount;
+    const sessions = c.sessionCount ?? c.SessionCount;
+    const dur = c.sessionDurationMinutes ?? c.SessionDurationMinutes;
+    const when = c.startsAtPersian || c.StartsAtPersian || '';
     const id = c.id ?? c.Id;
-    const media = hasVideo
-      ? `<div class="course-card__media" data-course-id="${id}">
-           <img src="${img}" alt="${title}" id="course-poster-${id}" onerror="this.style.opacity=.3">
-           <video id="course-vid-${id}" playsinline preload="none" style="display:none" src="${videoUrl}"></video>
-           <button type="button" class="course-card__play" data-play-course="${id}" aria-label="پخش"><span>▶</span></button>
-           <span class="course-card__badge">${badge}</span>
-         </div>`
-      : `<div class="course-card__media">
-           <img src="${img}" alt="${title}" onerror="this.style.opacity=.3">
-           <span class="course-card__badge">${badge}</span>
-         </div>`;
-    return `<article class="course-card">
-      ${media}
-      <div class="course-card__body">
-        <h3>${title}</h3>
-        <div class="course-card__meta">${sessions}${dur}</div>
-        ${when ? `<div class="course-card__meta">🗓 ${when}</div>` : ''}
-        <div class="course-card__price">${formatToman(price)}</div>
-      </div>
-    </article>`;
+    const subject = c.subject || c.Subject || window.__courseSubject || 'English';
+    const media = img
+      ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(title)}" loading="lazy" onerror="this.style.display='none'">`
+      : `<div class="v4-course-placeholder"><b>${escapeHtml(badge || 'COURSE')}</b></div>`;
+    const meta = [sessions ? `${sessions} جلسه` : '', dur ? `${dur} دقیقه` : '', when].filter(Boolean);
+    return `<article class="v4-course-card">
+      <a class="v4-course-card__media" href="#/${courseRouteDept(subject)}/course/${encodeURIComponent(id)}" aria-label="جزئیات ${escapeHtml(title)}">${media}<span>${escapeHtml(badge)}</span></a>
+      <div class="v4-course-card__body"><div class="v4-course-card__eyebrow">${escapeHtml(c.subjectLabel || c.SubjectLabel || '')}</div>
+        <h3><a href="#/${courseRouteDept(subject)}/course/${encodeURIComponent(id)}">${escapeHtml(title)}</a></h3>
+        <div class="v4-course-card__meta">${meta.map(x=>`<span>${escapeHtml(String(x))}</span>`).join('')}</div>
+        <div class="v4-course-card__foot"><b>${price == null ? 'برای اطلاع از شهریه تماس بگیرید' : formatToman(price)}</b><a href="#/${courseRouteDept(subject)}/course/${encodeURIComponent(id)}" aria-label="مشاهده جزئیات">مشاهده جزئیات ←</a></div>
+      </div></article>`;
   }).join('') + '</div>';
+}
+
+function courseRouteDept(subject){
+  const value = String(subject || 'English').toLowerCase();
+  return ({english:'english',computer:'computer',music:'music-skill',painting:'painting','1':'english','2':'computer','3':'painting','4':'music-skill'})[value] || 'english';
 }
 
 function courseFiltersHtml(active){
@@ -1139,9 +1315,10 @@ async function renderCoursesSection(subject){
   const list = await fetchCourses(_courseFilter, sub);
   const showLevelFilters = sub === 'English';
   return `
-    <section class="course-sec">
+    <section class="course-sec v4-course-section">
       <div class="course-sec__head">
-        <h2>دوره‌های آموزشی</h2>
+        <div><span class="v4-section-kicker">LEARNING PROGRAMS</span><h2>دوره‌های آموزشی</h2></div>
+        <a class="v4-course-all" href="#/${courseRouteDept(sub)}/courses">مشاهده همه دوره‌ها ←</a>
         ${showLevelFilters ? courseFiltersHtml(_courseFilter) : ''}
       </div>
       <div id="course-cards-host">${courseCardsHtml(list)}</div>
@@ -2040,11 +2217,36 @@ async function renderPlacementPage(){
 }
 
 
+function wireSiteAnchorScroll(){
+  if(window.__siteAnchorScrollWired) return;
+  window.__siteAnchorScrollWired=true;
+  document.querySelectorAll('.site-nav__links a[href^="#site-"]').forEach(a=>a.addEventListener('click',e=>{
+    e.preventDefault();
+    document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth',block:'start'});
+  }));
+}
+
+function syncSiteNav(){
+  wireSiteAnchorScroll();
+  const parts=(location.hash||'#/').replace(/^#\/?/,'').split('/').filter(Boolean);
+  const active=parts[0]==='english'?'english':'home';
+  document.querySelectorAll('.site-nav__links [data-site-route]').forEach(a=>{
+    const on=a.dataset.siteRoute===active;
+    a.classList.toggle('is-active',on);
+    if(on) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
+  });
+}
+
 async function route(){
+  syncSiteNav();
   stopCarousel();
+  closeVoiceDrawer();
   stopInlinePlayer();
   const hash = location.hash || '#/';
   const parts = hash.replace(/^#\/?/,'').split('/').filter(Boolean);
+  if(parts[0] === 'english' && parts[1] === 'podcasts') parts[1] = 'podcast';
+  if(parts[0] === 'english' && parts[1] === 'music') parts[1] = 'musics';
+  if(parts[0] === 'english' && parts[1] === 'stories' && parts[2] === 'detail') parts.splice(2,1);
 
   // brand ribbon / sticky placement visibility
   document.body.classList.toggle('is-placement', parts[0]==='placement');
@@ -2056,18 +2258,132 @@ async function route(){
     return;
   }
 
-  /* home */
+  /* home — Asatir v4 / mockup 51 */
   if(parts.length===0){
-    const page = await fetchPage('home');
-    const slides = slotsToCarousel(page) || CAROUSEL;
-    const circles = slotsToCircles(page, HOME_CIRCLES);
-    // inject dynamic carousel data
-    window.__CAROUSEL = slides;
-    app.innerHTML = `
-      ${renderCarousel(slides)}
-      <div class="main">
-        ${circlesHtml(circles)}
-      </div>`;
+    showSiteLoader(true, 'در حال آماده‌سازی آکادمی…');
+    try {
+      const page = await fetchPage('home');
+      const circles = slotsToCircles(page, HOME_CIRCLES);
+      const hero = page && page.hero ? page.hero : {};
+      const title = hero.title || 'آکادمی اساطیر آینده؛ یادگیری در مسیر علاقه‌مندی تو';
+      const subtitle = hero.subtitle || 'از زبان انگلیسی تا موسیقی، کامپیوتر و نقاشی؛ مسیر یادگیری مناسب خودت را پیدا کن.';
+      const heroImage = hero.imageUrl || '';
+      const departments = [
+        {id:'english',icon:'🗣',title:'زبان انگلیسی',desc:'پادکست، ویدیو، داستان، موسیقی و کتاب؛ از شنیدن تا مکالمه.',href:'#/english',tag:'زبان و ارتباط'},
+        {id:'music-skill',icon:'🎸',title:'موسیقی',desc:'از آشنایی با ساز تا تمرین و پیشرفت مرحله‌به‌مرحله.',href:'#/music-skill',tag:'هنر و اجرا'},
+        {id:'computer',icon:'💻',title:'کامپیوتر',desc:'مهارت‌های دیجیتال و مسیرهای آموزشی پروژه‌محور.',href:'#/computer',tag:'مهارت دیجیتال'},
+        {id:'painting',icon:'🎨',title:'نقاشی',desc:'یادگیری طراحی و هنرهای تجسمی با تمرین هدفمند.',href:'#/painting',tag:'هنرهای تجسمی'}
+      ];
+      const dynamicByTitle = new Map(circles.map(x=>[x.id,x]));
+      const deptCards = departments.map(d=>{
+        const actual = dynamicByTitle.get(d.id);
+        const label = actual?.label || d.title;
+        const img = actual?.img || '';
+        return `<a class="v4-dept-card" href="${d.href}" aria-label="ورود به دپارتمان ${escapeHtml(label)}">
+          <div class="v4-dept-card__icon">${img ? `<img src="${escapeHtml(img)}" alt="" loading="lazy">` : `<span>${d.icon}</span>`}</div>
+          <div class="v4-dept-card__body"><small>${d.tag}</small><h3>${escapeHtml(label)}</h3><p>${escapeHtml(d.desc)}</p><b>مشاهده دپارتمان <span aria-hidden="true">←</span></b></div>
+        </a>`;
+      }).join('');
+      app.innerHTML = `<main class="v4-home">
+        <section class="v4-home-hero">
+          <div class="v4-home-hero__copy"><span class="v4-eyebrow">ASATIR ACADEMY</span>
+            <h1>${escapeHtml(title)}</h1><p>${escapeHtml(subtitle)}</p>
+            <div class="v4-home-hero__actions"><a class="v4-btn v4-btn--gold" href="#/english">مشاهده مسیرهای آموزشی</a><button class="v4-btn v4-btn--outline" type="button" onclick="openPlacementModal()">تعیین سطح رایگان</button></div>
+            <div class="v4-home-proof"><span>مسیرهای آموزشی متنوع</span><span>محتوای چندرسانه‌ای</span><span>دسترسی به پلتفرم یادگیری</span></div>
+          </div>
+          <div class="v4-home-visual" ${heroImage ? `style="--v4-hero-image:url('${escapeHtml(heroImage)}')"` : ''} aria-hidden="true"><div class="v4-home-visual__orb">آ</div><div class="v4-home-visual__caption"><b>یادگیری، قدم‌به‌قدم</b><span>از علاقه تا مهارت</span></div></div>
+        </section>
+        <section class="v4-home-section"><div class="v4-section-heading"><div><span>EXPLORE</span><h2>دپارتمان‌های آکادمی</h2><p>از میان مسیرهای آموزشی، حوزهٔ مورد علاقه‌ات را انتخاب کن.</p></div></div><div class="v4-dept-grid">${deptCards}</div></section>
+        <section class="v4-home-bottom"><div><span class="v4-eyebrow">YOUR NEXT STEP</span><h2>نمی‌دانی از کجا شروع کنی؟</h2><p>با تعیین سطح، نقطهٔ شروع مناسب خودت را پیدا کن.</p></div><button class="v4-btn v4-btn--gold" type="button" onclick="openPlacementModal()">شروع تعیین سطح</button></section>
+      </main>`;
+    } finally { showSiteLoader(false); }
+    return;
+  }
+
+  /* Shared department hub — Asatir v4 / mockups 38 + 52 */
+  const departmentMap = {
+    painting:{key:'painting',title:'نقاشی',english:'PAINTING DEPARTMENT',subject:'Painting',icon:'🎨',accent:'#B66C43',description:'از طراحی پایه تا خلق اثر؛ مهارت‌های هنری را با تمرین و راهنمایی مرحله‌به‌مرحله توسعه بده.',stations:[]},
+    computer:{key:'computer',title:'کامپیوتر',english:'COMPUTER DEPARTMENT',subject:'Computer',icon:'💻',accent:'#0F7A57',description:'از مفاهیم پایه تا ساخت پروژه؛ مهارت‌های دیجیتال را با مسیرهای آموزشی هدفمند یاد بگیر.',stations:[{icon:'📚',title:'دوره‌های آموزشی',desc:'مسیرهای یادگیری و مهارت‌ها',href:'#/computer/courses'},{icon:'🎬',title:'ویدیوهای آموزشی',desc:'آموزش‌های ویدیویی',href:'#/computer/courses'},{icon:'🧪',title:'پروژه‌های عملی',desc:'یادگیری پروژه‌محور',href:'#/computer/courses'}]},
+    'music-skill':{key:'music',title:'موسیقی',english:'MUSIC DEPARTMENT',subject:'Music',icon:'🎸',accent:'#5B4B8A',description:'از شنیدن تا نواختن؛ مسیر یادگیری ساز و مبانی موسیقی را متناسب با سطح خودت دنبال کن.',stations:[{icon:'🎼',title:'دوره‌های موسیقی',desc:'آموزش ساز و مبانی موسیقی',href:'#/music-skill/courses'},{icon:'🎧',title:'تمرین و شنیدار',desc:'محتوای صوتی آموزشی',href:'#/music-skill/courses'},{icon:'🎬',title:'ویدیوهای آموزشی',desc:'تمرین‌های تصویری',href:'#/music-skill/courses'}]}
+  };
+  if(departmentMap[parts[0]] && parts.length===1){
+    const dept = departmentMap[parts[0]];
+    showSiteLoader(true, `در حال بارگذاری دپارتمان ${dept.title}…`);
+    try {
+      const page = await fetchPage(dept.key);
+      const hero = page?.hero || {};
+      const title = hero.title || dept.title;
+      const subtitle = hero.subtitle || dept.description;
+      const stations = dept.stations.map(x=>`<a class="v4-station" href="${x.href}"><i>${x.icon}</i><b>${x.title}</b><span>${x.desc}</span></a>`).join('');
+      app.innerHTML = `<main class="v4-department" style="--dept-accent:${dept.accent}">
+        <nav class="v4-crumb" aria-label="مسیر صفحه"><a href="#/">خانه</a><span>›</span><b>دپارتمان ${escapeHtml(dept.title)}</b></nav>
+        <section class="v4-dept-hero"><span class="v4-eyebrow">${dept.english}</span><div class="v4-dept-hero__content"><div><h1>${escapeHtml(title)}</h1><p>${escapeHtml(subtitle)}</p><div class="v4-dept-actions"><a class="v4-btn v4-btn--gold" href="#/${parts[0]}/courses">مشاهده دوره‌ها</a><button class="v4-btn v4-btn--outline" type="button" onclick="openPlacementModal()">تعیین سطح / مشاوره</button></div></div><div class="v4-dept-emblem" aria-hidden="true">${dept.icon}</div></div></section>
+        ${stations ? `<section class="v4-dept-section"><div class="v4-section-heading"><div><span>LEARNING PATH</span><h2>ایستگاه‌های این دپارتمان</h2><p>بخش‌های آموزشی در دسترس را انتخاب کن.</p></div></div><div class="v4-station-grid">${stations}</div></section>` : ''}
+        <section class="v4-dept-courses" id="${dept.key}-courses">${await renderCoursesSection(dept.subject)}</section>
+        <div class="v4-back-home"><a href="#/">بازگشت به صفحهٔ اصلی</a></div>
+      </main>`;
+      wireCourseCards(app);
+    } finally { showSiteLoader(false); }
+    return;
+  }
+
+  /* Public course list and course detail — backed by SiteCourse API */
+  const courseDepartments = {
+    english:{title:'زبان انگلیسی',subject:'English',accent:'#0A2B51'},
+    computer:{title:'کامپیوتر',subject:'Computer',accent:'#0F7A57'},
+    'music-skill':{title:'موسیقی',subject:'Music',accent:'#5B4B8A'},
+    painting:{title:'نقاشی',subject:'Painting',accent:'#B66C43'}
+  };
+  if(courseDepartments[parts[0]] && parts[1]==='course' && parts[2]){
+    const dept=courseDepartments[parts[0]];
+    showSiteLoader(true,'در حال بارگذاری جزئیات دوره…');
+    try{
+      const response=await fetch('/api/site/courses/'+encodeURIComponent(parts[2]),{cache:'no-store'});
+      if(!response.ok){
+        app.innerHTML=`<main class="v4-course-page"><div class="v4-course-state"><h1>دوره پیدا نشد</h1><p>این دوره در حال حاضر در دسترس نیست یا حذف شده است.</p><a class="v4-btn v4-btn--gold" href="#/${parts[0]}/courses">بازگشت به فهرست دوره‌ها</a></div></main>`;
+        return;
+      }
+      const c=await response.json();
+      if(c.isActive===false || c.IsActive===false){
+        app.innerHTML=`<main class="v4-course-page"><div class="v4-course-state"><h1>این دوره در دسترس نیست</h1><p>ثبت‌نام یا مشاهدهٔ این دوره در حال حاضر امکان‌پذیر نیست.</p><a class="v4-btn v4-btn--gold" href="#/${parts[0]}/courses">بازگشت به فهرست دوره‌ها</a></div></main>`;
+        return;
+      }
+      const title=c.title||c.Title||'دوره آموزشی';
+      const description=c.description||c.Description||'';
+      const level=c.levelLabel||c.LevelLabel||c.level||c.Level||'';
+      const price=c.tuitionAmount??c.TuitionAmount;
+      const count=c.sessionCount??c.SessionCount;
+      const duration=c.sessionDurationMinutes??c.SessionDurationMinutes;
+      const starts=c.startsAtPersian||c.StartsAtPersian||'';
+      const image=c.imageUrl||c.ImageUrl||'';
+      const video=c.videoUrl||c.VideoUrl||'';
+      const id=c.id??c.Id;
+      const subjectLabel=c.subjectLabel||c.SubjectLabel||dept.title;
+      const meta=[count?`${count} جلسه`:'',duration?`${duration} دقیقه برای هر جلسه`:'',starts?`شروع: ${starts}`:''].filter(Boolean);
+      app.innerHTML=`<main class="v4-course-page" style="--dept-accent:${dept.accent}">
+        <nav class="v4-crumb"><a href="#/">خانه</a><span>›</span><a href="#/${parts[0]}">${escapeHtml(subjectLabel)}</a><span>›</span><a href="#/${parts[0]}/courses">دوره‌ها</a><span>›</span><b>${escapeHtml(title)}</b></nav>
+        <section class="v4-course-detail-hero"><div class="v4-course-detail-copy"><span class="v4-eyebrow">${escapeHtml(subjectLabel)}</span><div class="v4-course-level">${escapeHtml(level)}</div><h1>${escapeHtml(title)}</h1><p>${escapeHtml(description || 'اطلاعات تکمیلی این دوره هنوز در سامانه ثبت نشده است.')}</p><div class="v4-course-detail-meta">${meta.map(x=>`<span>${escapeHtml(x)}</span>`).join('')}</div><div class="v4-course-detail-actions"><a class="v4-btn v4-btn--gold" href="/platform/student">ورود به پلتفرم آموزشی</a><a class="v4-btn v4-btn--outline" href="#/${parts[0]}/courses">بازگشت به دوره‌ها</a></div></div>
+          <div class="v4-course-detail-media">${image?`<img src="${escapeHtml(image)}" alt="${escapeHtml(title)}">`:`<div class="v4-course-placeholder"><b>${escapeHtml(level||'COURSE')}</b></div>`}</div></section>
+        <section class="v4-course-detail-grid"><article class="v4-course-panel"><span class="v4-section-kicker">ABOUT THIS COURSE</span><h2>درباره دوره</h2><div class="v4-course-description">${description?escapeHtml(description).replace(/\n/g,'<br>'):'توضیحات بیشتری برای این دوره ثبت نشده است.'}</div></article>
+          <aside class="v4-course-panel v4-course-price-panel"><span class="v4-section-kicker">ENROLLMENT</span><h2>اطلاعات ثبت‌نام</h2><div class="v4-course-price">${price==null?'برای اطلاع از شهریه تماس بگیرید':formatToman(price)}</div><dl>${level?`<div><dt>سطح</dt><dd>${escapeHtml(level)}</dd></div>`:''}${count?`<div><dt>تعداد جلسات</dt><dd>${count}</dd></div>`:''}${duration?`<div><dt>مدت هر جلسه</dt><dd>${duration} دقیقه</dd></div>`:''}${starts?`<div><dt>تاریخ شروع</dt><dd>${escapeHtml(starts)}</dd></div>`:''}</dl><a class="v4-btn v4-btn--gold" href="/platform/student">ورود / ثبت‌نام در پلتفرم</a></aside></section>
+        ${video?`<section class="v4-course-panel v4-course-sample"><h2>ویدیوی معرفی دوره</h2><video controls playsinline preload="metadata" src="${escapeHtml(video)}"></video></section>`:''}
+        <div class="v4-back-home"><a href="#/${parts[0]}/courses">بازگشت به فهرست دوره‌ها</a></div></main>`;
+    }catch(error){console.error('course detail',error);app.innerHTML='<main class="v4-course-page"><div class="v4-course-state"><h1>بارگذاری دوره ناموفق بود</h1><p>لطفاً اتصال را بررسی و دوباره تلاش کن.</p></div></main>'}
+    finally{showSiteLoader(false)}
+    return;
+  }
+  if(courseDepartments[parts[0]] && parts[1]==='courses'){
+    const dept=courseDepartments[parts[0]];
+    showSiteLoader(true,'در حال دریافت دوره‌ها…');
+    try{
+      _courseFilter=null;
+      const list=await fetchCourses(null,dept.subject);
+      app.innerHTML=`<main class="v4-course-page" style="--dept-accent:${dept.accent}"><nav class="v4-crumb"><a href="#/">خانه</a><span>›</span><a href="#/${parts[0]}">${dept.title}</a><span>›</span><b>دوره‌ها</b></nav>
+        <section class="v4-course-list-hero"><span class="v4-eyebrow">COURSE CATALOG</span><h1>دوره‌های ${dept.title}</h1><p>دورهٔ مناسب را انتخاب کن و جزئیات واقعی آن را ببین.</p><div class="v4-course-list-count">${list.length.toLocaleString('fa-IR')} دورهٔ فعال</div></section>
+        <section class="v4-course-catalog">${dept.subject==='English'?courseFiltersHtml(_courseFilter):''}<div id="course-cards-host">${courseCardsHtml(list)}</div></section>
+        <div class="v4-back-home"><a href="#/${parts[0]}">بازگشت به دپارتمان ${dept.title}</a></div></main>`;
+      wireCourseCards(app);
+    }finally{showSiteLoader(false)}
     return;
   }
 
@@ -2079,17 +2395,23 @@ async function route(){
     const heroImg = (page && page.hero && page.hero.imageUrl) || IMG.lang;
     const circles = slotsToCircles(page, ENGLISH_CIRCLES);
     app.innerHTML = `
-      <div class="hero-still site-banner"><img src="${heroImg}" alt="زبان انگلیسی"></div>
-      <div class="main">
-        <div class="sec-title"><h1>${(page&&page.hero&&page.hero.title)||'زبان انگلیسی'}</h1><p>${(page&&page.hero&&page.hero.subtitle)||'مسیر خود را انتخاب کنید'}</p></div>
-        <div class="place-cta">
-          <h2>سطح زبانت را رایگان مشخص کن</h2>
-          <p>آزمون کوتاه حدود ۱۵ دقیقه · نتیجه فوری · بدون ثبت‌نام</p>
-          <button type="button" class="place-cta__btn" onclick="openPlacementModal()">شروع تعیین سطح</button>
+      <section class="xhero">
+        <div class="xhero__in">
+          <div class="xhero__copy">
+            <span class="xhero__eyebrow">ENGLISH · زبان انگلیسی</span>
+            <h1>${escapeHtml((page&&page.hero&&page.hero.title)||'مسیر زبان انگلیسی؛ از شنیدن تا گفتن')}</h1>
+            <p>${escapeHtml((page&&page.hero&&page.hero.subtitle)||'پنج ایستگاه آموزشی با فایل‌های واقعی، داستان، موسیقی و کتاب؛ مسیر یادگیری را از سطح خودت شروع کن.')}</p>
+            <div class="xhero__meta"><span>پادکست و شنیدار</span><span>داستان و خواندن</span><span>فیلم و موسیقی</span></div>
+            <div class="xhero__actions"><button type="button" class="xbtn xbtn--gold" onclick="openPlacementModal()">تعیین سطح رایگان · ۱۵ دقیقه</button><a class="xbtn xbtn--ghost" href="#/english/courses">دیدن همه دوره‌ها</a></div>
+          </div>
+          <aside class="xhero__card"><h3>یک مسیر پیشنهادی برای شروع</h3><ol class="xhero__steps"><li><b>۱</b><span>یک پادکست کوتاه گوش کن</span></li><li><b>۲</b><span>یک داستان متناسب با سطح خودت بخوان</span></li><li><b>۳</b><span>یک ویدیوی آموزشی تماشا کن</span></li><li><b>۴</b><span>برای شناخت سطح، تعیین سطح را انجام بده</span></li></ol></aside>
         </div>
-        ${circlesHtml(circles)}
-        ${await renderCoursesSection('English')}
-        <div style="text-align:center"><a class="back" href="#/">← صفحه اصلی</a></div>
+      </section>
+      <div class="main main--english">
+        ${await renderEnglishStations(circles)}
+        <div id="english-courses">${await renderCoursesSection('English')}</div>
+        <section class="place-cta"><h2>اول سطح خودت را بدان، بعد دوره را انتخاب کن</h2><p>با یک آزمون کوتاه، مسیر مناسب سطح فعلی‌ات را پیدا کن.</p><button type="button" class="place-cta__btn" onclick="openPlacementModal()">شروع تعیین سطح</button></section>
+        <div class="site-return"><a class="back" href="#/">→ صفحه اصلی</a></div>
       </div>`;
     wireCourseCards(app);
     } finally { showSiteLoader(false); }
@@ -2114,33 +2436,37 @@ async function route(){
     const page = await fetchPage('english-' + key);
     const heroImg = (page && page.hero && page.hero.imageUrl) || CAT_HERO[key];
     const title = (page && page.hero && page.hero.title) || CAT_NAME[key];
+    const libraryHero = key === 'videos'
+      ? `<section class="v4-public-videos-hero"><span>VIDEO LIBRARY · فیلم‌های آموزشی</span><h1>${escapeHtml(title)}</h1><p>ویدیوهای آموزشی را انتخاب کن و مسیر یادگیری‌ات را ادامه بده.</p></section>`
+      : `<div class="hero-still site-banner"><img src="${heroImg}" alt="${title}"></div>`;
     app.innerHTML = `
-      <div class="hero-still site-banner"><img src="${heroImg}" alt="${title}"></div>
+      ${libraryHero}
       <div class="main">
-        <div class="sec-title"><h1>${title}</h1></div>
+        ${key === 'videos' ? '' : `<div class="sec-title"><h1>${title}</h1></div>`}
         ${(key === 'books' ? await renderBooksGrid() : await renderLibraryList(key))}
         <div style="text-align:center"><a class="back" href="#/english">← زبان انگلیسی</a></div>
       </div>`;
-    /* voice-only podcast: play inline — stay on page, show ring progress */
-    app.querySelectorAll('a.circle-wrap[data-voice-only="1"]').forEach(el=>{
-      const url = el.getAttribute('data-audio');
-      if(!url) return;
-      el.addEventListener('click', e=>{
-        e.preventDefault();
-        e.stopPropagation();
-        playAudio(url, el.getAttribute('data-title') || '', el);
-      });
-    });
+    // Audio playback and transcript visibility are separate actions.
+    app.querySelectorAll('[data-inline-play]').forEach(btn=>btn.addEventListener('click', e=>{
+      e.preventDefault(); e.stopPropagation();
+      const card = btn.closest('.content-card');
+      playAudio(btn.dataset.audio, btn.dataset.title || '', card, btn.dataset.id);
+    }));
+    app.querySelectorAll('[data-open-transcript]').forEach(btn=>btn.addEventListener('click', e=>{
+      e.preventDefault(); e.stopPropagation();
+      openVoiceTranscript({id:btn.dataset.id, title:btn.dataset.title || '', bodyText:btn.dataset.transcript || ''});
+    }));
     /* educational videos: hover 2s → 10s preview in circle */
     if(key === 'videos'){
+      bindPublicVideoSearch(app);
       bindVideoHoverPreviews(app);
     }
     } finally { showSiteLoader(false); }
     return;
   }
 
-  /* other skills — same course-card pattern as English */
-  if(['painting','computer','music-skill'].includes(parts[0])){
+  /* Legacy deep-link fallback for department subroutes */
+  if(['painting','computer','music-skill'].includes(parts[0]) && parts.length>1){
     const map = {
       painting:{title:'نقاشی', img:IMG.paint, subject:'Painting', pageKey:'painting'},
       computer:{title:'کامپیوتر', img:IMG.code, subject:'Computer', pageKey:'computer'},

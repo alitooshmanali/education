@@ -947,6 +947,9 @@ namespace Lesson.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<long?>("FileContentId")
+                        .HasColumnType("bigint");
+
                     b.Property<long?>("ImageContentId")
                         .HasColumnType("bigint");
 
@@ -969,6 +972,8 @@ namespace Lesson.Infrastructure.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FileContentId");
 
                     b.HasIndex("ImageContentId");
 
@@ -1698,10 +1703,17 @@ namespace Lesson.Infrastructure.Migrations
 
             modelBuilder.Entity("Lesson.Domain.Entities.SiteBook", b =>
                 {
+                    b.HasOne("Lesson.Domain.Entities.LessonContent", "FileContent")
+                        .WithMany()
+                        .HasForeignKey("FileContentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("Lesson.Domain.Entities.LessonContent", "ImageContent")
                         .WithMany()
                         .HasForeignKey("ImageContentId")
                         .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("FileContent");
 
                     b.Navigation("ImageContent");
                 });

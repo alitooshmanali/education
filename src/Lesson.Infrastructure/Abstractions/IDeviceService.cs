@@ -7,7 +7,7 @@ public sealed record DeviceValidationResult(bool Allowed, string? Reason, UserDe
 public interface IDeviceService
 {
     Task<List<UserDevice>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task<DeviceValidationResult> ValidateOrRegisterAsync(long userId, string deviceIdentifier, CancellationToken cancellationToken = default);
+    Task<DeviceValidationResult> ValidateOrRegisterAsync(long userId, string deviceIdentifier, CancellationToken cancellationToken = default, bool saveChanges = true);
     Task<bool> IsSessionValidAsync(long userId, string deviceIdentifier, string sessionKey, CancellationToken cancellationToken = default);
     Task RevokeDeviceAsync(long deviceId, CancellationToken cancellationToken = default);
 }

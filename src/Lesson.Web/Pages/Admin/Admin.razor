@@ -1,366 +1,283 @@
 @page "/admin"
 @attribute [Authorize(Roles = nameof(UserRole.Admin))]
-@inject IUserService Users
-@inject IContentService Contents
-@inject IFolderService Folders
-@inject IFeedbackService Feedbacks
-@inject IQuizService Quizzes
-@inject IClassService Classes
+@inject IAdminDashboardService Dashboard
+@inject ILogger<Admin> Logger
+
+<PageTitle>داشبورد مدیریت | آکادمی اساطیر آینده</PageTitle>
 
 <style>
-    .admin-dash { max-width: 1400px; width: 100%; box-sizing: border-box; }
-    .admin-dash__head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
-    .admin-dash__eyebrow { margin: 0; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; }
-    .admin-dash__title { margin: 4px 0 6px; font-size: 28px; font-weight: 900; color: var(--ink); }
-    .admin-dash__sub { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 520px; }
-    .admin-dash__actions { display: flex; flex-wrap: wrap; gap: 8px; }
-
-    .admin-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 18px; width: 100%; }
-    .admin-kpi { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; box-shadow: 0 2px 8px rgba(10,43,81,.05); position: relative; overflow: hidden; min-width: 0; }
-    .admin-kpi::after { content: ""; position: absolute; inset-inline: 0; top: 0; height: 3px; background: linear-gradient(90deg, var(--navy-800), var(--sand-500)); }
-    .admin-kpi__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .admin-kpi__label { font-size: 12.5px; font-weight: 700; color: var(--muted); }
-    .admin-kpi__icon { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--navy-50); font-size: 16px; flex-shrink: 0; }
-    .admin-kpi__value { font-size: 28px; font-weight: 900; color: var(--navy-800); line-height: 1.25; }
-    .admin-kpi__value small { font-size: 13px; font-weight: 600; color: var(--muted); margin-inline-start: 4px; }
-    .admin-kpi__meta { font-size: 11.5px; color: var(--muted); margin-top: 6px; }
-
-    .admin-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; width: 100%; }
-    .admin-card { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 2px 8px rgba(10,43,81,.05); overflow: hidden; min-width: 0; }
-    .admin-card__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
-    .admin-card__head h2 { margin: 0; font-size: 15px; font-weight: 800; }
-    .admin-card__badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--navy-50); color: var(--navy-800); }
-    .admin-card__badge.warn { background: var(--amber-bg); color: var(--amber); }
-    .admin-card__body { padding: 18px 20px; }
-
-    .admin-roles { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
-    .admin-donut { width: 140px; height: 140px; min-width: 140px; min-height: 140px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
-    .admin-donut__hole { width: 88px; height: 88px; border-radius: 50%; background: var(--paper); display: grid; place-items: center; text-align: center; }
-    .admin-donut__hole b { font-size: 22px; font-weight: 900; color: var(--navy-800); line-height: 1.2; }
-    .admin-donut__hole span { font-size: 11px; color: var(--muted); }
-    .admin-legend { display: flex; flex-direction: column; gap: 10px; font-size: 13px; flex: 1; min-width: 140px; }
-    .admin-legend div { display: flex; align-items: center; gap: 8px; }
-    .admin-legend i { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; display: inline-block; }
-    .admin-legend b { margin-inline-start: auto; font-weight: 800; color: var(--navy-800); }
-
-    .admin-sat { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
-    .admin-sat__gauge { width: 120px; height: 120px; min-width: 120px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; background: conic-gradient(var(--jade) 0 calc(var(--pct, 0) * 1%), var(--navy-50) 0); }
-    .admin-sat__gauge span { width: 78px; height: 78px; border-radius: 50%; background: var(--paper); display: grid; place-items: center; font-weight: 900; font-size: 18px; color: var(--navy-800); }
-    .admin-sat__detail { flex: 1; min-width: 180px; font-size: 13px; color: var(--muted); }
-    .admin-sat__detail p { margin: 0 0 6px; }
-    .admin-sat__bars { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-    .admin-sat__row { display: grid; grid-template-columns: 48px 1fr 28px; gap: 8px; align-items: center; font-size: 12px; }
-    .admin-sat__row .bar { height: 7px; border-radius: 99px; background: var(--navy-50); overflow: hidden; }
-    .admin-sat__row .bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--jade), var(--jade)); }
-    .admin-sat__row .bar.warn i { background: linear-gradient(90deg, var(--amber), var(--amber)); }
-    .admin-sat__row .bar.bad i { background: linear-gradient(90deg, var(--coral), var(--coral)); }
-    .admin-sat__row b { text-align: end; font-weight: 800; color: var(--navy-800); }
-
-    .admin-tasks { display: flex; flex-direction: column; gap: 10px; }
-    .admin-task { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--cream); }
-    .admin-task.warn { background: var(--amber-bg); border-color: var(--sand-300); }
-    .admin-task.info { background: var(--navy-50); border-color: var(--navy-100); }
-    .admin-task b { display: block; font-size: 13px; font-weight: 800; margin-bottom: 2px; }
-    .admin-task span { font-size: 12px; color: var(--muted); }
-
-    .admin-mini-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
-    .admin-mini-stats div { background: var(--sand-50); border-radius: 12px; padding: 12px; text-align: center; }
-    .admin-mini-stats span { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-    .admin-mini-stats b { font-size: 20px; font-weight: 900; color: var(--navy-800); }
-
-    .admin-quick-links { display: flex; flex-wrap: wrap; gap: 8px; }
-    .admin-quick-links a { font-size: 12.5px; font-weight: 700; padding: 8px 14px; border-radius: 999px; background: var(--navy-50); color: var(--navy-800); text-decoration: none; }
-
-    .admin-feedback-list { display: flex; flex-direction: column; }
-    .admin-feedback-row { padding: 12px 0; border-bottom: 1px solid var(--line); }
-    .admin-feedback-row:last-child { border-bottom: 0; }
-    .admin-feedback-row > div { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
-    .admin-feedback-row b { font-size: 13px; }
-    .admin-feedback-row span { font-size: 12px; color: var(--muted); }
-    .admin-feedback-row p { margin: 0; font-size: 13px; color: var(--muted); }
-    .admin-empty { margin: 0; color: var(--muted); font-size: 13.5px; }
-
-    @@media (max-width: 1100px) {
-        .admin-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        .admin-grid-2 { grid-template-columns: 1fr; }
-    }
-    @@media (max-width: 560px) {
-        .admin-kpis { grid-template-columns: 1fr; }
-        .admin-mini-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
+    .ad { width:100%; max-width:1440px; margin-inline:auto; color:var(--ink); }
+    .ad-head { display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap; padding:20px 22px; margin-bottom:16px; border:1px solid var(--line); border-radius:var(--r-xl); background:linear-gradient(110deg,var(--paper),var(--sand-50)); box-shadow:var(--sh-1); }
+    .ad-eyebrow { margin:0 0 4px; color:var(--sand-800); font-size:10px; font-weight:900; letter-spacing:.18em; }
+    .ad-title { margin:0; color:var(--navy-900); font-size:clamp(22px,2.5vw,30px); font-weight:900; }
+    .ad-sub { margin:5px 0 0; color:var(--muted); font-size:12px; }
+    .ad-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .ad-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:36px; padding:0 13px; border:1px solid var(--line); border-radius:10px; background:var(--paper); color:var(--navy-800); font:inherit; font-size:11.5px; font-weight:800; text-decoration:none; cursor:pointer; }
+    .ad-btn.primary { background:var(--navy-800); border-color:var(--navy-800); color:white; }
+    .ad-btn:hover { border-color:var(--sand-500); background:var(--sand-50); }
+    .ad-btn.primary:hover { background:var(--navy-900); }
+    .ad-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+    .ad-kpi { position:relative; min-width:0; overflow:hidden; padding:15px 17px; border:1px solid var(--line); border-radius:var(--r-xl); background:var(--paper); box-shadow:var(--sh-1); }
+    .ad-kpi:before { position:absolute; content:""; top:0; inset-inline:0; height:3px; background:linear-gradient(90deg,var(--navy-700),var(--sand-500)); }
+    .ad-kpi.dark { background:linear-gradient(145deg,var(--navy-800),var(--navy-950)); border-color:var(--navy-900); }
+    .ad-kpi.dark .ad-kpi-label,.ad-kpi.dark .ad-kpi-meta { color:rgba(255,255,255,.72); }
+    .ad-kpi.dark .ad-kpi-value { color:var(--sand-300); }
+    .ad-kpi-top { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+    .ad-kpi-label { color:var(--muted); font-size:11.5px; font-weight:800; }
+    .ad-kpi-icon { display:grid; place-items:center; width:34px; height:34px; flex:none; border-radius:10px; background:var(--navy-50); font-size:16px; }
+    .ad-kpi.dark .ad-kpi-icon { background:rgba(255,255,255,.12); }
+    .ad-kpi-value { margin-top:5px; color:var(--navy-900); font-size:27px; font-weight:900; line-height:1.3; }
+    .ad-kpi-value small { margin-inline-start:4px; color:var(--muted); font-size:12px; font-weight:700; }
+    .ad-kpi-meta { margin-top:4px; color:var(--muted); font-size:10.5px; }
+    .ad-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px; margin-bottom:14px; }
+    .ad-card { min-width:0; overflow:hidden; border:1px solid var(--line); border-radius:var(--r-xl); background:var(--paper); box-shadow:var(--sh-1); }
+    .ad-card-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 16px; border-bottom:1px solid var(--line); background:var(--sand-50); }
+    .ad-card-head h2 { margin:0; color:var(--navy-900); font-size:13px; font-weight:900; }
+    .ad-card-head small { color:var(--muted); font-size:10.5px; }
+    .ad-badge { display:inline-flex; align-items:center; padding:3px 9px; border-radius:var(--r-pill); background:var(--navy-50); color:var(--navy-800); font-size:10px; font-weight:800; white-space:nowrap; }
+    .ad-badge.warn { background:var(--amber-bg); color:var(--amber); }
+    .ad-card-body { padding:15px 16px; }
+    .ad-roles { display:flex; align-items:center; gap:22px; flex-wrap:wrap; }
+    .ad-donut { display:grid; place-items:center; width:132px; height:132px; flex:none; border-radius:50%; }
+    .ad-donut-hole { display:grid; align-content:center; justify-items:center; width:84px; height:84px; border-radius:50%; background:var(--paper); }
+    .ad-donut-hole b { color:var(--navy-900); font-size:21px; font-weight:900; line-height:1.2; }
+    .ad-donut-hole span { color:var(--muted); font-size:10px; }
+    .ad-legend { display:flex; flex:1; min-width:145px; flex-direction:column; gap:10px; }
+    .ad-legend-row { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:11.5px; }
+    .ad-legend-row i { width:10px; height:10px; flex:none; border-radius:3px; }
+    .ad-legend-row b { margin-inline-start:auto; color:var(--navy-900); font-weight:900; }
+    .ad-satisfaction { display:flex; align-items:center; gap:20px; flex-wrap:wrap; }
+    .ad-gauge { display:grid; place-items:center; width:112px; height:112px; flex:none; border-radius:50%; background:conic-gradient(var(--jade) 0 calc(var(--pct,0)*1%),var(--navy-50) 0); }
+    .ad-gauge span { display:grid; place-items:center; width:74px; height:74px; border-radius:50%; background:var(--paper); color:var(--navy-900); font-size:17px; font-weight:900; }
+    .ad-sat-detail { flex:1; min-width:170px; }
+    .ad-sat-detail p { margin:0 0 5px; color:var(--muted); font-size:11.5px; }
+    .ad-sat-detail strong { color:var(--navy-900); }
+    .ad-bars { display:grid; gap:7px; margin-top:11px; }
+    .ad-bar-row { display:grid; grid-template-columns:38px minmax(30px,1fr) 24px; align-items:center; gap:8px; color:var(--muted); font-size:10px; }
+    .ad-bar { height:6px; overflow:hidden; border-radius:99px; background:var(--navy-50); }
+    .ad-bar i { display:block; height:100%; border-radius:99px; background:var(--jade); }
+    .ad-bar.warn i { background:var(--amber); }.ad-bar.bad i { background:var(--coral); }
+    .ad-bar-row b { color:var(--navy-900); text-align:end; }
+    .ad-tasks { display:grid; gap:8px; }
+    .ad-task { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:11px; background:var(--cream); }
+    .ad-task.warn { border-color:var(--sand-300); background:var(--amber-bg); }
+    .ad-task.info { border-color:var(--navy-100); background:var(--navy-50); }
+    .ad-task b { display:block; margin-bottom:2px; color:var(--navy-900); font-size:11.5px; }
+    .ad-task span { color:var(--muted); font-size:10.5px; }
+    .ad-mini { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-bottom:13px; }
+    .ad-mini-item { padding:10px 7px; border-radius:10px; background:var(--sand-50); text-align:center; }
+    .ad-mini-item span { display:block; color:var(--muted); font-size:10px; }
+    .ad-mini-item b { display:block; color:var(--navy-900); font-size:18px; font-weight:900; }
+    .ad-links { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+    .ad-link { display:flex; align-items:center; justify-content:space-between; gap:8px; min-width:0; padding:9px 10px; border:1px solid var(--line); border-radius:10px; background:var(--paper); color:var(--navy-800); font-size:10.5px; font-weight:800; text-decoration:none; }
+    .ad-link:hover { border-color:var(--sand-500); background:var(--sand-50); }
+    .ad-link span:last-child { color:var(--muted); font-size:10px; }
+    .ad-table-wrap { overflow-x:auto; }
+    .ad-table { width:100%; border-collapse:collapse; font-size:11px; }
+    .ad-table th { padding:10px 12px; background:#F7F9FC; color:var(--muted); font-size:10px; font-weight:900; text-align:start; white-space:nowrap; }
+    .ad-table td { padding:10px 12px; border-top:1px solid #EDF1F6; vertical-align:middle; }
+    .ad-file-title { color:var(--navy-900); font-weight:800; }
+    .ad-file-sub { display:block; max-width:300px; overflow:hidden; color:var(--muted); font-size:9.5px; text-overflow:ellipsis; white-space:nowrap; direction:ltr; text-align:right; }
+    .ad-status { display:inline-flex; padding:3px 8px; border-radius:99px; background:var(--jade-bg); color:var(--jade); font-size:9.5px; font-weight:800; white-space:nowrap; }
+    .ad-status.off { background:var(--amber-bg); color:var(--amber); }
+    .ad-feedback { display:grid; gap:0; }
+    .ad-feedback-item { padding:10px 0; border-bottom:1px solid var(--line); }
+    .ad-feedback-item:last-child { border:0; }
+    .ad-feedback-top { display:flex; justify-content:space-between; gap:10px; }
+    .ad-feedback-top b { color:var(--navy-900); font-size:11px; }
+    .ad-feedback-top span,.ad-feedback-item p { color:var(--muted); font-size:10.5px; }
+    .ad-feedback-item p { margin:4px 0 0; }
+    .ad-empty { padding:18px 8px; color:var(--muted); font-size:11.5px; text-align:center; }
+    .ad-error { padding:16px; border:1px solid #F3D6D0; border-radius:12px; background:var(--coral-bg); color:#7E2A1D; }
+    .ad-loading { display:grid; gap:12px; }
+    .ad-skeleton { height:108px; border-radius:14px; background:linear-gradient(90deg,#EEF3F8 25%,#F7FAFD 37%,#EEF3F8 63%); background-size:400% 100%; animation:ad-shimmer 1.3s ease infinite; }
+    @@keyframes ad-shimmer { 0%{background-position:100% 50%} 100%{background-position:0 50%} }
+    @@media(max-width:1050px) { .ad-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ad-grid{grid-template-columns:1fr} }
+    @@media(max-width:620px) { .ad-head{padding:15px}.ad-actions{width:100%}.ad-actions .ad-btn{flex:1}.ad-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.ad-kpi{padding:12px}.ad-kpi-value{font-size:23px}.ad-mini{grid-template-columns:repeat(2,minmax(0,1fr))}.ad-links{grid-template-columns:1fr}.ad-roles{justify-content:center}.ad-legend{min-width:100%;} }
+    @@media(prefers-reduced-motion:reduce) { .ad-skeleton{animation:none} }
 </style>
 
-
-<section class="admin-dash">
-    <div class="admin-dash__head">
-        <div>
-            <p class="admin-dash__eyebrow">ADMIN</p>
-            <h1 class="admin-dash__title">داشبورد مدیریت</h1>
-            <p class="admin-dash__sub">کلاس‌ها و مدرسان را ادمین تعریف می‌کند؛ محتوا و آزمون را مدرس هر کلاس.</p>
-        </div>
-        <div class="admin-dash__actions">
-            <a class="btn btn-primary" href="/admin/classes">کلاس‌ها</a>
-            <a class="btn btn-secondary" href="/admin/teachers">مدرسان</a>
-            <a class="btn btn-secondary" href="/admin/schedule">برنامهٔ هفتگی</a>
-            <a class="btn btn-ghost" href="/admin/users">کاربران</a>
-        </div>
-    </div>
-
-    <div class="admin-kpis">
-        <article class="admin-kpi">
-            <div class="admin-kpi__top">
-                <span class="admin-kpi__label">کاربران سیستم</span>
-                <span class="admin-kpi__icon">👤</span>
+@if (_loading)
+{
+    <section class="ad">
+        <div class="ad-head"><div><p class="ad-eyebrow">ADMIN OVERVIEW</p><h1 class="ad-title">داشبورد مدیریت</h1><p class="ad-sub">در حال دریافت آمار واقعی سامانه…</p></div></div>
+        <div class="ad-loading"><div class="ad-kpis"><div class="ad-skeleton"></div><div class="ad-skeleton"></div><div class="ad-skeleton"></div><div class="ad-skeleton"></div></div><div class="ad-grid"><div class="ad-skeleton"></div><div class="ad-skeleton"></div></div></div>
+    </section>
+}
+else if (!string.IsNullOrWhiteSpace(_error))
+{
+    <section class="ad">
+        <div class="ad-head"><div><p class="ad-eyebrow">ADMIN OVERVIEW</p><h1 class="ad-title">داشبورد مدیریت</h1><p class="ad-sub">نمای کلی وضعیت آموزشگاه و وب‌سایت</p></div><button class="ad-btn primary" @onclick="LoadAsync">تلاش دوباره</button></div>
+        <div class="ad-error"><b>دریافت اطلاعات داشبورد انجام نشد.</b><div>@_error</div></div>
+    </section>
+}
+else
+{
+    <section class="ad">
+        <header class="ad-head">
+            <div><p class="ad-eyebrow">ASATIR PLATFORM · ADMIN</p><h1 class="ad-title">داشبورد مدیریت</h1><p class="ad-sub">نمای یکپارچه مدیریت آموزشگاه، محتوای سایت و فعالیت‌های آموزشی</p></div>
+            <div class="ad-actions">
+                <a class="ad-btn primary" href="/admin/media">＋ بارگذاری محتوا</a>
+                <a class="ad-btn" href="/admin/reports">مرکز گزارش‌ها ↗</a>
+                <button class="ad-btn" @onclick="LoadAsync" disabled="@_loading">↻ بروزرسانی</button>
             </div>
-            <div class="admin-kpi__value">@_usersTotal</div>
-            <div class="admin-kpi__meta">فعال: @_usersActive · غیرفعال: @_usersInactive</div>
-        </article>
-        <article class="admin-kpi">
-            <div class="admin-kpi__top">
-                <span class="admin-kpi__label">کلاس‌های فعال</span>
-                <span class="admin-kpi__icon">📚</span>
-            </div>
-            <div class="admin-kpi__value">@_classesActive</div>
-            <div class="admin-kpi__meta">بدون مدرس: @_classesNoTeacher · تکمیل ظرفیت: @_classesFull</div>
-        </article>
-        <article class="admin-kpi">
-            <div class="admin-kpi__top">
-                <span class="admin-kpi__label">استادان</span>
-                <span class="admin-kpi__icon">🎓</span>
-            </div>
-            <div class="admin-kpi__value">@_teachersActive</div>
-            <div class="admin-kpi__meta">کل نقش مدرس: @_teachersTotal</div>
-        </article>
-        <article class="admin-kpi">
-            <div class="admin-kpi__top">
-                <span class="admin-kpi__label">رضایت از دوره‌ها</span>
-                <span class="admin-kpi__icon">⭐</span>
-            </div>
-            <div class="admin-kpi__value">@(_satisfaction?.AverageRating.ToString("0.0") ?? "—")<small>/ ۵</small></div>
-            <div class="admin-kpi__meta">@_satCount نظر · رضایت @_satPercent٪</div>
-        </article>
-    </div>
-
-    <div class="admin-grid-2">
-        <article class="admin-card">
-            <header class="admin-card__head">
-                <h2>ترکیب نقش کاربران</h2>
-                <span class="admin-card__badge">@_usersTotal کاربر</span>
-            </header>
-            <div class="admin-card__body admin-roles">
-                <div class="admin-donut" style="background: @_donutGradient">
-                    <div class="admin-donut__hole">
-                        <b>@_usersActive</b>
-                        <span>فعال</span>
-                    </div>
-                </div>
-                <div class="admin-legend">
-                    <div><i style="background:var(--navy-800)"></i>زبان‌آموز <b>@_students</b></div>
-                    <div><i style="background:var(--sand-500)"></i>استاد <b>@_teachersTotal</b></div>
-                    <div><i style="background:var(--navy-500)"></i>مدیر <b>@_admins</b></div>
-                </div>
-            </div>
-        </article>
-
-        <article class="admin-card">
-            <header class="admin-card__head">
-                <h2>رضایت دانشجویان</h2>
-            </header>
-            <div class="admin-card__body admin-sat">
-                <div class="admin-sat__gauge" style="--pct:@_satPercent">
-                    <span>@_satPercent٪</span>
-                </div>
-                <div class="admin-sat__detail">
-                    <p>میانگین امتیاز: <b>@(_satisfaction?.AverageRating.ToString("0.0") ?? "0")</b> از ۵</p>
-                    <p>@_satCount نظر ثبت‌شده</p>
-                    <div class="admin-sat__bars">
-                        <div class="admin-sat__row"><span>راضی</span><div class="bar"><i style="width:@_pctSatisfied%"></i></div><b>@_satisfied</b></div>
-                        <div class="admin-sat__row"><span>خنثی</span><div class="bar warn"><i style="width:@_pctNeutral%"></i></div><b>@_neutral</b></div>
-                        <div class="admin-sat__row"><span>ناراضی</span><div class="bar bad"><i style="width:@_pctDissatisfied%"></i></div><b>@_dissatisfied</b></div>
-                    </div>
-                </div>
-            </div>
-        </article>
-    </div>
-
-    <div class="admin-grid-2">
-        <article class="admin-card">
-            <header class="admin-card__head">
-                <h2>کارهای در انتظار مدیر</h2>
-                <span class="admin-card__badge warn">@_pendingCount مورد</span>
-            </header>
-            <div class="admin-card__body admin-tasks">
-                @if (_pending.Count == 0)
-                {
-                    <p class="admin-empty">مورد معلقی نیست.</p>
-                }
-                else
-                {
-                    @foreach (var t in _pending)
-                    {
-                        <div class="admin-task @t.Tone">
-                            <div>
-                                <b>@t.Title</b>
-                                <span>@t.Detail</span>
-                            </div>
-                            @if (!string.IsNullOrEmpty(t.Href))
-                            {
-                                <a class="btn btn-sm btn-ghost" href="@t.Href">مشاهده</a>
-                            }
-                        </div>
-                    }
-                }
-            </div>
-        </article>
-
-        <article class="admin-card">
-            <header class="admin-card__head">
-                <h2>وضعیت محتوا و آزمون</h2>
-            </header>
-            <div class="admin-card__body">
-                <div class="admin-mini-stats">
-                    <div><span>محتوا</span><b>@_contents</b></div>
-                    <div><span>پوشه</span><b>@_folders</b></div>
-                    <div><span>آزمون</span><b>@_quizzes</b></div>
-                    <div><span>کلاس کل</span><b>@_classesTotal</b></div>
-                </div>
-                <div class="admin-quick-links">
-                    <a href="/admin/classes">مدیریت کلاس‌ها</a>
-                    <a href="/admin/teachers">مدرسان و سطوح</a>
-                    <a href="/admin/schedule">برنامهٔ هفتگی</a>
-                    <a href="/admin/users">کاربران و نقش‌ها</a>
-                    <a href="/admin/permissions">دسترسی‌ها</a>
-                    <a href="/admin/audit">لاگ‌ها</a>
-                </div>
-            </div>
-        </article>
-    </div>
-
-    <article class="admin-card">
-        <header class="admin-card__head">
-            <h2>آخرین نظرات</h2>
         </header>
-        <div class="admin-card__body">
-            @if (_recentFeedback.Count == 0)
-            {
-                <p class="admin-empty">هنوز نظری ثبت نشده است.</p>
-            }
-            else
-            {
-                <div class="admin-feedback-list">
-                    @foreach (var f in _recentFeedback.Take(8))
-                    {
-                        <div class="admin-feedback-row">
-                            <div>
-                                <b>@(f.Username ?? "کاربر")</b>
-                                <span>امتیاز @f.Rating از ۵</span>
-                            </div>
-                            <p>@(string.IsNullOrWhiteSpace(f.Comment) ? "—" : f.Comment)</p>
-                        </div>
-                    }
-                </div>
-            }
+
+        <div class="ad-kpis">
+            <article class="ad-kpi"><div class="ad-kpi-top"><span class="ad-kpi-label">کاربران سامانه</span><span class="ad-kpi-icon">♙</span></div><div class="ad-kpi-value">@N(_usersTotal)</div><div class="ad-kpi-meta">فعال @_usersActive · غیرفعال @_usersInactive</div></article>
+            <article class="ad-kpi"><div class="ad-kpi-top"><span class="ad-kpi-label">کلاس‌های فعال</span><span class="ad-kpi-icon">▤</span></div><div class="ad-kpi-value">@N(_classesActive)</div><div class="ad-kpi-meta">کل @_classesTotal · بدون مدرس @_classesNoTeacher</div></article>
+            <article class="ad-kpi"><div class="ad-kpi-top"><span class="ad-kpi-label">مدرسان فعال</span><span class="ad-kpi-icon">♧</span></div><div class="ad-kpi-value">@N(_teachersActive)</div><div class="ad-kpi-meta">کل مدرسان @_teachersTotal · زبان‌آموز @_students</div></article>
+            <article class="ad-kpi dark"><div class="ad-kpi-top"><span class="ad-kpi-label">رضایت ثبت‌شده</span><span class="ad-kpi-icon">☆</span></div><div class="ad-kpi-value">@(_satisfaction?.AverageRating.ToString("0.0") ?? "—")<small>/ ۵</small></div><div class="ad-kpi-meta">@N(_satCount) نظر · رضایت @_satPercent٪</div></article>
         </div>
-    </article>
-</section>
+
+        <div class="ad-grid">
+            <article class="ad-card">
+                <header class="ad-card-head"><h2>ترکیب نقش کاربران</h2><span class="ad-badge">@N(_usersTotal) کاربر</span></header>
+                <div class="ad-card-body ad-roles">
+                    <div class="ad-donut" style="background:@_donutGradient"><div class="ad-donut-hole"><b>@N(_usersActive)</b><span>کاربر فعال</span></div></div>
+                    <div class="ad-legend">
+                        <div class="ad-legend-row"><i style="background:var(--navy-800)"></i>زبان‌آموزان <b>@N(_students)</b></div>
+                        <div class="ad-legend-row"><i style="background:var(--sand-500)"></i>مدرسان <b>@N(_teachersTotal)</b></div>
+                        <div class="ad-legend-row"><i style="background:var(--navy-500)"></i>مدیران <b>@N(_admins)</b></div>
+                    </div>
+                </div>
+            </article>
+            <article class="ad-card">
+                <header class="ad-card-head"><h2>رضایت کاربران از محتوا</h2><a class="ad-badge" href="/admin/reports">گزارش کامل ↗</a></header>
+                <div class="ad-card-body ad-satisfaction">
+                    <div class="ad-gauge" style="--pct:@_satPercent"><span>@_satPercent٪</span></div>
+                    <div class="ad-sat-detail"><p>میانگین امتیاز: <strong>@(_satisfaction?.AverageRating.ToString("0.0") ?? "0.0") از ۵</strong></p><p>@N(_satCount) نظر ثبت شده است.</p>
+                        <div class="ad-bars"><div class="ad-bar-row"><span>راضی</span><div class="ad-bar"><i style="width:@_pctSatisfied%"></i></div><b>@N(_satisfied)</b></div><div class="ad-bar-row"><span>خنثی</span><div class="ad-bar warn"><i style="width:@_pctNeutral%"></i></div><b>@N(_neutral)</b></div><div class="ad-bar-row"><span>ناراضی</span><div class="ad-bar bad"><i style="width:@_pctDissatisfied%"></i></div><b>@N(_dissatisfied)</b></div></div>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <div class="ad-grid">
+            <article class="ad-card">
+                <header class="ad-card-head"><h2>موارد نیازمند پیگیری</h2><span class="ad-badge warn">@N(_pendingCount) مورد</span></header>
+                <div class="ad-card-body ad-tasks">
+                    @if (_pending.Count == 0) { <div class="ad-empty">در حال حاضر موردی برای پیگیری وجود ندارد.</div> }
+                    else { @foreach (var item in _pending) { <div class="ad-task @item.Tone"><div><b>@item.Title</b><span>@item.Detail</span></div>@if (!string.IsNullOrWhiteSpace(item.Href)) { <a class="ad-btn" href="@item.Href">بررسی</a> }</div> } }
+                    @if (_classesFull > 0) { <div class="ad-task info"><div><b>کلاس‌های تکمیل ظرفیت</b><span>@N(_classesFull) کلاس در وضعیت تکمیل ظرفیت است.</span></div><a class="ad-btn" href="/admin/classes">مشاهده</a></div> }
+                </div>
+            </article>
+            <article class="ad-card">
+                <header class="ad-card-head"><h2>مدیریت سریع بخش‌ها</h2><small>دسترسی مستقیم و گزارش هر حوزه</small></header>
+                <div class="ad-card-body">
+                    <div class="ad-mini">
+                        <div class="ad-mini-item"><span>محتوای آموزشی فعال</span><b>@N(_contents)</b></div>
+                        <div class="ad-mini-item"><span>پوشه‌ها</span><b>@N(_folders)</b></div>
+                        <div class="ad-mini-item"><span>آزمون‌ها</span><b>@N(_quizzes)</b></div>
+                        <div class="ad-mini-item"><span>تلاش آزمون</span><b>@N(_quizAttempts)</b></div>
+                    </div>
+                    <div class="ad-mini">
+                        <div class="ad-mini-item"><span>کتاب‌های سایت</span><b>@N(_websiteBooks)</b></div>
+                        <div class="ad-mini-item"><span>دوره‌های سایت</span><b>@N(_websiteCourses)</b></div>
+                        <div class="ad-mini-item"><span>آیتم‌های کتابخانه</span><b>@N(_websiteLibraryItems)</b></div>
+                        <div class="ad-mini-item"><span>جایگاه‌های صفحه</span><b>@N(_websiteSlots)</b></div>
+                    </div>
+                    <div class="ad-links">
+                        <a class="ad-link" href="/admin/users"><span>کاربران و نقش‌ها</span><span>گزارش ↗</span></a>
+                        <a class="ad-link" href="/admin/classes"><span>کلاس‌ها و ظرفیت</span><span>گزارش ↗</span></a>
+                        <a class="ad-link" href="/admin/teachers"><span>مدرسان</span><span>گزارش ↗</span></a>
+                        <a class="ad-link" href="/admin/schedule"><span>برنامه هفتگی</span><span>مدیریت ↗</span></a>
+                        <a class="ad-link" href="/admin/media"><span>رسانه و بارگذاری</span><span>کتابخانه ↗</span></a>
+                        <a class="ad-link" href="/admin/reports"><span>گزارش جامع سامانه</span><span>مشاهده ↗</span></a>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <article class="ad-card" style="margin-bottom:14px">
+            <header class="ad-card-head"><h2>آخرین بارگذاری‌های محتوای آموزشی</h2><a class="ad-badge" href="/admin/media">مشاهده همه محتوا ↗</a></header>
+            @if (_recentUploads.Count == 0) { <div class="ad-empty">هنوز محتوای آموزشی بارگذاری نشده است.</div> }
+            else {
+                <div class="ad-table-wrap"><table class="ad-table"><thead><tr><th>نوع</th><th>عنوان و نام فایل</th><th>حجم</th><th>وضعیت</th><th>زمان بارگذاری</th></tr></thead><tbody>
+                    @foreach (var upload in _recentUploads) {
+                        <tr><td><span class="ad-badge">@TypeLabel(upload.Type)</span></td><td><span class="ad-file-title">@upload.Title</span><span class="ad-file-sub">@upload.FileName</span></td><td>@Size(upload.FileSize)</td><td><span class="ad-status @(upload.IsActive ? "" : "off")">@(upload.IsActive ? "فعال" : "غیرفعال")</span></td><td>@upload.CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")</td></tr>
+                    }
+                </tbody></table></div>
+            }
+        </article>
+
+        <article class="ad-card">
+            <header class="ad-card-head"><h2>آخرین بازخوردها</h2><a class="ad-badge" href="/admin/reports">گزارش بازخوردها ↗</a></header>
+            <div class="ad-card-body">
+                @if (_recentFeedback.Count == 0) { <div class="ad-empty">هنوز بازخوردی ثبت نشده است.</div> }
+                else { <div class="ad-feedback">@foreach (var feedback in _recentFeedback.Take(8)) { <div class="ad-feedback-item"><div class="ad-feedback-top"><b>@(string.IsNullOrWhiteSpace(feedback.Username) ? "کاربر" : feedback.Username)</b><span>امتیاز @feedback.Rating از ۵</span></div><p>@(string.IsNullOrWhiteSpace(feedback.Comment) ? "بدون توضیح" : feedback.Comment)</p></div> }</div> }
+            </div>
+        </article>
+    </section>
+}
 
 @code {
     private sealed record PendingItem(string Title, string Detail, string Tone, string? Href);
-
-    private int _usersTotal, _usersActive, _usersInactive;
-    private int _students, _teachersTotal, _teachersActive, _admins;
-    private int _classesTotal, _classesActive, _classesNoTeacher, _classesFull;
-    private int _contents, _folders, _quizzes;
+    private bool _loading = true;
+    private string? _error;
+    private int _usersTotal, _usersActive, _usersInactive, _students, _teachersTotal, _teachersActive, _admins;
+    private int _classesTotal, _classesActive, _classesNoTeacher, _classesFull, _contents, _folders, _quizzes, _quizAttempts;
+    private int _websiteBooks, _websiteCourses, _websiteLibraryItems, _websiteSlots;
     private SatisfactionSummaryDto? _satisfaction;
     private IReadOnlyList<FeedbackDto> _recentFeedback = [];
-    private List<PendingItem> _pending = new();
-
-    private int _satPercent, _satCount, _satisfied, _neutral, _dissatisfied;
-    private int _pctSatisfied, _pctNeutral, _pctDissatisfied;
-    private int _pendingCount;
+    private IReadOnlyList<AdminRecentUploadDto> _recentUploads = [];
+    private List<PendingItem> _pending = [];
+    private int _satPercent, _satCount, _satisfied, _neutral, _dissatisfied, _pctSatisfied, _pctNeutral, _pctDissatisfied, _pendingCount;
     private string _donutGradient = "conic-gradient(var(--navy-50) 0 100%)";
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
     {
-        var allUsers = await Users.GetAllAsync();
-        _usersTotal = allUsers.Count;
-        _usersActive = allUsers.Count(u => u.IsActive);
-        _usersInactive = _usersTotal - _usersActive;
-        _students = allUsers.Count(u => u.Role == UserRole.Student);
-        _teachersTotal = allUsers.Count(u => u.Role == UserRole.Teacher);
-        _teachersActive = allUsers.Count(u => u.Role == UserRole.Teacher && u.IsActive);
-        _admins = allUsers.Count(u => u.Role == UserRole.Admin);
-
-        var classes = await Classes.GetAllAsync();
-        _classesTotal = classes.Count;
-        _classesActive = classes.Count(c => c.Status == ClassStatus.Active);
-        _classesNoTeacher = classes.Count(c => c.Status == ClassStatus.NoTeacher || c.TeacherId is null);
-        _classesFull = classes.Count(c => c.Status == ClassStatus.Full);
-
-        _contents = await Contents.CountActiveAsync();
-        var tree = await Folders.GetTreeAsync();
-        _folders = CountFolders(tree);
-        _quizzes = (await Quizzes.GetAllAsync()).Count;
-
-        _satisfaction = await Feedbacks.GetSatisfactionSummaryAsync();
-        _recentFeedback = await Feedbacks.GetAllAsync();
-
-        if (_satisfaction is not null)
+        _loading = true;
+        _error = null;
+        try
         {
-            _satPercent = (int)Math.Round(_satisfaction.SatisfactionPercent);
-            _satCount = _satisfaction.TotalCount;
-            _satisfied = _satisfaction.SatisfiedCount;
-            _neutral = _satisfaction.NeutralCount;
-            _dissatisfied = _satisfaction.DissatisfiedCount;
-            var t = Math.Max(1, _satCount);
-            _pctSatisfied = (int)Math.Round(100.0 * _satisfied / t);
-            _pctNeutral = (int)Math.Round(100.0 * _neutral / t);
-            _pctDissatisfied = (int)Math.Round(100.0 * _dissatisfied / t);
+            var data = await Dashboard.GetAsync();
+            _usersTotal = data.UsersTotal; _usersActive = data.UsersActive; _usersInactive = data.UsersInactive;
+            _students = data.Students; _teachersTotal = data.TeachersTotal; _teachersActive = data.TeachersActive; _admins = data.Admins;
+            _classesTotal = data.ClassesTotal; _classesActive = data.ClassesActive; _classesNoTeacher = data.ClassesNoTeacher; _classesFull = data.ClassesFull;
+            _contents = data.ActiveContents; _folders = data.Folders; _quizzes = data.Quizzes; _quizAttempts = data.QuizAttempts;
+            _websiteBooks = data.WebsiteBooks; _websiteCourses = data.WebsiteCourses;
+            _websiteLibraryItems = data.WebsiteLibraryItems; _websiteSlots = data.WebsiteSlots;
+            _satisfaction = data.Satisfaction; _recentFeedback = data.RecentFeedback; _recentUploads = data.RecentUploads;
+            _satPercent = (int)Math.Round(data.Satisfaction.SatisfactionPercent);
+            _satCount = data.Satisfaction.TotalCount; _satisfied = data.Satisfaction.SatisfiedCount;
+            _neutral = data.Satisfaction.NeutralCount; _dissatisfied = data.Satisfaction.DissatisfiedCount;
+            var total = Math.Max(1, _satCount);
+            _pctSatisfied = (int)Math.Round(100d * _satisfied / total);
+            _pctNeutral = (int)Math.Round(100d * _neutral / total);
+            _pctDissatisfied = (int)Math.Round(100d * _dissatisfied / total);
+            BuildDonut();
+            BuildPending(data.UnassignedClasses, data.FullClasses);
         }
-
-        BuildDonut();
-        BuildPending(classes);
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load admin dashboard");
+            _error = "ارتباط با پایگاه داده یا دریافت اطلاعات داشبورد با خطا مواجه شد. گزارش فنی در لاگ برنامه ثبت شده است.";
+        }
+        finally { _loading = false; }
     }
 
     private void BuildDonut()
     {
-        var n = Math.Max(1, _usersTotal);
-        var pStudent = 100.0 * _students / n;
-        var pTeacher = 100.0 * _teachersTotal / n;
-        var a = 0.0;
-        var b = a + pStudent;
-        var c = b + pTeacher;
-        _donutGradient =
-            $"conic-gradient(var(--navy-800) 0 {b:0.##}%, var(--sand-500) {b:0.##}% {c:0.##}%, var(--navy-500) {c:0.##}% 100%)";
+        var total = Math.Max(1, _students + _teachersTotal + _admins);
+        var studentEnd = 100d * _students / total;
+        var teacherEnd = studentEnd + 100d * _teachersTotal / total;
+        _donutGradient = $"conic-gradient(var(--navy-800) 0 {studentEnd:0.##}%,var(--sand-500) {studentEnd:0.##}% {teacherEnd:0.##}%,var(--navy-500) {teacherEnd:0.##}% 100%)";
     }
 
-    private void BuildPending(IReadOnlyList<ClassRoomDto> classes)
+    private void BuildPending(IReadOnlyList<ClassRoomDto> unassigned, IReadOnlyList<ClassRoomDto> full)
     {
-        _pending = new List<PendingItem>();
-        foreach (var c in classes.Where(x => x.TeacherId is null && x.Status != ClassStatus.Inactive).Take(5))
-        {
-            _pending.Add(new PendingItem(
-                $"کلاس بدون مدرس: {c.Code}",
-                $"{c.Title} · سطح {c.Level}",
-                "warn",
-                "/admin/classes"));
-        }
-        foreach (var c in classes.Where(x => x.Status == ClassStatus.Full).Take(3))
-        {
-            _pending.Add(new PendingItem(
-                $"ظرفیت تکمیل: {c.Code}",
-                $"{c.EnrolledCount}/{c.Capacity} · {c.Title}",
-                "info",
-                "/admin/classes"));
-        }
+        _pending = [];
+        foreach (var item in unassigned)
+            _pending.Add(new PendingItem($"کلاس بدون مدرس: {item.Code}", $"{item.Title} · سطح {item.Level}", "warn", "/admin/classes"));
+        foreach (var item in full)
+            _pending.Add(new PendingItem($"ظرفیت تکمیل: {item.Code}", $"{item.EnrolledCount}/{item.Capacity} · {item.Title}", "info", "/admin/classes"));
         _pendingCount = _pending.Count;
     }
 
-    private static int CountFolders(IReadOnlyList<FolderNodeDto> nodes)
-    {
-        var n = 0;
-        foreach (var node in nodes)
-            n += 1 + CountFolders(node.Children);
-        return n;
-    }
+    private static string N(int value) => value.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("fa-IR"));
+    private static string TypeLabel(string type) => type switch { "Video" => "ویدئو", "Audio" => "صوت", "Image" => "تصویر", "Document" => "سند", "Story" => "داستان", _ => "سایر" };
+    private static string Size(long bytes) => bytes switch { < 1024 => $"{bytes} B", < 1024 * 1024 => $"{bytes / 1024d:0.#} KB", _ => $"{bytes / (1024d * 1024):0.##} MB" };
 }

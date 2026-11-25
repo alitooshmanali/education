@@ -1,0 +1,4 @@
+.asset-picker { display:grid; gap:6px; min-width:0; }
+.asset-picker > label { display:block; color:var(--muted); font-size:12px; font-weight:800; }
+.asset-picker select { width:100%; min-height:42px; padding:9px 12px; border:1px solid var(--line); border-radius:10px; background:var(--paper); color:var(--ink); font:inherit; font-size:12px; }
+.asset-picker small,.asset-picker__loading { color:var(--muted); font-size:11px; line-height:1.7; }

@@ -5,11 +5,15 @@
 <PageHeader Eyebrow="Admin" Title="لاگ فعالیت" Subtitle="گزارش تغییرات مدیریتی" />
 
 <section class="panel pad">
-    <DataTable TItem="Lesson.Domain.Entities.AuditLog" Items="_items" Columns="_columns" />
+    <DataTable TItem="Lesson.Domain.Entities.AuditLog" Items="_items" Columns="_columns"
+               Loading="_loading" ErrorMessage="_loadError" OnRetry="ReloadAsync"
+               EmptyTitle="هنوز رویدادی ثبت نشده است" EmptyMessage="فعالیت‌های مدیریتی پس از انجام عملیات در این بخش ثبت می‌شوند." />
 </section>
 
 @code {
     private IReadOnlyList<Lesson.Domain.Entities.AuditLog> _items = [];
+    private bool _loading = true;
+    private string? _loadError;
 
     private readonly IReadOnlyList<TableColumn<Lesson.Domain.Entities.AuditLog>> _columns =
     [
@@ -20,8 +24,14 @@
         new() { Header = "تاریخ", Template = x => (RenderFragment)(b => b.AddContent(0, x.CreatedAt.ToLocalTime().ToString("g"))) }
     ];
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => ReloadAsync();
+
+    private async Task ReloadAsync()
     {
-        _items = await Audit.GetRecentAsync(200);
+        _loading = true;
+        _loadError = null;
+        try { _items = await Audit.GetRecentAsync(200); }
+        catch { _loadError = "بارگذاری لاگ فعالیت‌ها ناموفق بود. لطفاً دوباره تلاش کنید."; }
+        finally { _loading = false; }
     }
 }

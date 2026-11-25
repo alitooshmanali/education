@@ -7,6 +7,7 @@ using Lesson.Infrastructure.Persistence;
 using Lesson.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using System.Security.Claims;
@@ -46,6 +47,7 @@ builder.Services.AddDbContext<LessonDbContext>(options =>
 
 builder.Services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<LessonDbContext>());
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFolderService, FolderService>();
 builder.Services.AddScoped<IPermissionService, PermissionService>();
@@ -65,6 +67,7 @@ builder.Services.AddScoped<IPlacementGameBankService, PlacementGameBankService>(
 builder.Services.AddScoped<ISiteCourseService, SiteCourseService>();
 builder.Services.AddScoped<ISiteBookService, SiteBookService>();
 builder.Services.AddScoped<TeacherSessionState>();
+builder.Services.AddScoped<Lesson.Web.Services.MediaAssetCatalog>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
@@ -119,14 +122,20 @@ app.MapGet("/api/site/library", async (int? category, string? cat, int? skip, in
 app.MapGet("/api/site/pages/{pageKey}", async (string pageKey, ISitePageService pages) =>
     Results.Ok(await pages.GetPublicPageAsync(pageKey)));
 
-app.MapGet("/api/site/media/{contentId:long}", async (HttpContext context, long contentId, ISitePageService pages, IContentStreamingService streaming) =>
+app.MapGet("/api/site/media/{contentId:long}", async (long contentId, ISitePageService pages, LessonDbContext db, CancellationToken ct) =>
 {
-    if (!await pages.IsPublicMediaAsync(contentId))
+    if (!await pages.IsPublicMediaAsync(contentId, ct))
         return Results.NotFound();
-    // Public stream for site-linked content only
-    var result = await streaming.OpenAsync(contentId, 0, string.Empty, string.Empty, isAdmin: true);
-    if (result is null) return Results.NotFound();
-    return Results.Stream(result.Stream, result.ContentType, enableRangeProcessing: result.Stream.CanSeek, fileDownloadName: result.FileName);
+
+    // Browser audio/video players rely on byte-range requests for metadata and seeking.
+    // File(byte[], ..., enableRangeProcessing: true) emits 206 + Content-Range when requested.
+    var media = await db.Contents.AsNoTracking()
+        .Where(x => x.Id == contentId && x.IsActive)
+        .Select(x => new { x.Content, x.MimeType, x.OriginalFileName })
+        .FirstOrDefaultAsync(ct);
+    if (media is null || media.Content.Length == 0) return Results.NotFound();
+
+    return Results.File(media.Content, media.MimeType, enableRangeProcessing: true);
 });
 
 
@@ -276,7 +285,7 @@ app.MapPost("/api/auth/login", async (HttpContext context, Lesson.Infrastructure
     var result = await auth.LoginAsync(new LoginRequest(username, password, device));
     if (!result.Success || result.User is null || result.SessionKey is null)
     {
-        return Results.Redirect($"/login?error={Uri.EscapeDataString(result.FailureReason ?? "login_failed")}", true);
+        return Results.Redirect($"/login?error={Uri.EscapeDataString(result.FailureReason ?? "login_failed")}", permanent: false);
     }
 
     if (!context.Request.Cookies.ContainsKey("lesson.device"))
@@ -284,7 +293,7 @@ app.MapPost("/api/auth/login", async (HttpContext context, Lesson.Infrastructure
         context.Response.Cookies.Append("lesson.device", device, new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
+            Secure = context.Request.IsHttps,
             SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Strict,
             IsEssential = true
         });
@@ -390,11 +399,36 @@ public sealed record ProgressUpdateRequest(double PositionSeconds, double? Durat
 public sealed class CurrentUserContext : ICurrentUserContext
 {
     private readonly IHttpContextAccessor _http;
-    public CurrentUserContext(IHttpContextAccessor http) => _http = http;
-    public long? UserId => long.TryParse(_http.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
-    public UserRole? Role => Enum.TryParse<UserRole>(_http.HttpContext?.User.FindFirstValue(ClaimTypes.Role), out var role) ? role : null;
-    public string? DeviceIdentifier => _http.HttpContext?.User.FindFirstValue("lesson.device");
-    public string? SessionKey => _http.HttpContext?.User.FindFirstValue("lesson.session");
+    private readonly AuthenticationStateProvider _authenticationStateProvider;
+    private ClaimsPrincipal? _principal;
+    private Task? _initialization;
+
+    public CurrentUserContext(
+        IHttpContextAccessor http,
+        AuthenticationStateProvider authenticationStateProvider)
+    {
+        _http = http;
+        _authenticationStateProvider = authenticationStateProvider;
+        _principal = http.HttpContext?.User;
+    }
+
+    public Task EnsureInitializedAsync()
+        => _initialization ??= InitializeCoreAsync();
+
+    private async Task InitializeCoreAsync()
+    {
+        // In Interactive Server components HttpContext is not guaranteed to exist
+        // after the initial HTTP request. Use Blazor's circuit authentication state.
+        var authenticationState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+        _principal = authenticationState.User;
+    }
+
+    private ClaimsPrincipal? Principal => _principal ?? _http.HttpContext?.User;
+
+    public long? UserId => long.TryParse(Principal?.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
+    public UserRole? Role => Enum.TryParse<UserRole>(Principal?.FindFirstValue(ClaimTypes.Role), out var role) ? role : null;
+    public string? DeviceIdentifier => Principal?.FindFirstValue("lesson.device");
+    public string? SessionKey => Principal?.FindFirstValue("lesson.session");
 }
 
 public sealed record PlacementStartBody(string? Phone);

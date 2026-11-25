@@ -8,6 +8,8 @@ public sealed class SiteBook : BaseEntity
     public string Title { get; set; } = string.Empty;
     public long? ImageContentId { get; set; }
     public LessonContent? ImageContent { get; set; }
+    public long? FileContentId { get; set; }
+    public LessonContent? FileContent { get; set; }
     public decimal Price { get; set; }
     public int SortOrder { get; set; }
 }

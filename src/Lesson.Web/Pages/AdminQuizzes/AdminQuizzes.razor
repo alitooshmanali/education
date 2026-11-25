@@ -22,7 +22,10 @@
             <div class="alert alert-error">@_error</div>
         }
 
-        <DataTable TItem="QuizListItemDto" Items="_items" Columns="_columns">
+        <DataTable TItem="QuizListItemDto" Items="_items" Columns="_columns"
+                   Loading="_loading" ErrorMessage="_loadError" OnRetry="ReloadAsync"
+                   EmptyTitle="هنوز آزمونی ساخته نشده است" EmptyMessage="برای شروع، یک آزمون جدید طراحی کنید.">
+            <EmptyAction><button class="btn btn-primary" type="button" @onclick="() => _showCreate = true">+ ساخت اولین آزمون</button></EmptyAction>
             <ActionsTemplate Context="item">
                 <button class="btn btn-ghost" type="button" @onclick="() => LoadReports(item.Id)">گزارش</button>
                 <button class="btn btn-danger" type="button" @onclick="() => DeleteQuiz(item.Id)">حذف</button>
@@ -120,9 +123,9 @@
     private IReadOnlyList<QuizListItemDto> _items = [];
     private IReadOnlyList<QuizReportRowDto> _reports = [];
     private bool _showCreate;
-    private bool _busy;
+    private bool _busy, _loading = true;
     private string? _status;
-    private string? _error;
+    private string? _error, _loadError;
 
     private string _title = "";
     private string _intro = "";
@@ -151,8 +154,18 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _items = await Quizzes.GetAllAsync();
+        await CurrentUser.EnsureInitializedAsync();
+        await ReloadAsync();
         if (_questions.Count == 0) AddQuestion();
+    }
+
+    private async Task ReloadAsync()
+    {
+        _loading = true;
+        _loadError = null;
+        try { _items = await Quizzes.GetAllAsync(); }
+        catch { _loadError = "بارگذاری فهرست آزمون‌ها ناموفق بود. دوباره تلاش کنید."; }
+        finally { _loading = false; }
     }
 
     private void AddQuestion()
@@ -199,7 +212,7 @@
             _title = ""; _intro = "";
             _questions.Clear();
             AddQuestion();
-            _items = await Quizzes.GetAllAsync();
+            await ReloadAsync();
         }
         catch (Exception ex)
         {

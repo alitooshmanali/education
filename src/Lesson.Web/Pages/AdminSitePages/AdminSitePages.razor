@@ -90,8 +90,7 @@
                     </div>
                 }
                 <div class="sp-field full">
-                    <label>آپلود تصویر (در Content ذخیره می‌شود)</label>
-                    <InputFile OnChange="OnFile" accept="image/*" />
+                    <ContentAssetPicker Label="تصویر اسلات سایت" TypeFilter="ContentType.Image" FolderPathContains="_PageSiteImages" @bind-Value="_contentId" />
                     @if (_contentId is { } cid)
                     {
                         <p style="margin-top:8px;font-size:12px;color:var(--muted)">Content Id: @cid · <a href="/api/site/media/@cid" target="_blank">پیش‌نمایش</a></p>
@@ -118,9 +117,17 @@
                 </tr>
             </thead>
             <tbody>
-                @if (_items.Count == 0)
+                @if (_loading)
                 {
-                    <tr><td colspan="6" style="padding:24px;text-align:center;color:var(--muted)">برای این صفحه اسلاتی نیست. با «اسلات جدید» اضافه کنید.</td></tr>
+                    <tr><td colspan="6"><LoadingState Skeleton="true" Rows="4" Title="در حال بارگذاری بخش‌های صفحه" /></td></tr>
+                }
+                else if (_loadError is not null)
+                {
+                    <tr><td colspan="6"><ErrorState Title="بخش‌های صفحه بارگذاری نشدند" Message="@_loadError" OnRetry="Reload" /></td></tr>
+                }
+                else if (_items.Count == 0)
+                {
+                    <tr><td colspan="6"><EmptyState Icon="layout" Title="این صفحه هنوز بخشی ندارد" Message="با افزودن اسلات، محتوای صفحه را بسازید."><Action><button class="btn btn-primary" type="button" @onclick="StartCreate">+ افزودن اسلات</button></Action></EmptyState></td></tr>
                 }
                 else
                 {
@@ -168,7 +175,8 @@
     private string _pageKey = "home";
     private string _pageLabel = "صفحه اصلی";
     private List<SiteSlotDto> _items = new();
-    private bool _showForm, _busy;
+    private bool _showForm, _busy, _loading = true;
+    private string? _loadError;
     private long? _editId, _contentId;
     private string _title = "", _subtitle = "", _destKey = "";
     private string? _error, _ok;
@@ -178,6 +186,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await Current.EnsureInitializedAsync();
         await EnsureSiteFolderAsync();
         await Reload();
     }
@@ -198,7 +207,11 @@
 
     private async Task Reload()
     {
-        _items = (await Pages.GetAllAdminAsync(_pageKey)).Where(x => x.IsActive).ToList();
+        _loading = true;
+        _loadError = null;
+        try { _items = (await Pages.GetAllAdminAsync(_pageKey)).Where(x => x.IsActive).ToList(); }
+        catch { _loadError = "بارگذاری بخش‌های این صفحه ناموفق بود. دوباره تلاش کنید."; }
+        finally { _loading = false; }
     }
 
     private void StartCreate()

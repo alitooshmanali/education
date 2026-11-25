@@ -1,0 +1,74 @@
+@using Lesson.Infrastructure.Abstractions
+@using Lesson.Domain.Enums
+@inject MediaAssetCatalog Catalog
+
+<div class="asset-picker">
+    <label>@Label</label>
+    @if (_loading)
+    {
+        <div class="asset-picker__loading">در حال دریافت رسانه‌های بارگذاری‌شده…</div>
+    }
+    else
+    {
+        <select value="@(Value?.ToString() ?? string.Empty)" @onchange="ChangeAsync" disabled="@Disabled">
+            <option value="">— انتخاب از مرکز رسانه —</option>
+            @foreach (var asset in _items)
+            {
+                <option value="@asset.Id">@asset.DisplayName · @asset.Type · @FormatSize(asset.FileSize)</option>
+            }
+        </select>
+        @if (_items.Count == 0)
+        {
+            <small>رسانه‌ای با این نوع و مقصد پیدا نشد. <a href="/admin/media">بارگذاری در مرکز یکپارچه رسانه</a></small>
+        }
+        else
+        {
+            <small>@_items.Count رسانه قابل انتخاب است · <a href="/admin/media">مدیریت و بارگذاری رسانه</a></small>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "رسانه";
+    [Parameter] public ContentType TypeFilter { get; set; }
+    [Parameter] public string? FolderPathContains { get; set; }
+    [Parameter] public IReadOnlyList<string>? AllowedExtensions { get; set; }
+    [Parameter] public long? Value { get; set; }
+    [Parameter] public EventCallback<long?> ValueChanged { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+
+    private IReadOnlyList<ContentDto> _items = [];
+    private bool _loading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        try
+        {
+            var all = await Catalog.GetAsync();
+            var query = all.Where(x => x.Type == TypeFilter);
+            if (AllowedExtensions is { Count: > 0 })
+                query = query.Where(x => AllowedExtensions.Contains(x.FileExtension, StringComparer.OrdinalIgnoreCase));
+            if (!string.IsNullOrWhiteSpace(FolderPathContains))
+                query = query.Where(x => x.FolderPath.Contains(FolderPathContains, StringComparison.OrdinalIgnoreCase));
+
+            var filtered = query.ToList();
+            if (Value is long selected && all.FirstOrDefault(x => x.Id == selected) is { } current
+                && current.Type == TypeFilter
+                && (AllowedExtensions is not { Count: > 0 } || AllowedExtensions.Contains(current.FileExtension, StringComparer.OrdinalIgnoreCase))
+                && filtered.All(x => x.Id != selected))
+                filtered.Insert(0, current);
+            _items = filtered;
+        }
+        finally { _loading = false; }
+    }
+
+    private Task ChangeAsync(ChangeEventArgs args)
+    {
+        var raw = args.Value?.ToString();
+        return ValueChanged.InvokeAsync(long.TryParse(raw, out var id) ? (long?)id : null);
+    }
+
+    private static string FormatSize(long bytes)
+        => bytes >= 1024 * 1024 ? $"{bytes / 1024d / 1024d:0.0} MB" : $"{bytes / 1024d:0} KB";
+}

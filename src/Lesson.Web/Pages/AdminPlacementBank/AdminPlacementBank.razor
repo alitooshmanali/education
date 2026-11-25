@@ -112,8 +112,7 @@
                         <input @bind="_hint" />
                     </div>
                     <div class="pb-field full">
-                        <label>فایل صوت بیت دوم (mp3/wav)</label>
-                        <InputFile OnChange="OnAudioFile" accept="audio/*,.mp3,.wav,.m4a" />
+                        <ContentAssetPicker Label="فایل صوت بیت دوم (mp3/wav)" TypeFilter="ContentType.Audio" FolderPathContains="_PagePlacement" @bind-Value="_audioId" />
                         @if (_audioId is long aid)
                         {
                             <p class="pb-hint">صوت ✓ · <a href="/api/site/media/@aid" target="_blank">پخش</a></p>
@@ -150,9 +149,21 @@
                 </tr>
             </thead>
             <tbody>
-                @if (Filtered.Count==0)
+                @if (_loading)
                 {
-                    <tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted)">موردی نیست — از «آیتم جدید» اضافه کنید.</td></tr>
+                    <tr><td colspan="4"><LoadingState Skeleton="true" Rows="4" Title="در حال بارگذاری بانک تعیین سطح" /></td></tr>
+                }
+                else if (_loadError is not null)
+                {
+                    <tr><td colspan="4"><ErrorState Title="بانک تعیین سطح بارگذاری نشد" Message="@_loadError" OnRetry="Reload" /></td></tr>
+                }
+                else if (Filtered.Count == 0 && _items.Any(x => x.Kind == _tab))
+                {
+                    <tr><td colspan="4"><NoResultsState Title="موردی برای نمایش پیدا نشد" Message="فیلتر یا دسته انتخاب‌شده را بررسی کنید." /></td></tr>
+                }
+                else if (Filtered.Count == 0)
+                {
+                    <tr><td colspan="4"><EmptyState Icon="puzzle" Title="این دسته هنوز آیتمی ندارد" Message="برای شروع، اولین آیتم را اضافه کنید."><Action><button class="btn btn-primary" type="button" @onclick="StartCreate">+ افزودن آیتم</button></Action></EmptyState></td></tr>
                 }
                 else
                 {
@@ -178,7 +189,8 @@
     private List<PlacementGameItemDto> _items = new();
     private PlacementGameKind _tab = PlacementGameKind.Grammar;
     private PlacementGameKind _kind = PlacementGameKind.Grammar;
-    private bool _showForm, _busy;
+    private bool _showForm, _busy, _loading = true;
+    private string? _loadError;
     private long? _editId, _audioId;
     private string _level = "A1", _question = "", _options = "", _word = "", _line1 = "", _line2 = "", _hint = "", _speak = "", _story = "";
     private int _answer, _sort;
@@ -187,9 +199,20 @@
     private IReadOnlyList<PlacementGameItemDto> Filtered =>
         _items.Where(x => x.Kind == _tab).OrderBy(x => x.SortOrder).ThenBy(x => x.Id).ToList();
 
-    protected override async Task OnInitializedAsync() => await Reload();
+    protected override async Task OnInitializedAsync()
+    {
+        await Current.EnsureInitializedAsync();
+        await Reload();
+    }
 
-    private async Task Reload() => _items = (await Bank.GetAllAdminAsync()).ToList();
+    private async Task Reload()
+    {
+        _loading = true;
+        _loadError = null;
+        try { _items = (await Bank.GetAllAdminAsync()).ToList(); }
+        catch { _loadError = "بارگذاری بانک تعیین سطح ناموفق بود. دوباره تلاش کنید."; }
+        finally { _loading = false; }
+    }
 
     private async Task SwitchTab(PlacementGameKind k)
     {

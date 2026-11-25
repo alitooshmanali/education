@@ -22,9 +22,23 @@ public sealed class FolderService : IFolderService
 
         var folderIds = folders.Select(f => f.Id).ToList();
 
+        // Project metadata only. Loading LessonContent entities here also loads the
+        // varbinary(max) Content column for every file in the tree, which can make
+        // admin/teacher navigation appear frozen when the library contains videos.
         var contents = await _db.Contents.AsNoTracking()
-            .Include(c => c.Levels)
             .Where(c => folderIds.Contains(c.FolderId))
+            .Select(c => new ContentDto(
+                c.Id,
+                c.OriginalFileName,
+                c.DisplayName,
+                c.FileExtension,
+                c.MimeType,
+                c.FileSize,
+                c.Type,
+                c.DurationSeconds,
+                c.FolderId,
+                c.Folder != null ? c.Folder.RelativePath : string.Empty,
+                c.Levels.Select(level => level.Level).ToList()))
             .ToListAsync(cancellationToken);
 
         var contentsByFolder = contents.ToLookup(c => c.FolderId);
@@ -143,7 +157,7 @@ public sealed class FolderService : IFolderService
     private static IReadOnlyList<FolderNodeDto> Build(
         long? parentId,
         ILookup<long?, Folder> lookup,
-        ILookup<long, LessonContent> contentsByFolder,
+        ILookup<long, ContentDto> contentsByFolder,
         IReadOnlyDictionary<long, string> pathById)
     {
         if (!lookup[parentId].Any())
@@ -153,18 +167,7 @@ public sealed class FolderService : IFolderService
         {
             var path = pathById.TryGetValue(f.Id, out var p) ? p : f.RelativePath;
             var contents = contentsByFolder[f.Id]
-                .Select(c => new ContentDto(
-                    c.Id,
-                    c.OriginalFileName,
-                    c.DisplayName,
-                    c.FileExtension,
-                    c.MimeType,
-                    c.FileSize,
-                    c.Type,
-                    c.DurationSeconds,
-                    c.FolderId,
-                    path,
-                    c.Levels?.Select(l => l.Level).ToList() ?? new List<LanguageLevel>()))
+                .Select(c => c with { FolderPath = path })
                 .ToList();
 
             return new FolderNodeDto(
@@ -180,13 +183,17 @@ public sealed class FolderService : IFolderService
 
     public async Task EnsureSystemFoldersAsync(CancellationToken cancellationToken = default)
     {
+        // One indexed lookup instead of one database round-trip per protected folder.
+        var existing = await _db.Folders.AsNoTracking()
+            .Where(x => x.ParentFolderId == null && SystemFolders.All.Contains(x.Name))
+            .Select(x => x.Name)
+            .ToListAsync(cancellationToken);
+        var existingNames = existing.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var added = false;
+
         foreach (var name in SystemFolders.All)
         {
-            var exists = await _db.Folders.AnyAsync(
-                x => x.Name == name && x.ParentFolderId == null,
-                cancellationToken);
-            if (exists) continue;
-
+            if (existingNames.Contains(name)) continue;
             _db.Folders.Add(new Folder
             {
                 Name = name,
@@ -195,8 +202,11 @@ public sealed class FolderService : IFolderService
                 Level = LanguageLevel.A1,
                 IsActive = true
             });
+            added = true;
         }
-        await _db.SaveChangesAsync(cancellationToken);
+
+        if (added)
+            await _db.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<Folder> GetSystemFolderAsync(string systemFolderName, CancellationToken cancellationToken = default)

@@ -115,6 +115,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await CurrentUser.EnsureInitializedAsync();
         if (CurrentUser.UserId is null) { Nav.NavigateTo("/login", true); return; }
         _detail = await Quizzes.GetDetailAsync(QuizId, includeCorrectAnswers: false);
         if (_detail is null) { _error = "آزمون یافت نشد."; return; }

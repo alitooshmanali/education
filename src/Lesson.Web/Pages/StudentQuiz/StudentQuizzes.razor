@@ -36,6 +36,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await CurrentUser.EnsureInitializedAsync();
         if (CurrentUser.UserId is null) { Nav.NavigateTo("/login", true); return; }
         _items = await Quizzes.GetForStudentAsync(CurrentUser.UserId.Value);
     }

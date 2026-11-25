@@ -158,7 +158,12 @@
         </section>
     }
 
-    <DataTable TItem="User" Items="_filtered" Columns="_columns">
+    <DataTable TItem="User" Items="_filtered" Columns="_columns"
+               Loading="_isLoading" ErrorMessage="_loadError" OnRetry="ReloadAsync"
+               HasSourceItems="@(_users.Count > 0)" NoResultsTitle="کاربری با این جست‌وجو پیدا نشد"
+               NoResultsMessage="عبارت جست‌وجو را تغییر دهید یا پاک کنید." OnClearFilters="ClearSearch"
+               EmptyTitle="هنوز کاربری ثبت نشده است" EmptyMessage="برای شروع، اولین کاربر را ایجاد کنید.">
+        <EmptyAction><button class="btn btn-primary" type="button" @onclick="() => _showCreate = true">+ ایجاد اولین کاربر</button></EmptyAction>
         <ActionsTemplate Context="user">
             <button class="btn btn-secondary" type="button" @onclick="() => OpenEdit(user)">ویرایش</button>
             <button class="btn btn-ghost" type="button" @onclick="() => OpenReset(user)">بازنشانی</button>
@@ -182,8 +187,9 @@
     private IReadOnlyList<User> _filtered = [];
     private string _query = string.Empty;
     private string? _errorMessage;
+    private string? _loadError;
     private string? _statusMessage;
-    private bool _isBusy;
+    private bool _isBusy, _isLoading = true;
 
     private bool _showCreate;
     private string _createUsername = string.Empty;
@@ -220,10 +226,22 @@
 
     private async Task ReloadAsync()
     {
-        _errorMessage = null;
-        _users = await Users.GetAllAsync();
-        _filtered = ApplySearch(_users, _query);
+        _isLoading = true;
+        _loadError = null;
+        try
+        {
+            _users = await Users.GetAllAsync();
+            _filtered = ApplySearch(_users, _query);
+            _errorMessage = null;
+        }
+        catch
+        {
+            _loadError = "بارگذاری فهرست کاربران ناموفق بود. اطلاعات ذخیره‌شده دست‌نخورده باقی مانده‌اند.";
+        }
+        finally { _isLoading = false; }
     }
+
+    private void ClearSearch() => OnSearch(string.Empty);
 
     private void OnSearch(string q)
     {

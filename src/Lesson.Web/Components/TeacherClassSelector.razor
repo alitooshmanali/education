@@ -115,6 +115,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await Current.EnsureInitializedAsync();
         Session.Changed += OnSessionChanged;
         if (Current.UserId is not long uid) return;
 

@@ -65,6 +65,10 @@
     try {
       url = typeof args[0] === 'string' ? args[0] : (args[0] && args[0].url) || '';
     } catch (_) {}
+    // Login has its own inline submit spinner; avoid covering the form with the global overlay.
+    if (/\/api\/auth\/login(?:\?|$)/i.test(url)) {
+      return origFetch.apply(window, args);
+    }
     // skip tiny static assets
     if (/\.(png|jpg|jpeg|gif|svg|webp|css|woff2?)(\?|$)/i.test(url)) {
       return origFetch.apply(window, args);

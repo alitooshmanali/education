@@ -1,0 +1,18 @@
+<section class="empty-state empty-state--filtered" role="status">
+    <div class="empty-state__icon"><AppIcon Name="search" /></div>
+    <h3 class="empty-state__title">@Title</h3>
+    @if (!string.IsNullOrWhiteSpace(Message))
+    {
+        <p class="empty-state__desc">@Message</p>
+    }
+    @if (OnClear.HasDelegate)
+    {
+        <button type="button" class="btn btn-ghost" @onclick="OnClear">پاک کردن فیلترها</button>
+    }
+</section>
+
+@code {
+    [Parameter] public string Title { get; set; } = "نتیجه‌ای پیدا نشد";
+    [Parameter] public string Message { get; set; } = "با تغییر عبارت جست‌وجو یا فیلترها دوباره تلاش کنید.";
+    [Parameter] public EventCallback OnClear { get; set; }
+}

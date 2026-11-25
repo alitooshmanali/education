@@ -5,7 +5,7 @@
 @inject ICurrentUserContext Current
 @implements IDisposable
 
-<section class="page">
+<section class="page workspace-page teacher-page teacher-videos-page">
     <PageHeader Title="ویدیوهای آموزشی" Subtitle="ویدیوها در پوشه قرار می‌گیرند. پیش‌فرض همه می‌بینند؛ می‌توانید دسترسی را محدود کنید. پخش فقط با Play و به‌صورت chunk." />
     
     @if (Session.SelectedClassId is null)
@@ -52,6 +52,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+        await Current.EnsureInitializedAsync();
         Session.Changed += OnChanged;
         await LoadAsync();
     }

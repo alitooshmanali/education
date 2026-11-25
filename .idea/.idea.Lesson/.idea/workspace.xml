@@ -10,7 +10,87 @@
     <configurations />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bba0822f-46d9-4d97-aa9a-2857b4f57e21" name="Changes" comment="" />
+    <list default="true" id="bba0822f-46d9-4d97-aa9a-2857b4f57e21" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Lesson/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Lesson/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Domain/Entities/SiteBook.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Domain/Entities/SiteBook.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Abstractions/ICurrentUserContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Abstractions/ICurrentUserContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Abstractions/IDeviceService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Abstractions/IDeviceService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Abstractions/ISiteBookService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Abstractions/ISiteBookService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Migrations/LessonDbContextModelSnapshot.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Migrations/LessonDbContextModelSnapshot.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Persistence/LessonDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Persistence/LessonDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Services/AuthenticationService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Services/AuthenticationService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Services/ContentService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Services/ContentService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Services/DeviceService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Services/DeviceService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Services/FolderService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Services/FolderService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Services/SiteBookService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Services/SiteBookService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Infrastructure/Services/SitePageService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Infrastructure/Services/SitePageService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/App.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/App.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/AppIcon.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/AppIcon.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/Breadcrumbs.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/Breadcrumbs.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/DataTable.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/DataTable.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/ErrorState.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/ErrorState.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/FolderTree.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/FolderTree.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/LoadingState.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/LoadingState.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/PageHeader.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/PageHeader.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/StatCard.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/StatCard.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/StatusBadge.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/StatusBadge.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/TeacherClassSelector.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/TeacherClassSelector.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/VideoCard.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/VideoCard.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Components/VideoPlayer.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Components/VideoPlayer.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Layout/AuthLayout.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Layout/AuthLayout.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Layout/MainLayout.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Layout/MainLayout.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/Admin/Admin.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/Admin/Admin.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminAudit/AdminAudit.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminAudit/AdminAudit.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminCandidates/AdminCandidates.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminCandidates/AdminCandidates.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminClasses/AdminClasses.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminClasses/AdminClasses.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminContents/AdminContent.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminContents/AdminContent.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminContents/AdminContents.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminContents/AdminContents.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminDevices/AdminDevices.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminDevices/AdminDevices.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminPermissions/AdminPermissions.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminPermissions/AdminPermissions.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminPlacementBank/AdminPlacementBank.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminPlacementBank/AdminPlacementBank.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminQuizzes/AdminQuizzes.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminQuizzes/AdminQuizzes.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSchedule/AdminSchedule.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSchedule/AdminSchedule.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSiteBooks/AdminSiteBooks.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSiteBooks/AdminSiteBooks.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSiteCourses/AdminSiteCourses.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSiteCourses/AdminSiteCourses.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSiteLibrary/AdminSiteLibrary.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSiteLibrary/AdminSiteLibrary.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSitePages/AdminSitePages.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminSitePages/AdminSitePages.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminTeachers/AdminTeachers.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminTeachers/AdminTeachers.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminUsers/AdminUsers.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/AdminUsers/AdminUsers.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/Denied/Denied.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/Denied/Denied.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/Error/Error.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/Error/Error.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/Index/Index.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/Index/Index.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/Login/Login.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/Login/Login.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/Login/Login.razor.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/Login/Login.razor.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/NotFound/NotFound.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/NotFound/NotFound.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/Student/Student.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/Student/Student.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/StudentQuiz/StudentQuizTake.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/StudentQuiz/StudentQuizTake.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/StudentQuiz/StudentQuizzes.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/StudentQuiz/StudentQuizzes.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/StudentVideo/StudentVideo.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/StudentVideo/StudentVideo.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/StudentVideo/StudentVideos.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/StudentVideo/StudentVideos.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/Teacher/Teacher.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/Teacher/Teacher.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherContents/TeacherContents.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherContents/TeacherContents.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherFolders/TeacherFolders.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherFolders/TeacherFolders.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherPodcasts/TeacherPodcasts.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherPodcasts/TeacherPodcasts.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherQuizzes/TeacherQuizzes.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherQuizzes/TeacherQuizzes.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherReports/TeacherReports.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherReports/TeacherReports.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherStories/TeacherStories.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherStories/TeacherStories.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherStudents/TeacherStudents.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherStudents/TeacherStudents.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherVideos/TeacherVideos.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Pages/TeacherVideos/TeacherVideos.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/Routes.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/Routes.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/_Imports.razor" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/_Imports.razor" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/ds/components.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/ds/components.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/ds/fonts.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/ds/fonts.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/ds/patterns.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/ds/patterns.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/ds/tokens.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/css/ds/tokens.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/js/global-loader.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/js/global-loader.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/site-index.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/css/site-index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-admin.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-admin.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-student.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-student.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-teacher.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/Lesson.Web/wwwroot/site/platform-teacher.html" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -20,6 +100,11 @@
     <option name="firstShow" value="false" />
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -44,23 +129,23 @@
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="true" />
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.0009379827100455" />
-      <entry key="MS500" value="1.3324850814392375" />
-      <entry key="S2" value="2.583292652408814" />
-      <entry key="S5" value="3.304403374460133" />
-      <entry key="S10" value="3.6257032445221054" />
-      <entry key="S30" value="3.868780150667282" />
-      <entry key="S60" value="3.933728971391004" />
-      <entry key="M2" value="4.0154646731127315" />
-      <entry key="M5" value="5.380174165501438" />
-      <entry key="M10" value="8.293173114237959" />
-      <entry key="M15" value="10.527048443384064" />
-      <entry key="M30" value="15.951900349097297" />
-      <entry key="H1" value="23.57863474175961" />
-      <entry key="H2" value="30.944080962442325" />
-      <entry key="H4" value="36.21763561307342" />
-      <entry key="D1" value="41.74645022892891" />
-      <entry key="W1" value="42.81763161287513" />
+      <entry key="MS100" value="1.4886385547332304" />
+      <entry key="MS500" value="2.809459957987669" />
+      <entry key="S2" value="8.570824231164146" />
+      <entry key="S5" value="16.766134844268755" />
+      <entry key="S10" value="25.047855882962722" />
+      <entry key="S30" value="36.44250274880058" />
+      <entry key="S60" value="42.379289257759524" />
+      <entry key="M2" value="47.59916052189523" />
+      <entry key="M5" value="53.47399519182469" />
+      <entry key="M10" value="58.24038398175648" />
+      <entry key="M15" value="61.35875471572623" />
+      <entry key="M30" value="67.93621696482566" />
+      <entry key="H1" value="76.43229673764074" />
+      <entry key="H2" value="84.56223669632489" />
+      <entry key="H4" value="90.41567230675284" />
+      <entry key="D1" value="96.59330228034203" />
+      <entry key="W1" value="97.79521257437139" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
@@ -82,23 +167,23 @@
       <entry key="W1" value="0.0" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="0.9668423524847662" />
-      <entry key="MS500" value="1.3231646056385373" />
-      <entry key="S2" value="2.578516431013038" />
-      <entry key="S5" value="3.3019150072288928" />
-      <entry key="S10" value="3.624329580131619" />
-      <entry key="S30" value="3.8682895341913435" />
-      <entry key="S60" value="3.9334792830735026" />
-      <entry key="M2" value="4.0153367051894895" />
-      <entry key="M5" value="5.380100492543029" />
-      <entry key="M10" value="8.293112297787397" />
-      <entry key="M15" value="10.526995965683424" />
-      <entry key="M30" value="15.951860671239947" />
-      <entry key="H1" value="23.578606003003763" />
-      <entry key="H2" value="30.944062381143628" />
-      <entry key="H4" value="36.217624824815275" />
-      <entry key="D1" value="41.74644817003705" />
-      <entry key="W1" value="42.81763131153805" />
+      <entry key="MS100" value="1.447912714484426" />
+      <entry key="MS500" value="2.7910188196562817" />
+      <entry key="S2" value="8.552411219375836" />
+      <entry key="S5" value="16.7525443979056" />
+      <entry key="S10" value="25.038451968934478" />
+      <entry key="S30" value="36.43824478684861" />
+      <entry key="S60" value="42.37686205890909" />
+      <entry key="M2" value="47.59781049717734" />
+      <entry key="M5" value="53.47338793147976" />
+      <entry key="M10" value="58.24004790698152" />
+      <entry key="M15" value="61.35851551667237" />
+      <entry key="M30" value="67.93608150017937" />
+      <entry key="H1" value="76.43221909594826" />
+      <entry key="H2" value="84.56219321430275" />
+      <entry key="H4" value="90.41564889888458" />
+      <entry key="D1" value="96.59329808681262" />
+      <entry key="W1" value="97.79521196718603" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -109,25 +194,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    ".NET Launch Settings Profile.Lesson.Web.executor": "Debug",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "cidr.known.project.marker": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "master",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;.NET Launch Settings Profile.Lesson.Web.executor&quot;: &quot;Debug&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;new__Design&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="Lesson.Web" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/src/Lesson.Web/Lesson.Web.csproj" />
@@ -166,7 +251,8 @@
     <MESSAGE value="part 1" />
     <MESSAGE value="fixing logo animitions" />
     <MESSAGE value="fixing ui kit" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixing ui kit" />
+    <MESSAGE value="test" />
+    <option name="LAST_COMMIT_MESSAGE" value="test" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

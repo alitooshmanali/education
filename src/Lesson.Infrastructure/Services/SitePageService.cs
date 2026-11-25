@@ -86,7 +86,7 @@ public sealed class SitePageService(IApplicationDbContext db) : ISitePageService
         if (await db.PlacementGameItems.AnyAsync(x =>
             x.IsActive && x.AudioContentId == contentId, cancellationToken)) return true;
         return await db.SiteBooks.AnyAsync(x =>
-            x.IsActive && x.ImageContentId == contentId, cancellationToken);
+            x.IsActive && (x.ImageContentId == contentId || x.FileContentId == contentId), cancellationToken);
     }
 
     private static string Normalize(string key) => key.Trim().ToLowerInvariant();

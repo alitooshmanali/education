@@ -1,0 +1,90 @@
+@page "/admin/reports"
+@attribute [Authorize(Roles = nameof(UserRole.Admin))]
+@inject IAdminDashboardService Dashboard
+
+<PageHeader Eyebrow="ADMIN · REPORTS" Title="مرکز گزارش‌های پلتفرم" Subtitle="نمای کلی و نقطه ورود گزارش‌های آموزشگاه، وب‌سایت، محتوای آموزشی و ارزیابی‌ها." />
+
+@if (_loading)
+{
+    <LoadingState Skeleton="true" Rows="5" Title="در حال آماده‌سازی گزارش‌ها" />
+}
+else if (_data is null)
+{
+    <ErrorState Title="گزارش‌ها بارگذاری نشدند" Message="اتصال دیتابیس یا دریافت اطلاعات با خطا مواجه شد." OnRetry="LoadAsync" />
+}
+else
+{
+    <section class="report-center">
+        <article class="report-section" id="academy">
+            <div class="report-section__head"><div><span>01 · ACADEMY</span><h2>مدیریت آموزشگاه</h2><p>کاربران، مدرسان و کلاس‌ها</p></div><a href="/admin/users">مدیریت کاربران ←</a></div>
+            <div class="report-metrics">
+                <div><small>کل کاربران</small><strong>@_data.UsersTotal</strong><span>فعال @_data.UsersActive · غیرفعال @_data.UsersInactive</span></div>
+                <div><small>مدرسان</small><strong>@_data.TeachersTotal</strong><span>فعال @_data.TeachersActive</span></div>
+                <div><small>کلاس‌ها</small><strong>@_data.ClassesTotal</strong><span>فعال @_data.ClassesActive</span></div>
+                <div><small>نیازمند پیگیری</small><strong>@(_data.ClassesNoTeacher + _data.ClassesFull)</strong><span>بدون مدرس @_data.ClassesNoTeacher · تکمیل ظرفیت @_data.ClassesFull</span></div>
+            </div>
+            <div class="report-links"><a href="/admin/users">گزارش کاربران</a><a href="/admin/teachers">گزارش مدرسان</a><a href="/admin/classes">گزارش کلاس‌ها</a><a href="/admin/schedule">برنامه کلاسی</a></div>
+        </article>
+
+        <article class="report-section" id="website">
+            <div class="report-section__head"><div><span>02 · WEBSITE</span><h2>مدیریت وب‌سایت</h2><p>صفحات عمومی، کتابخانه، کتاب‌ها و دوره‌ها</p></div><a href="/admin/site-pages">مدیریت صفحات ←</a></div>
+            <div class="report-metrics">
+                <div><small>اسلات‌های صفحات</small><strong>@_data.WebsiteSlots</strong><span>هیرو، کروسل و دایره‌ها</span></div>
+                <div><small>کتابخانه سایت</small><strong>@_data.WebsiteLibraryItems</strong><span>صوت، ویدئو، داستان و موسیقی</span></div>
+                <div><small>کتاب‌ها</small><strong>@_data.WebsiteBooks</strong><span>آیتم‌های فروشگاه کتاب</span></div>
+                <div><small>دوره‌ها</small><strong>@_data.WebsiteCourses</strong><span>دوره‌های قابل نمایش</span></div>
+            </div>
+            <div class="report-links"><a href="/admin/site-pages">صفحات سایت</a><a href="/admin/site-library">کتابخانه</a><a href="/admin/site-books">کتاب‌ها</a><a href="/admin/site-courses">دوره‌ها</a></div>
+        </article>
+
+        <article class="report-section" id="platform">
+            <div class="report-section__head"><div><span>03 · LEARNING PLATFORM</span><h2>محتوا و آموزش</h2><p>مخزن رسانه، پوشه‌ها و آزمون‌های آموزشی</p></div><a href="/admin/media">مرکز رسانه ←</a></div>
+            <div class="report-metrics">
+                <div><small>رسانه‌های فعال</small><strong>@_data.ActiveContents</strong><span>تصویر، ویدئو، صوت و سند</span></div>
+                <div><small>پوشه‌ها</small><strong>@_data.Folders</strong><span>ساختار ذخیره‌سازی محتوا</span></div>
+                <div><small>آزمون‌ها</small><strong>@_data.Quizzes</strong><span>آزمون‌های تعریف‌شده</span></div>
+                <div><small>رضایت ثبت‌شده</small><strong>@_data.Satisfaction.TotalCount</strong><span>میانگین @_data.Satisfaction.AverageRating از ۵</span></div>
+            </div>
+            <div class="report-links"><a href="/admin/media">مرکز رسانه</a><a href="/admin/contents">محتوای پلتفرم</a><a href="/admin/folders">پوشه‌ها</a><a href="/admin/quizzes">آزمون‌ها</a></div>
+        </article>
+
+        <article class="report-section" id="assessment">
+            <div class="report-section__head"><div><span>04 · ASSESSMENT</span><h2>ارزیابی و تعیین سطح</h2><p>داوطلبان، آزمون‌ها و نتایج</p></div><a href="/admin/candidates">داوطلبان ←</a></div>
+            <div class="report-metrics">
+                <div><small>داوطلبان</small><strong>@_data.Candidates</strong><span>پرونده‌های تعیین سطح</span></div>
+                <div><small>تلاش‌های آزمون</small><strong>@_data.QuizAttempts</strong><span>تلاش‌های ثبت‌شده</span></div>
+            </div>
+            <div class="report-links"><a href="/admin/candidates">داوطلبان</a><a href="/admin/placement-bank">بانک تعیین سطح</a><a href="/admin/quizzes">مدیریت آزمون‌ها</a></div>
+        </article>
+
+        <article class="report-section" id="security">
+            <div class="report-section__head"><div><span>05 · SECURITY & AUDIT</span><h2>امنیت و فعالیت سیستم</h2><p>رویدادهای ثبت‌شده و دستگاه‌های کاربران</p></div><a href="/admin/audit">مشاهده لاگ‌ها ←</a></div>
+            <div class="report-metrics">
+                <div><small>رویدادهای ثبت‌شده</small><strong>@_data.AuditEvents</strong><span>سوابق AuditLog</span></div>
+            </div>
+            <div class="report-links"><a href="/admin/audit">گزارش فعالیت‌ها</a><a href="/admin/devices">دستگاه‌های متصل</a><a href="/admin/permissions">دسترسی‌ها</a></div>
+        </article>
+    </section>
+}
+
+<style>
+.report-center{display:grid;gap:16px;max-width:1440px}.report-section{scroll-margin-top:90px;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-xl);padding:20px;box-shadow:var(--sh-1)}
+.report-section__head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}.report-section__head span{font-size:10px;font-weight:900;letter-spacing:.1em;color:var(--sand-800)}.report-section__head h2{margin:4px 0;font-size:17px;font-weight:900;color:var(--navy-900)}.report-section__head p{margin:0;color:var(--muted);font-size:12px}.report-section__head>a{font-size:12px;font-weight:800;color:var(--navy-800);white-space:nowrap}
+.report-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.report-metrics>div{display:grid;gap:3px;min-width:0;padding:13px;border:1px solid var(--line);border-radius:12px;background:var(--cream)}.report-metrics small{font-size:11px;color:var(--muted);font-weight:700}.report-metrics strong{font-size:24px;color:var(--navy-900);font-weight:900}.report-metrics span{font-size:10px;color:var(--muted);line-height:1.7}.report-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.report-links a{padding:7px 12px;border-radius:999px;background:var(--navy-50);color:var(--navy-800);font-size:11px;font-weight:800}
+@@media(max-width:900px){.report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}@@media(max-width:560px){.report-section{padding:14px}.report-section__head{flex-direction:column}.report-metrics{grid-template-columns:1fr 1fr}.report-metrics strong{font-size:21px}}
+</style>
+
+@code {
+    private AdminDashboardDataDto? _data;
+    private bool _loading = true;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        try { _data = await Dashboard.GetAsync(); }
+        catch { _data = null; }
+        finally { _loading = false; }
+    }
+}

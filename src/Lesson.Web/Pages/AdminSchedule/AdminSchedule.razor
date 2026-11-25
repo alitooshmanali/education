@@ -31,6 +31,22 @@
         <h1 class="sch__title">برنامهٔ هفتگی</h1>
         <p class="sch__sub">نمای تجمیعی کلاس‌ها بر اساس روز — تداخل مدرس هنگام ذخیره کنترل می‌شود.</p>
     </div>
+    @if (_loading)
+    {
+        <LoadingState Skeleton="true" Rows="7" Title="در حال بارگذاری برنامه هفتگی" />
+    }
+    else if (_loadError is not null)
+    {
+        <ErrorState Title="برنامه هفتگی بارگذاری نشد" Message="@_loadError" OnRetry="ReloadAsync" />
+    }
+    else if (!_byDay.Values.Any(day => day.Count > 0))
+    {
+        <EmptyState Icon="calendar-days" Title="هنوز کلاسی در برنامه ثبت نشده است" Message="پس از ایجاد کلاس و تعیین روزهای برگزاری، برنامه هفتگی اینجا نمایش داده می‌شود.">
+            <Action><a class="btn btn-primary" href="/admin/classes">مدیریت کلاس‌ها</a></Action>
+        </EmptyState>
+    }
+    else
+    {
     <div class="sch-grid">
         @for (var d = 0; d < 7; d++)
         {
@@ -65,21 +81,34 @@
             </div>
         }
     </div>
+    }
 </section>
 
 @code {
     private static readonly string[] _dayNames = ["یک‌شنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه", "شنبه"];
     private Dictionary<int, List<ClassRoomDto>> _byDay = new();
+    private bool _loading = true;
+    private string? _loadError;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => ReloadAsync();
+
+    private async Task ReloadAsync()
     {
-        var all = (await Classes.GetAllAsync()).Where(c => c.Status != ClassStatus.Inactive).ToList();
-        _byDay = Enumerable.Range(0, 7).ToDictionary(i => i, _ => new List<ClassRoomDto>());
-        foreach (var c in all)
+        _loading = true;
+        _loadError = null;
+        try
         {
-            foreach (var d in c.Days)
-                _byDay[d.DayOfWeek].Add(c);
+            var all = (await Classes.GetAllAsync()).Where(c => c.Status != ClassStatus.Inactive).ToList();
+            var byDay = Enumerable.Range(0, 7).ToDictionary(i => i, _ => new List<ClassRoomDto>());
+            foreach (var c in all)
+            {
+                foreach (var d in c.Days)
+                    byDay[d.DayOfWeek].Add(c);
+            }
+            _byDay = byDay;
         }
+        catch { _loadError = "دریافت برنامه هفتگی ناموفق بود. دوباره تلاش کنید."; }
+        finally { _loading = false; }
     }
 
     private static string Fmt(TimeSpan t) => $"{t.Hours:00}:{t.Minutes:00}";

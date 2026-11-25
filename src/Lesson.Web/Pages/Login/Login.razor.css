@@ -275,3 +275,17 @@
 .brand--auth .brand__mark--logo {
     background: #fff;
 }
+
+
+/* Password visibility control: reserve a physical right-side gutter for LTR credentials. */
+.login-password-wrap { direction:ltr; }
+.login-password-wrap input { direction:ltr; text-align:left; padding-left:14px; padding-right:54px; }
+.login-toggle-password { right:7px; left:auto; inset-inline:auto; z-index:2; background:var(--color-surface); }
+.login-toggle-password:hover { background:var(--color-surface-elevated); }
+.auth-submit { position:relative; width:100%; min-height:46px; justify-content:center; gap:9px; }
+.auth-submit__spinner { display:none; width:17px; height:17px; border:2px solid rgba(255,255,255,.35); border-top-color:#fff; border-radius:50%; animation:asatir-spin .7s linear infinite; }
+.auth-submit.is-loading .auth-submit__spinner { display:inline-block; }
+.auth-submit.is-loading { opacity:.86; cursor:wait; }
+.auth-submit__status { min-height:18px; margin:0; text-align:center; color:var(--color-text-secondary); font-size:.78rem; }
+@keyframes asatir-spin { to { transform:rotate(360deg); } }
+@media (prefers-reduced-motion:reduce) { .auth-submit__spinner { animation:none; border-top-color:#fff; } }

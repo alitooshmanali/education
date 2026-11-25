@@ -3,181 +3,493 @@
 @inject ISiteBookService Books
 @inject IContentService Contents
 @inject IFolderService Folders
+@inject MediaAssetCatalog AssetCatalog
 @inject ICurrentUserContext Current
+@inject IJSRuntime JS
+
+<PageTitle>کتاب‌های سایت | مدیریت اساطیر آینده</PageTitle>
 
 <style>
-    .sb { max-width: 960px; width:100%; }
-    .sb__head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; margin-bottom:16px; }
-    .sb__title { margin:0; font-size:24px; font-weight:900; color:var(--navy-800); }
-    .sb-form { background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:16px; margin-bottom:14px; }
-    .sb-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .sb-field label { display:block; font-size:12px; font-weight:700; color:var(--muted); margin-bottom:4px; }
-    .sb-field input { width:100%; box-sizing:border-box; border:1px solid var(--line); border-radius:10px; padding:9px 12px; font:inherit; }
-    .sb-field.full { grid-column:1/-1; }
-    .sb-card { background:var(--paper); border:1px solid var(--line); border-radius:16px; overflow:hidden; }
-    .sb-table { width:100%; border-collapse:collapse; font-size:13px; }
-    .sb-table th { text-align:start; font-size:11px; font-weight:800; color:var(--muted); padding:10px 12px; background:var(--sand-50); border-bottom:1px solid var(--line); }
-    .sb-table td { padding:10px 12px; border-bottom:1px solid var(--navy-50); vertical-align:middle; }
-    .sb-thumb { width:48px; height:48px; object-fit:cover; border-radius:8px; background:var(--sand-50); }
-    .sb-alert { padding:10px 12px; border-radius:10px; margin-bottom:12px; font-size:13px; }
-    .sb-alert.err { background:var(--coral-bg); color:var(--coral); }
-    .sb-alert.ok { background:var(--jade-bg); color:var(--jade); }
-    @@media (max-width:600px){ .sb-grid { grid-template-columns:1fr; } }
+    .sb-page{--sb-navy:#0A2B51;--sb-navy2:#061B33;--sb-gold:#D1AB7B;--sb-sand:#F2DCB6;--sb-cream:#FAF7F2;--sb-line:#E4EAF1;--sb-muted:#647587;--sb-green:#0F7A57;--sb-red:#B3402F;max-width:1440px;width:100%;margin:0 auto;color:#0E1B2A}
+    .sb-head{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:18px}.sb-head h1{font-size:24px;font-weight:900;color:var(--sb-navy);margin:0}.sb-sub{font-size:12px;color:var(--sb-muted);margin-top:4px}.sb-head-actions{margin-inline-start:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .sb-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:0 13px;border:1px solid var(--sb-line);border-radius:10px;background:#fff;color:var(--sb-navy);font:inherit;font-size:12px;font-weight:800;cursor:pointer;text-decoration:none}.sb-btn:disabled{opacity:.55;cursor:not-allowed}.sb-btn.primary{background:var(--sb-navy);border-color:var(--sb-navy);color:#fff}.sb-btn.gold{background:#FBF3E4;border-color:var(--sb-gold);color:#6B4E1E}.sb-btn.danger{background:#FBEBE8;border-color:#F3D6D0;color:var(--sb-red)}.sb-btn.small{min-height:29px;padding:0 9px;font-size:11px;border-radius:8px}
+    .sb-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}.sb-stat,.sb-card{background:#fff;border:1px solid var(--sb-line);border-radius:15px;box-shadow:0 1px 3px rgba(10,43,81,.05);min-width:0}.sb-stat{padding:13px 15px}.sb-stat-label{font-size:11px;color:var(--sb-muted);font-weight:700}.sb-stat-value{font-size:25px;line-height:1.45;color:var(--sb-navy);font-weight:900}.sb-stat-note{font-size:10px;color:var(--sb-muted)}
+    .sb-toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:13px}.sb-segments{display:flex;gap:3px;padding:3px;border:1px solid var(--sb-line);border-radius:10px;background:#F1F5F9;flex-wrap:wrap}.sb-segments button{border:0;border-radius:7px;background:transparent;padding:6px 10px;color:var(--sb-muted);font:inherit;font-size:11px;font-weight:800;cursor:pointer}.sb-segments button.active{background:#fff;color:var(--sb-navy);box-shadow:0 1px 3px rgba(10,43,81,.08)}.sb-search{width:min(260px,100%);min-height:36px;border:1px solid var(--sb-line);border-radius:10px;background:#fff;padding:7px 11px;font:inherit;font-size:12px;box-sizing:border-box}.sb-spacer{flex:1}
+    .sb-note{padding:11px 13px;border:1px solid #D5E3F5;border-radius:11px;background:#F1F6FD;color:#1B3557;font-size:11.5px;margin-bottom:14px}.sb-note code{direction:ltr;display:inline-block;background:#E4EAF1;border-radius:5px;padding:1px 6px}
+    .sb-card{overflow:hidden}.sb-table-wrap{overflow-x:auto}.sb-table{width:100%;border-collapse:collapse;min-width:800px;font-size:12px}.sb-table th{text-align:start;background:#F7F9FC;color:var(--sb-muted);font-size:10.5px;font-weight:900;padding:11px 12px;border-bottom:1px solid var(--sb-line);white-space:nowrap}.sb-table td{padding:10px 12px;border-bottom:1px solid #EDF1F6;vertical-align:middle}.sb-table tr:last-child td{border-bottom:0}.sb-table tr.incomplete{background:#FFFBF7}.sb-book{display:flex;align-items:center;gap:10px;min-width:220px}.sb-thumb{width:42px;height:56px;object-fit:cover;border-radius:7px;border:1px solid var(--sb-line);background:#E4EAF1;flex:none}.sb-thumb.empty{display:grid;place-items:center;color:#8294A8;font-size:20px}.sb-book-title{font-weight:900;color:var(--sb-navy)}.sb-meta{font-size:10px;color:var(--sb-muted);margin-top:2px}.sb-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border:1px solid var(--sb-line);border-radius:999px;background:#F7F9FC;color:var(--sb-navy);font-size:10px;font-weight:800;white-space:nowrap}.sb-chip.ok{background:#E7F5EF;border-color:#C6E7D8;color:var(--sb-green)}.sb-chip.warn{background:#FBF3E2;border-color:#EBD9B0;color:#8A6A2F}.sb-chip.err{background:#FBEBE8;border-color:#F3D6D0;color:var(--sb-red)}.sb-chip.off{background:#F1F5F9;color:#647587}
+    .sb-footer{display:flex;align-items:center;gap:8px;padding:11px 14px;border-top:1px solid var(--sb-line);font-size:11px;color:var(--sb-muted)}.sb-page-btn{min-width:30px;height:29px;border:1px solid var(--sb-line);border-radius:8px;background:#fff;color:var(--sb-navy);font:inherit;font-size:11px;font-weight:800;cursor:pointer}.sb-page-btn.current{background:var(--sb-navy);border-color:var(--sb-navy);color:#fff}.sb-page-btn:disabled{opacity:.4;cursor:not-allowed}
+    .sb-lower{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.85fr);gap:14px;margin-top:15px}.sb-card-head{display:flex;align-items:center;gap:8px;padding:12px 15px;border-bottom:1px solid var(--sb-line)}.sb-card-head h2{font-size:13px;color:var(--sb-navy);font-weight:900;margin:0}.sb-card-head span{font-size:10px;color:var(--sb-muted);margin-inline-start:auto}.sb-card-body{padding:14px}.sb-preview{display:flex;align-items:flex-start;gap:14px}.sb-preview .sb-thumb{width:88px;height:116px}.sb-preview-title{font-size:14px;color:var(--sb-navy);font-weight:900;margin:7px 0 3px}.sb-preview-price{font-size:16px;font-weight:900;color:var(--sb-navy);margin-top:8px}.sb-rules{font-size:11px}.sb-rule{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed #EDF1F6}.sb-rule:last-child{border:0}.sb-rule b{color:var(--sb-navy);text-align:end}
+    .sb-form{padding:15px;margin-bottom:14px}.sb-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.sb-field{min-width:0}.sb-field.full{grid-column:1/-1}.sb-field label{display:block;font-size:11px;font-weight:800;color:var(--sb-muted);margin-bottom:5px}.sb-field input{width:100%;box-sizing:border-box;min-height:38px;padding:8px 11px;border:1px solid var(--sb-line);border-radius:9px;font:inherit;font-size:12px;background:#fff}.sb-form-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.sb-check{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:800;color:var(--sb-navy);padding:8px 0}.sb-alert{padding:10px 12px;border-radius:10px;margin-bottom:12px;font-size:12px}.sb-alert.error{background:#FBEBE8;color:var(--sb-red);border:1px solid #F3D6D0}.sb-alert.success{background:#E7F5EF;color:var(--sb-green);border:1px solid #C6E7D8}.sb-empty{text-align:center;padding:30px 14px;color:var(--sb-muted);font-size:12px}.sb-loading{padding:25px;text-align:center;color:var(--sb-muted);font-size:12px}.sb-hint{font-size:10px;color:var(--sb-muted);margin-top:5px}
+    .sb-editor{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;margin-bottom:15px;align-items:start}.sb-editor-main{min-width:0}.sb-editor-side{display:grid;gap:14px}.sb-form-head{display:flex;align-items:center;gap:10px;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--sb-line)}.sb-form-head h2{font-size:14px;color:var(--sb-navy);font-weight:900;margin:0}.sb-field select,.sb-field textarea{width:100%;box-sizing:border-box;min-height:38px;padding:8px 11px;border:1px solid var(--sb-line);border-radius:9px;font:inherit;font-size:12px;background:#fff}.sb-field textarea{resize:vertical}.sb-field input:focus,.sb-field select:focus,.sb-field textarea:focus{outline:2px solid rgba(10,43,81,.16);border-color:var(--sb-navy)}.sb-upload{border:1.5px dashed #C8D4E2;border-radius:12px;background:#FBFCFE;padding:14px;display:grid;gap:7px}.sb-upload strong{color:var(--sb-navy);font-size:12px}.sb-upload small{color:var(--sb-muted);font-size:10px}.sb-upload input[type=file]{width:100%;font-size:11px}.sb-file{display:flex;align-items:center;gap:9px;padding:9px;border:1px solid var(--sb-line);border-radius:10px;background:#F8FAFC;margin-top:8px;min-width:0}.sb-file-icon{width:34px;height:34px;border-radius:9px;background:#E4EAF1;display:grid;place-items:center;flex:none}.sb-file-meta{min-width:0;flex:1}.sb-file-meta strong{display:block;overflow-wrap:anywhere;font-size:10.5px;color:var(--sb-navy)}.sb-file-meta small{display:block;color:var(--sb-muted);font-size:10px}.sb-preview-live{display:grid;gap:9px}.sb-preview-live img{width:min(100%,190px);aspect-ratio:4/5;object-fit:cover;margin:0 auto;border:1px solid var(--sb-line);border-radius:10px;background:#E4EAF1}.sb-preview-live .sb-no-cover{width:min(100%,190px);aspect-ratio:4/5;margin:0 auto;display:grid;place-items:center;border:1px solid var(--sb-line);border-radius:10px;background:#F1F5F9;color:#8294A8;font-size:34px}.sb-upload-note{font-size:10px;color:var(--sb-muted);line-height:1.8}.sb-form-actions{position:sticky;bottom:0;background:#fff;padding-top:12px;border-top:1px solid var(--sb-line)}.sb-check input{width:16px;height:16px;accent-color:var(--sb-green)}
+    @@media(max-width:1050px){.sb-editor{grid-template-columns:1fr}.sb-editor-side{grid-template-columns:1fr 1fr}}
+    @@media(max-width:680px){.sb-editor-side{grid-template-columns:1fr}.sb-form-grid{grid-template-columns:1fr}.sb-field.full{grid-column:auto}}
+    @@media(max-width:1050px){.sb-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.sb-lower{grid-template-columns:1fr}}
+    @@media(max-width:680px){.sb-head h1{font-size:21px}.sb-stats{gap:8px}.sb-stat{padding:10px}.sb-stat-value{font-size:21px}.sb-toolbar{align-items:stretch}.sb-segments{width:100%}.sb-search{width:100%;max-width:none}.sb-spacer{display:none}.sb-form-grid{grid-template-columns:1fr}.sb-field.full{grid-column:auto}.sb-head-actions{margin-inline-start:0;width:100%}.sb-head-actions .sb-btn{flex:1}}
 </style>
 
-<section class="sb">
-    <div class="sb__head">
+<section class="sb-page">
+    <header class="sb-head">
         <div>
-            <h1 class="sb__title">کتاب‌های سایت</h1>
-            <p style="margin:4px 0 0;color:var(--muted);font-size:13px">فقط عنوان · تصویر · قیمت</p>
+            <h1>کتاب‌های سایت</h1>
+            <div class="sb-sub">مدیریت کتاب‌های قابل نمایش در بخش کتاب‌های انگلیسی · اطلاعات واقعی سایت</div>
         </div>
-        <button class="btn btn-primary" type="button" @onclick="StartCreate">کتاب جدید</button>
-    </div>
+        <div class="sb-head-actions">
+            <span class="sb-chip">/admin/site-books</span>
+            <button class="sb-btn" type="button" @onclick="ExportCsv" disabled="@(!_items.Any())">↓ خروجی CSV</button>
+            <button class="sb-btn primary" type="button" @onclick="StartCreate">＋ کتاب جدید</button>
+        </div>
+    </header>
 
-    @if (!string.IsNullOrEmpty(_error)) { <div class="sb-alert err">@_error</div> }
-    @if (!string.IsNullOrEmpty(_ok)) { <div class="sb-alert ok">@_ok</div> }
+    @if (_error is not null) { <div class="sb-alert error" role="alert">@_error <button class="sb-btn small" type="button" @onclick="ReloadAsync">تلاش مجدد</button></div> }
+    @if (_success is not null) { <div class="sb-alert success" role="status">@_success</div> }
+
+    <div class="sb-stats">
+        <div class="sb-stat"><div class="sb-stat-label">کل کتاب‌ها</div><div class="sb-stat-value">@_items.Count.ToString("N0")</div><div class="sb-stat-note">تمام رکوردهای ثبت‌شده</div></div>
+        <div class="sb-stat"><div class="sb-stat-label">فعال و قابل نمایش</div><div class="sb-stat-value">@_items.Count(x => x.IsActive).ToString("N0")</div><div class="sb-stat-note">وضعیت انتشار فعال</div></div>
+        <div class="sb-stat"><div class="sb-stat-label">بدون فایل PDF</div><div class="sb-stat-value">@_items.Count(x => x.FileContentId is null).ToString("N0")</div><div class="sb-stat-note">نیازمند اتصال فایل کتاب</div></div>
+        <div class="sb-stat"><div class="sb-stat-label">غیرفعال / آرشیو</div><div class="sb-stat-value">@_items.Count(x => !x.IsActive).ToString("N0")</div><div class="sb-stat-note">مخفی از فهرست عمومی</div></div>
+    </div>
 
     @if (_showForm)
     {
-        <div class="sb-form">
-            <div class="sb-grid">
-                <div class="sb-field full">
-                    <label>عنوان</label>
-                    <input @bind="_title" />
+        <div class="sb-editor">
+            <section class="sb-card sb-form sb-editor-main">
+                <div class="sb-form-head">
+                    <div><h2>@(_editId is null ? "فرم ثبت کتاب جدید" : "ویرایش کتاب")</h2><div class="sb-hint">اطلاعات پایه و فایل‌های کتاب را در همین فرم ثبت کنید.</div></div>
+                    <span class="sb-spacer"></span><span class="sb-chip">@(_editId is null ? "ایجاد" : $"شناسه #{_editId}")</span>
                 </div>
-                <div class="sb-field">
-                    <label>قیمت (تومان)</label>
-                    <input type="number" @bind="_price" min="0" step="1000" />
+                @if (_formError is not null) { <div class="sb-alert error" role="alert">@_formError</div> }
+                <div class="sb-form-grid">
+                    <div class="sb-field full">
+                        <label for="sb-title">عنوان کتاب <span style="color:var(--sb-red)">*</span></label>
+                        <input id="sb-title" @bind="_title" maxlength="300" placeholder="عنوان کتاب را وارد کنید" disabled="@_busy" />
+                        <div class="sb-hint">همان عنوانی که در کارت کتاب سایت نمایش داده می‌شود.</div>
+                    </div>
+                    <div class="sb-field"><label for="sb-price">قیمت (تومان)</label><input id="sb-price" type="number" min="0" step="1000" @bind="_price" disabled="@_busy" /><div class="sb-hint">در مدل فعلی قیمت اجباری و عددی است؛ مقدار صفر به‌عنوان قیمت صفر ذخیره می‌شود.</div></div>
+                    <div class="sb-field"><label for="sb-sort">ترتیب نمایش</label><input id="sb-sort" type="number" @bind="_sort" disabled="@_busy" /></div>
+                    <div class="sb-field full">
+                        <label>فایل کتاب (PDF)</label>
+                        <div class="sb-upload"><strong>بارگذاری فایل PDF</strong><small>فقط PDF · حداکثر ۲۰ مگابایت · عنوان کتاب باید قبل از بارگذاری وارد شود.</small>
+                            <InputFile OnChange="OnBookPdfSelected" accept=".pdf,application/pdf" disabled="@_busy" />
+                        </div>
+                        @if (_fileName is not null && _fileId is not null)
+                        {
+                            <div class="sb-file"><div class="sb-file-icon">📄</div><div class="sb-file-meta"><strong>@_fileName</strong><small>@FormatFileSize(_fileSize) · شناسه رسانه: @_fileId</small></div><span class="sb-chip ok">آماده</span><button class="sb-btn small danger" type="button" @onclick="ClearPdf" disabled="@_busy">قطع اتصال</button></div>
+                        }
+                        else if (_fileId is long selectedFileId)
+                        { <div class="sb-hint"><a href="/api/site/media/@selectedFileId" target="_blank" rel="noopener">مشاهده PDF انتخاب‌شده</a> · شناسه رسانه: @selectedFileId</div> }
+                        <div class="sb-hint">یا از مرکز رسانه یک فایل موجود انتخاب کنید:</div>
+                        <ContentAssetPicker Label="انتخاب PDF موجود" TypeFilter="ContentType.Document" FolderPathContains="_PageSiteImages" AllowedExtensions="PdfExtensions" Value="_fileId" ValueChanged="OnExistingPdfChanged" Disabled="_busy" />
+                    </div>
+                    <div class="sb-field full">
+                        <label>تصویر جلد کتاب</label>
+                        <div class="sb-upload"><strong>بارگذاری تصویر جلد</strong><small>JPG / JPEG / PNG / WebP · حداکثر ۸ مگابایت</small>
+                            <InputFile OnChange="OnCoverSelected" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" disabled="@_busy" />
+                        </div>
+                        @if (_imageId is long selectedImageId)
+                        {
+                            <div class="sb-file"><div class="sb-file-icon">🖼️</div><div class="sb-file-meta"><strong>@(_imageName ?? "تصویر جلد انتخاب‌شده")</strong><small>@(selectedImageId == _imageId ? $"شناسه رسانه: {selectedImageId}" : string.Empty)</small></div><span class="sb-chip ok">متصل</span><button class="sb-btn small danger" type="button" @onclick="ClearCover" disabled="@_busy">قطع اتصال</button></div>
+                            <img class="sb-thumb" style="width:76px;height:96px;margin-top:8px" src="/api/site/media/@selectedImageId" alt="پیش‌نمایش جلد" />
+                        }
+                        <div class="sb-hint">یا از مرکز رسانه تصویر جلد موجود را انتخاب کنید:</div>
+                        <ContentAssetPicker Label="انتخاب تصویر موجود" TypeFilter="ContentType.Image" FolderPathContains="_PageSiteImages" AllowedExtensions="ImageExtensions" Value="_imageId" ValueChanged="OnExistingCoverChanged" Disabled="_busy" />
+                    </div>
+                    <div class="sb-field full"><label class="sb-check"><input type="checkbox" @bind="_isActive" disabled="@_busy" /> فعال باشد و در سایت نمایش داده شود</label></div>
                 </div>
-                <div class="sb-field">
-                    <label>ترتیب</label>
-                    <input type="number" @bind="_sort" />
+                <div class="sb-form-actions">
+                    <button class="sb-btn primary" type="button" @onclick="SaveAsync" disabled="@_busy">@(_busy ? "در حال ذخیره…" : "ذخیره کتاب")</button>
+                    <button class="sb-btn" type="button" @onclick="CancelForm" disabled="@_busy">انصراف</button>
+                    @if (_busy) { <span class="sb-hint">لطفاً تا پایان عملیات صفحه را نبندید.</span> }
                 </div>
-                <div class="sb-field full">
-                    <label>تصویر کتاب</label>
-                    <InputFile OnChange="OnImageFile" accept="image/*" />
-                    @if (_imageId is long iid)
-                    {
-                        <div style="margin-top:8px"><img class="sb-thumb" src="/api/site/media/@iid" alt="" /></div>
-                    }
-                </div>
-            </div>
-            <div style="display:flex;gap:8px;margin-top:12px">
-                <button class="btn btn-primary" type="button" disabled="@_busy" @onclick="SaveAsync">ذخیره</button>
-                <button class="btn btn-ghost" type="button" @onclick="() => _showForm=false">لغو</button>
-            </div>
+            </section>
+            <aside class="sb-editor-side">
+                <section class="sb-card">
+                    <div class="sb-card-head"><h2>پیش‌نمایش کارت سایت</h2><span>همگام با فرم</span></div>
+                    <div class="sb-card-body sb-preview-live">
+                        @if (_imageId is long liveImageId) { <img src="/api/site/media/@liveImageId" alt="جلد کتاب" /> }
+                        else { <div class="sb-no-cover">▤</div> }
+                        <div><span class="sb-chip">کتاب آموزشی</span><div class="sb-preview-title">@(string.IsNullOrWhiteSpace(_title) ? "عنوان کتاب" : _title)</div><div class="sb-meta">ترتیب نمایش: @_sort</div></div>
+                        <div class="sb-preview-price">@_price.ToString("N0") <span class="sb-meta">تومان</span></div>
+                        @if (_isActive && _fileId is long liveFileId) { <a class="sb-btn primary small" href="/api/site/media/@liveFileId" target="_blank" rel="noopener">مشاهده / دریافت PDF</a> }
+                        else if (!_isActive) { <span class="sb-chip off">در سایت نمایش داده نمی‌شود</span> }
+                        else { <span class="sb-chip warn">فایل PDF متصل نیست</span> }
+                    </div>
+                </section>
+                <section class="sb-card"><div class="sb-card-head"><h2>قواعد و محدودیت‌ها</h2></div><div class="sb-card-body sb-rules">
+                    <div class="sb-rule"><span>عنوان خالی</span><b>ذخیره و بارگذاری مسدود</b></div>
+                    <div class="sb-rule"><span>PDF</span><b>حداکثر ۲۰ مگابایت</b></div>
+                    <div class="sb-rule"><span>تصویر جلد</span><b>حداکثر ۸ مگابایت</b></div>
+                    <div class="sb-rule"><span>IsActive = false</span><b>مخفی از سایت</b></div>
+                    <div class="sb-rule"><span>FileContentId خالی</span><b>بدون دکمه دریافت PDF</b></div>
+                </div></section>
+            </aside>
         </div>
     }
 
-    <div class="sb-card">
-        <table class="sb-table">
-            <thead>
-                <tr><th></th><th>عنوان</th><th>قیمت</th><th></th></tr>
-            </thead>
-            <tbody>
-                @if (_items.Count == 0)
+    <div class="sb-toolbar">
+        <div class="sb-segments" role="group" aria-label="فیلتر وضعیت کتاب‌ها">
+            <button class="@FilterClass(BookFilter.All)" @onclick="() => SetFilter(BookFilter.All)">همه (@_items.Count)</button>
+            <button class="@FilterClass(BookFilter.Active)" @onclick="() => SetFilter(BookFilter.Active)">فعال (@_items.Count(x => x.IsActive))</button>
+            <button class="@FilterClass(BookFilter.MissingFile)" @onclick="() => SetFilter(BookFilter.MissingFile)">بدون PDF (@_items.Count(x => x.FileContentId is null))</button>
+            <button class="@FilterClass(BookFilter.Archived)" @onclick="() => SetFilter(BookFilter.Archived)">آرشیو (@_items.Count(x => !x.IsActive))</button>
+        </div>
+        <input class="sb-search" placeholder="جست‌وجوی عنوان کتاب…" @bind="_query" @bind:event="oninput" @bind:after="ResetPage" aria-label="جست‌وجوی کتاب" />
+        <span class="sb-spacer"></span>
+        <button class="sb-btn" type="button" @onclick="ReloadAsync" disabled="@_loading">↻ بروزرسانی</button>
+    </div>
+
+    <div class="sb-note">نکته: کتاب فعال در فهرست عمومی سایت نمایش داده می‌شود. اگر فایل PDF به آن متصل نباشد، کارت کتاب همچنان می‌تواند نمایش داده شود اما لینک دریافت فایل نخواهد داشت. برای نمایش فایل، رسانه انتخاب‌شده نیز باید در مخزن فعال باشد.</div>
+
+    <section class="sb-card">
+        @if (_loading)
+        {
+            <LoadingState Skeleton="true" Rows="4" Title="در حال دریافت فهرست کتاب‌ها" />
+        }
+        else if (_loadError is not null)
+        {
+            <ErrorState Title="فهرست کتاب‌ها بارگذاری نشد" Message="@_loadError" OnRetry="ReloadAsync" />
+        }
+        else if (_filtered.Count == 0 && _items.Count > 0)
+        {
+            <NoResultsState Title="کتابی با این فیلتر پیدا نشد" Message="عبارت جست‌وجو یا فیلتر وضعیت را تغییر دهید." OnClear="ClearFilters" />
+        }
+        else if (_filtered.Count == 0)
+        {
+            <EmptyState Icon="book" Title="هنوز کتابی ثبت نشده است" Message="اولین کتاب را با جلد و فایل PDF اضافه کنید تا در سایت نمایش داده شود.">
+                <Action><button class="sb-btn primary" type="button" @onclick="StartCreate">＋ افزودن اولین کتاب</button></Action>
+            </EmptyState>
+        }
+        else
+        {
+            <div class="sb-table-wrap">
+                <table class="sb-table">
+                    <thead><tr><th style="width:68px">جلد</th><th>عنوان کتاب</th><th>قیمت</th><th>فایل PDF</th><th>وضعیت</th><th style="width:150px">عملیات</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in _pageItems)
+                    {
+                        <tr class="@((item.FileContentId is null) ? "incomplete" : null)">
+                            <td>
+                                @if (item.ImageUrl is not null) { <img class="sb-thumb" src="@item.ImageUrl" alt="جلد @item.Title" loading="lazy" /> }
+                                else { <div class="sb-thumb empty" aria-label="بدون جلد">▤</div> }
+                            </td>
+                            <td><div class="sb-book"><div><div class="sb-book-title">@item.Title</div><div class="sb-meta">شناسه: @item.Id · ترتیب: @item.SortOrder</div></div></div></td>
+                            <td><strong>@item.Price.ToString("N0")</strong> <span class="sb-meta">تومان</span></td>
+                            <td>@if (item.FileContentId is not null) { <a class="sb-chip ok" href="@item.FileUrl" target="_blank" rel="noopener">✓ فایل متصل</a> } else { <span class="sb-chip err">✕ فایل ندارد</span> }</td>
+                            <td>@if (item.IsActive) { <span class="sb-chip ok">فعال</span> } else { <span class="sb-chip off">آرشیو / غیرفعال</span> }</td>
+                            <td style="white-space:nowrap"><button class="sb-btn small" type="button" @onclick="() => StartEdit(item)">ویرایش</button> <button class="sb-btn small danger" type="button" @onclick="() => AskDelete(item)">حذف</button></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <footer class="sb-footer">
+                <span>@_filtered.Count.ToString("N0") نتیجه · نمایش @(_filtered.Count == 0 ? 0 : ((_page - 1) * PageSize) + 1) تا @Math.Min(_page * PageSize, _filtered.Count)</span>
+                <span class="sb-spacer"></span>
+                <button class="sb-page-btn" type="button" disabled="@(_page <= 1)" @onclick="PreviousPage">قبلی</button>
+                @for (var p = 1; p <= PageCount; p++)
                 {
-                    <tr><td colspan="4" style="padding:20px;text-align:center;color:var(--muted)">کتابی ثبت نشده.</td></tr>
+                    var pageNumber = p;
+                    <button class="sb-page-btn @(_page == pageNumber ? "current" : null)" type="button" @onclick="() => GoToPage(pageNumber)">@pageNumber</button>
+                }
+                <button class="sb-page-btn" type="button" disabled="@(_page >= PageCount)" @onclick="NextPage">بعدی</button>
+            </footer>
+        }
+    </section>
+
+    <div class="sb-lower">
+        <section class="sb-card">
+            <div class="sb-card-head"><h2>پیش‌نمایش سمت کاربر</h2><span>نمونه بر اساس اطلاعات انتخاب‌شده</span></div>
+            <div class="sb-card-body">
+                @if (_preview is null)
+                {
+                    <div class="sb-empty" style="padding:12px">برای مشاهده پیش‌نمایش، یک کتاب را ویرایش کنید.</div>
                 }
                 else
                 {
-                    @foreach (var it in _items)
-                    {
-                        <tr>
-                            <td>
-                                @if (it.ImageUrl is not null)
-                                {
-                                    <img class="sb-thumb" src="@it.ImageUrl" alt="" />
-                                }
-                            </td>
-                            <td><strong>@it.Title</strong></td>
-                            <td>@it.Price.ToString("N0") تومان</td>
-                            <td style="text-align:end;white-space:nowrap">
-                                <button class="btn btn-sm btn-ghost" type="button" @onclick="() => StartEdit(it)">ویرایش</button>
-                                <button class="btn btn-sm btn-outline" type="button" @onclick="() => DeleteAsync(it.Id)">حذف</button>
-                            </td>
-                        </tr>
-                    }
+                    <div class="sb-preview">
+                        @if (_preview.ImageUrl is not null) { <img class="sb-thumb" src="@_preview.ImageUrl" alt="جلد کتاب" /> }
+                        else { <div class="sb-thumb empty">▤</div> }
+                        <div style="min-width:0;flex:1">
+                            <span class="sb-chip">کتاب آموزشی</span>
+                            <div class="sb-preview-title">@_preview.Title</div>
+                            <div class="sb-meta">شناسه کتاب: @_preview.Id</div>
+                            <div class="sb-preview-price">@_preview.Price.ToString("N0") <span class="sb-meta">تومان</span></div>
+                            @if (_preview.IsActive && _preview.FileUrl is not null) { <a class="sb-btn primary small" style="margin-top:8px" href="@_preview.FileUrl" target="_blank" rel="noopener">مشاهده / دریافت PDF</a> }
+                            else if (!_preview.IsActive) { <span class="sb-chip off" style="margin-top:8px">در سایت نمایش داده نمی‌شود</span> }
+                            else { <span class="sb-chip warn" style="margin-top:8px">فایل PDF متصل نیست</span> }
+                        </div>
+                    </div>
                 }
-            </tbody>
-        </table>
+            </div>
+        </section>
+        <section class="sb-card">
+            <div class="sb-card-head"><h2>قواعد نمایش در سایت</h2></div>
+            <div class="sb-card-body sb-rules">
+                <div class="sb-rule"><span>IsActive = true</span><b>در فهرست عمومی قرار می‌گیرد</b></div>
+                <div class="sb-rule"><span>IsActive = false</span><b>از فهرست عمومی مخفی است</b></div>
+                <div class="sb-rule"><span>ImageContentId خالی</span><b>کاور پیش‌فرض بخش</b></div>
+                <div class="sb-rule"><span>FileContentId خالی</span><b>بدون لینک PDF</b></div>
+                <div class="sb-rule"><span>رسانه غیرفعال</span><b>ممکن است endpoint رسانه پاسخ ۴۰۴ بدهد</b></div>
+            </div>
+        </section>
     </div>
 </section>
 
-@code {
-    private List<SiteBookDto> _items = new();
-    private bool _showForm, _busy;
-    private long? _editId, _imageId;
-    private string _title = "";
-    private decimal _price;
-    private int _sort;
-    private string? _error, _ok;
+<ConfirmDialog IsOpen="_showDeleteConfirm" Title="حذف کتاب" Message="آیا از حذف دائمی این کتاب مطمئن هستید؟ این عملیات قابل بازگشت نیست." ConfirmText="حذف دائمی" Busy="_busy" OnClose="CancelDelete" OnConfirm="DeleteConfirmedAsync" />
 
-    protected override async Task OnInitializedAsync() => await Reload();
-    private async Task Reload() => _items = (await Books.GetAllAdminAsync()).ToList();
+@code {
+    private const int PageSize = 8;
+    private static readonly string[] PdfExtensions = [".pdf"];
+    private static readonly string[] ImageExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+    private enum BookFilter { All, Active, MissingFile, Archived }
+
+    private List<SiteBookDto> _items = [];
+    private IReadOnlyList<SiteBookDto> _filtered = [];
+    private IReadOnlyList<SiteBookDto> _pageItems = [];
+    private bool _showForm, _busy, _loading, _isActive = true, _showDeleteConfirm;
+    private long? _editId, _imageId, _fileId, _deleteId;
+    private string _title = string.Empty, _query = string.Empty;
+    private string? _formError, _fileName, _imageName;
+    private long _fileSize;
+    private decimal _price;
+    private int _sort, _page = 1;
+    private string? _error, _success, _loadError;
+    private BookFilter _filter = BookFilter.All;
+    private SiteBookDto? _preview;
+
+    private int PageCount => Math.Max(1, (int)Math.Ceiling(_filtered.Count / (double)PageSize));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Current.EnsureInitializedAsync();
+        await ReloadAsync();
+    }
+
+    private async Task ReloadAsync()
+    {
+        _loading = true;
+        _loadError = null;
+        try
+        {
+            _items = (await Books.GetAllAdminAsync()).ToList();
+            ApplyFilters();
+        }
+        catch
+        {
+            _loadError = "بارگذاری فهرست کتاب‌ها ناموفق بود. اطلاعات ذخیره‌شده دست‌نخورده باقی مانده‌اند.";
+        }
+        finally { _loading = false; }
+    }
+
+    private void ClearFilters()
+    {
+        _query = string.Empty;
+        _filter = BookFilter.All;
+        _page = 1;
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        IEnumerable<SiteBookDto> query = _items;
+        query = _filter switch
+        {
+            BookFilter.Active => query.Where(x => x.IsActive),
+            BookFilter.MissingFile => query.Where(x => x.FileContentId is null),
+            BookFilter.Archived => query.Where(x => !x.IsActive),
+            _ => query
+        };
+        if (!string.IsNullOrWhiteSpace(_query))
+            query = query.Where(x => x.Title.Contains(_query.Trim(), StringComparison.CurrentCultureIgnoreCase));
+        _filtered = query.OrderBy(x => x.SortOrder).ThenByDescending(x => x.Id).ToList();
+        _page = Math.Clamp(_page, 1, PageCount);
+        UpdatePageItems();
+    }
+
+    private void UpdatePageItems() => _pageItems = _filtered.Skip((_page - 1) * PageSize).Take(PageSize).ToList();
+    private void ResetPage() { _page = 1; ApplyFilters(); }
+    private void SetFilter(BookFilter filter) { _filter = filter; _page = 1; ApplyFilters(); }
+    private string FilterClass(BookFilter filter) => _filter == filter ? "active" : string.Empty;
+    private void GoToPage(int page) { _page = Math.Clamp(page, 1, PageCount); UpdatePageItems(); }
+    private void PreviousPage() => GoToPage(_page - 1);
+    private void NextPage() => GoToPage(_page + 1);
 
     private void StartCreate()
     {
-        _editId = null; _title = ""; _price = 0; _sort = _items.Count; _imageId = null;
-        _showForm = true; _error = _ok = null;
+        _editId = null; _title = string.Empty; _price = 0; _sort = _items.Count;
+        _imageId = null; _fileId = null; _isActive = true; _preview = null;
+        _fileName = _imageName = null; _fileSize = 0; _formError = null;
+        _showForm = true; _error = _success = null;
     }
 
-    private void StartEdit(SiteBookDto it)
+    private async Task StartEdit(SiteBookDto item)
     {
-        _editId = it.Id; _title = it.Title; _price = it.Price; _sort = it.SortOrder; _imageId = it.ImageContentId;
-        _showForm = true; _error = _ok = null;
+        _editId = item.Id; _title = item.Title; _price = item.Price; _sort = item.SortOrder;
+        _imageId = item.ImageContentId; _fileId = item.FileContentId; _isActive = item.IsActive;
+        _fileName = _imageName = null; _fileSize = 0; _formError = null;
+        try
+        {
+            var assets = await AssetCatalog.GetAsync();
+            var file = assets.FirstOrDefault(x => x.Id == _fileId);
+            var image = assets.FirstOrDefault(x => x.Id == _imageId);
+            _fileName = file?.OriginalFileName;
+            _fileSize = file?.FileSize ?? 0;
+            _imageName = image?.OriginalFileName;
+        }
+        catch { /* Metadata is optional; existing content IDs remain editable. */ }
+        _preview = item; _showForm = true; _error = _success = null;
     }
+
+    private void CancelForm() { _showForm = false; _error = _formError = null; }
 
     private async Task SaveAsync()
     {
-        _error = _ok = null;
-        if (string.IsNullOrWhiteSpace(_title)) { _error = "عنوان لازم است."; return; }
+        _error = _success = _formError = null;
+        if (string.IsNullOrWhiteSpace(_title)) { _formError = "عنوان کتاب الزامی است."; return; }
+        if (_price < 0) { _formError = "قیمت نمی‌تواند منفی باشد."; return; }
         _busy = true;
         try
         {
-            await Books.UpsertAsync(_editId, _title.Trim(), _price, _imageId, _sort, true);
-            _ok = "ذخیره شد.";
+            await Books.UpsertAsync(_editId, _title.Trim(), _price, _imageId, _fileId, _sort, _isActive);
+            _success = _editId is null ? "کتاب جدید با موفقیت ثبت شد." : "تغییرات کتاب ذخیره شد.";
             _showForm = false;
-            await Reload();
+            await ReloadAsync();
         }
-        catch (Exception ex) { _error = ex.Message; }
+        catch (Exception ex) { _error = "ذخیره کتاب انجام نشد: " + ex.Message; }
         finally { _busy = false; }
     }
 
-    private async Task DeleteAsync(long id)
-    {
-        try { await Books.HardDeleteAsync(id); await Reload(); }
-        catch (Exception ex) { _error = ex.Message; }
-    }
+    private Task OnBookPdfSelected(InputFileChangeEventArgs e) => UploadBookAssetAsync(e, isCover: false);
+    private Task OnCoverSelected(InputFileChangeEventArgs e) => UploadBookAssetAsync(e, isCover: true);
 
-    private async Task OnImageFile(InputFileChangeEventArgs e)
+    private async Task UploadBookAssetAsync(InputFileChangeEventArgs e, bool isCover)
     {
-        _error = _ok = null;
+        _formError = _error = null;
+        if (string.IsNullOrWhiteSpace(_title))
+        {
+            _formError = "ابتدا عنوان کتاب را وارد کنید؛ سپس فایل را بارگذاری کنید.";
+            return;
+        }
+
         var file = e.File;
-        if (file is null) return;
-        if (file.Size > 8 * 1024 * 1024) { _error = "حجم تصویر زیاد است."; return; }
+        if (file is null || file.Size <= 0)
+        {
+            _formError = "فایل انتخاب‌شده خالی یا نامعتبر است.";
+            return;
+        }
+
+        var extension = Path.GetExtension(file.Name).ToLowerInvariant();
+        var maxBytes = isCover ? 8L * 1024 * 1024 : 20L * 1024 * 1024;
+        var allowed = isCover
+            ? new[] { ".jpg", ".jpeg", ".png", ".webp" }
+            : new[] { ".pdf" };
+        if (!allowed.Contains(extension))
+        {
+            _formError = isCover ? "فرمت جلد باید JPG، PNG یا WebP باشد." : "فایل کتاب باید PDF باشد.";
+            return;
+        }
+        if (file.Size > maxBytes)
+        {
+            _formError = isCover ? "حداکثر حجم تصویر جلد ۸ مگابایت است." : "حداکثر حجم فایل کتاب ۲۰ مگابایت است.";
+            return;
+        }
+
         _busy = true;
         try
         {
-            if (_editId is null)
+            var folder = await Folders.GetSystemFolderAsync(SystemFolders.PageSiteImages);
+            await using var source = file.OpenReadStream(maxAllowedSize: maxBytes);
+            await using var buffer = new MemoryStream((int)file.Size);
+            await source.CopyToAsync(buffer);
+            var bytes = buffer.ToArray();
+            if (!isCover && (bytes.Length < 5 || !bytes.AsSpan(0, 5).SequenceEqual("%PDF-"u8)))
+                throw new InvalidOperationException("محتوای فایل انتخاب‌شده PDF معتبر نیست.");
+            if (isCover && !IsValidImage(bytes, extension))
+                throw new InvalidOperationException("محتوای فایل با فرمت تصویر انتخاب‌شده مطابقت ندارد.");
+
+            await using var uploadStream = new MemoryStream(bytes, writable: false);
+            var type = isCover ? ContentType.Image : ContentType.Document;
+            var request = new UploadContentRequest(folder.Id, file.Name, file.Name, uploadStream, bytes.LongLength, new[] { LanguageLevel.A1 }, type);
+            var uploaded = await Contents.UploadAsync(request, Current.UserId, isAdmin: true);
+            if (isCover)
             {
-                if (string.IsNullOrWhiteSpace(_title)) _title = "کتاب جدید";
-                var created = await Books.UpsertAsync(null, _title.Trim(), _price, null, _sort, true);
-                _editId = created.Id;
+                _imageId = uploaded.Id;
+                _imageName = file.Name;
             }
-            var folder = await Folders.GetSystemFolderAsync(Lesson.Domain.SystemFolders.PageSiteImages);
-            await using var stream = file.OpenReadStream(maxAllowedSize: 8 * 1024 * 1024);
-            await using var ms = new MemoryStream();
-            await stream.CopyToAsync(ms);
-            ms.Position = 0;
-            var req = new UploadContentRequest(folder.Id, file.Name, file.Name, ms, ms.Length, new[] { LanguageLevel.A1 }, ContentType.Image);
-            var entity = await Contents.UploadAsync(req, Current.UserId, isAdmin: true);
-            _imageId = entity.Id;
-            await Books.UpsertAsync(_editId, _title.Trim(), _price, _imageId, _sort, true);
-            _ok = "تصویر ذخیره شد.";
-            await Reload();
+            else
+            {
+                _fileId = uploaded.Id;
+                _fileName = file.Name;
+                _fileSize = uploaded.FileSize;
+            }
+            await AssetCatalog.RefreshAsync();
         }
-        catch (Exception ex) { _error = "آپلود: " + ex.Message; }
+        catch (Exception ex)
+        {
+            _formError = "بارگذاری فایل انجام نشد: " + ex.Message;
+        }
         finally { _busy = false; }
     }
+
+    private Task OnExistingPdfChanged(long? value)
+    {
+        _fileId = value;
+        _fileName = null;
+        _fileSize = 0;
+        return Task.CompletedTask;
+    }
+
+    private Task OnExistingCoverChanged(long? value)
+    {
+        _imageId = value;
+        _imageName = null;
+        return Task.CompletedTask;
+    }
+
+    private static bool IsValidImage(byte[] bytes, string extension)
+    {
+        return extension switch
+        {
+            ".jpg" or ".jpeg" => bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF,
+            ".png" => bytes.Length >= 8 && bytes.AsSpan(0, 8).SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }),
+            ".webp" => bytes.Length >= 12 && bytes.AsSpan(0, 4).SequenceEqual("RIFF"u8) && bytes.AsSpan(8, 4).SequenceEqual("WEBP"u8),
+            _ => false
+        };
+    }
+
+    private void ClearPdf() { _fileId = null; _fileName = null; _fileSize = 0; }
+    private void ClearCover() { _imageId = null; _imageName = null; }
+    private static string FormatFileSize(long bytes) => bytes >= 1024 * 1024 ? $"{bytes / 1024d / 1024d:0.0} MB" : $"{bytes / 1024d:0} KB";
+
+    private void AskDelete(SiteBookDto item) { _deleteId = item.Id; _showDeleteConfirm = true; _error = null; }
+    private void CancelDelete() { _showDeleteConfirm = false; _deleteId = null; }
+
+    private async Task DeleteConfirmedAsync()
+    {
+        if (_deleteId is not long id) return;
+        _busy = true;
+        try
+        {
+            await Books.HardDeleteAsync(id);
+            _success = "کتاب حذف شد.";
+            if (_preview?.Id == id) _preview = null;
+            _showDeleteConfirm = false; _deleteId = null;
+            await ReloadAsync();
+        }
+        catch (Exception ex) { _error = "حذف کتاب انجام نشد: " + ex.Message; }
+        finally { _busy = false; }
+    }
+
+    private async Task ExportCsv()
+    {
+        var rows = new List<string> { "Id,Title,Price,ImageContentId,FileContentId,SortOrder,IsActive" };
+        rows.AddRange(_filtered.Select(x => string.Join(',',
+            x.Id.ToString(), Csv(x.Title), x.Price.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            x.ImageContentId?.ToString() ?? string.Empty, x.FileContentId?.ToString() ?? string.Empty,
+            x.SortOrder.ToString(), x.IsActive ? "true" : "false")));
+        try { await JS.InvokeVoidAsync("asatirDownloads.csv", "site-books.csv", string.Join("\r\n", rows)); }
+        catch (Exception ex) { _error = "ساخت فایل خروجی ناموفق بود: " + ex.Message; }
+    }
+
+    private static string Csv(string value) => "\"" + value.Replace("\"", "\"\"") + "\"";
 }

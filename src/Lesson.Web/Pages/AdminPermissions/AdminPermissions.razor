@@ -4,7 +4,8 @@
 @inject IPermissionService Permissions
 @inject IFolderService Folders
 
-<PageHeader Eyebrow="Admin" Title="مدیریت دسترسی" Subtitle="اعطاء دسترسی پوشه‌ای به کاربران" />
+<section class="page workspace-page admin-page admin-permissions-page">
+<PageHeader Eyebrow="ADMINISTRATION" Title="مدیریت دسترسی" Subtitle="اعطاء دسترسی پوشه‌ای به کاربران" />
 
     <section class="panel pad">
     <div class="grid two-col">
@@ -60,6 +61,8 @@
         Busy="_isBusy"
         OnClose="CancelRevoke"
         OnConfirm="RevokeSelectedAsync" />
+</section>
+
 </section>
 
 @code {

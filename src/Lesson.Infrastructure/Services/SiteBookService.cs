@@ -23,7 +23,7 @@ public sealed class SiteBookService(IApplicationDbContext db) : ISiteBookService
         return list.Select(Map).ToList();
     }
 
-    public async Task<SiteBookDto> UpsertAsync(long? id, string title, decimal price, long? imageContentId, int sortOrder, bool isActive, CancellationToken ct = default)
+    public async Task<SiteBookDto> UpsertAsync(long? id, string title, decimal price, long? imageContentId, long? fileContentId, int sortOrder, bool isActive, CancellationToken ct = default)
     {
         SiteBook entity;
         if (id is { } eid)
@@ -40,6 +40,7 @@ public sealed class SiteBookService(IApplicationDbContext db) : ISiteBookService
         entity.Title = title.Trim();
         entity.Price = price < 0 ? 0 : price;
         entity.ImageContentId = imageContentId is 0 or null ? null : imageContentId;
+        entity.FileContentId = fileContentId is 0 or null ? null : fileContentId;
         entity.SortOrder = sortOrder;
         entity.IsActive = isActive;
         entity.UpdatedAt = DateTimeOffset.UtcNow;
@@ -58,5 +59,7 @@ public sealed class SiteBookService(IApplicationDbContext db) : ISiteBookService
     private static SiteBookDto Map(SiteBook x) => new(
         x.Id, x.Title, x.Price, x.ImageContentId,
         x.ImageContentId is { } iid ? $"/api/site/media/{iid}" : null,
+        x.FileContentId,
+        x.FileContentId is { } fid ? $"/api/site/media/{fid}" : null,
         x.SortOrder, x.IsActive);
 }

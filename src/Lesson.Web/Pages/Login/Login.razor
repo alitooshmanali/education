@@ -1,10 +1,19 @@
 @page "/login"
 @layout AuthLayout
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 @code {
     private string? _error;
     private bool _showPassword;
+    private bool _loginScriptInitialized;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _loginScriptInitialized) return;
+        _loginScriptInitialized = true;
+        await JS.InvokeVoidAsync("asatirLogin.initialize");
+    }
 
     protected override void OnInitialized()
     {
@@ -37,7 +46,7 @@
         </section>
 
         <section class="auth-card-wrap">
-            <form class="auth-card" method="post" action="/api/auth/login">
+            <form class="auth-card" method="post" action="/api/auth/login" data-asatir-login novalidate>
                 <h2>ورود به حساب</h2>
                 <p class="sub">نام کاربری و رمز عبور خود را وارد کنید.</p>
 
@@ -62,7 +71,8 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-primary btn-compact" type="submit"><AppIcon Name="shield" /> ورود</button>
+                    <button class="btn btn-primary btn-compact auth-submit" type="submit"><AppIcon Name="shield" /> <span class="auth-submit__label">ورود</span><span class="auth-submit__spinner" aria-hidden="true"></span></button>
+                    <p class="auth-submit__status" data-login-status role="status" aria-live="polite"></p>
                     <p class="sub" style="margin-top:1rem;text-align:center">
                         <a href="/site/index.html">بازگشت به وب‌سایت اساطیر آینده</a>
                     </p>
