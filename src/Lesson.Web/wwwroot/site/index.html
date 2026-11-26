@@ -19,14 +19,8 @@
     </span>
   </a>
   <div id="app"></div>
-  <div class="site-player" id="site-player">
-    <div class="site-player__meta">
-      <div class="site-player__title" id="sp-title">در حال پخش</div>
-      <div class="site-player__sub">پادکست · فقط پخش</div>
-    </div>
-    <audio id="audio-el" controls controlsList="nodownload noplaybackrate" oncontextmenu="return false"></audio>
-    <button type="button" class="site-player__close" id="sp-close" aria-label="بستن">×</button>
-  </div>
+  <!-- موتور صوتی مشترک؛ کنترل‌ها داخل قاب دایره‌ای محتوا نمایش داده می‌شوند. -->
+  <audio id="audio-el" preload="metadata" controlsList="nodownload noplaybackrate" oncontextmenu="return false" hidden></audio>
   <footer class="footer">
     <div class="footer__inner">
       <div class="footer__brand">
@@ -69,14 +63,10 @@
     </div>
   </div>
 
-  <!-- voice transcript drawer -->
-  <div id="voice-drawer-backdrop" class="voice-drawer-backdrop" hidden></div>
+  <!-- پنل متن صوتی؛ غیرمودال و بدون پوشاندن تعامل صفحه -->
   <aside id="voice-drawer" class="voice-drawer" aria-hidden="true" hidden>
     <div class="voice-drawer__head">
-      <div>
-        <p class="voice-drawer__eyebrow">متن / متن آهنگ</p>
-        <h3 id="voice-drawer-title" class="voice-drawer__title">—</h3>
-      </div>
+      <div><p class="voice-drawer__eyebrow">متن / متن آهنگ</p><h3 id="voice-drawer-title" class="voice-drawer__title">—</h3></div>
       <button type="button" class="voice-drawer__close" id="voice-drawer-close" aria-label="بستن">×</button>
     </div>
     <div class="voice-drawer__tabs">
@@ -88,10 +78,9 @@
         <img class="site-loader__logo site-loader__logo--sm" src="/site/img/logo.png" onerror="this.onerror=null;this.src='/site/img/logo.svg'" alt="">
         <span>در حال آماده‌سازی متن…</span>
       </div>
-      <div id="voice-drawer-content" class="voice-drawer__content" dir="auto"></div>
+      <div id="voice-drawer-content" class="voice-drawer__content" dir="auto" aria-live="polite"></div>
     </div>
   </aside>
-
 
   <button type="button" class="place-sticky" id="place-sticky" onclick="openPlacementModal()">تعیین سطح</button>
   <div class="place-modal" id="place-modal" role="dialog" aria-modal="true" aria-labelledby="place-modal-title" aria-describedby="place-modal-description">
@@ -383,6 +372,8 @@ async function fetchLibrary(category){
       // فقط اگر بعد از فیلتر چیزی ماند؛ وگرنه همان items (شاید category در JSON نباشد)
       if (filtered.length) items = filtered;
     }
+    // Cache complete DTOs (including bodyText) for transcript drawer.
+    items.forEach(it => { if (it && it.id != null) _libraryItemCache.set(String(it.id), it); });
     return items;
   }catch(e){
     console.warn('fetchLibrary failed', e);
@@ -390,8 +381,6 @@ async function fetchLibrary(category){
   }
 }
 
-const sitePlayer = document.getElementById('site-player');
-const spTitle = document.getElementById('sp-title');
 const CIRC = 2 * Math.PI * 46; // r=46
 
 function fmtTime(sec){
@@ -412,20 +401,21 @@ function setRingProgress(wrap, ratio){
 }
 
 function clearAllPlaying(){
-  document.querySelectorAll('.circle-wrap.is-playing, .circle.is-playing').forEach(el=>{
-    el.classList.remove('is-playing');
+  document.querySelectorAll('.circle-wrap.is-playing, .circle.is-playing, .circle-wrap.has-progress').forEach(el=>{
+    el.classList.remove('is-playing','has-progress');
+    setRingProgress(el, 0);
+    const timeEl = el.querySelector('[data-time]');
+    if(timeEl) timeEl.textContent = '۰:۰۰ / --:--';
   });
 }
-
-document.getElementById('sp-close')?.addEventListener('click', ()=>{
-  stopInlinePlayer();
-});
 
 let _activeWrap = null;
 
 
 /* —— Logo loader + Voice/Music transcript drawer —— */
 const _transcriptCache = new Map();
+// DTO cache: collection API already returns bodyText/lyrics.
+const _libraryItemCache = new Map();
 let _drawerVoiceKey = null;
 let _drawerTab = 'orig';
 
@@ -438,19 +428,15 @@ window.showSiteLoader = function(show, text){
   el.hidden = !show;
 };
 
+let _drawerRequestId = 0;
+
 function openVoiceDrawerShell(title){
   const drawer = document.getElementById('voice-drawer');
-  const bd = document.getElementById('voice-drawer-backdrop');
   const titleEl = document.getElementById('voice-drawer-title');
   if(titleEl) titleEl.textContent = title || 'متن';
-  if(bd){
-    bd.hidden = false;
-    requestAnimationFrame(()=> bd.classList.add('is-open'));
-  }
   if(drawer){
     drawer.hidden = false;
     drawer.setAttribute('aria-hidden','false');
-    // force reflow then animate in
     void drawer.offsetWidth;
     requestAnimationFrame(()=> drawer.classList.add('is-open'));
   }
@@ -458,15 +444,11 @@ function openVoiceDrawerShell(title){
 
 function closeVoiceDrawer(){
   const drawer = document.getElementById('voice-drawer');
-  const bd = document.getElementById('voice-drawer-backdrop');
+  ++_drawerRequestId;
   if(drawer){
     drawer.classList.remove('is-open');
     drawer.setAttribute('aria-hidden','true');
     setTimeout(()=>{ if(!drawer.classList.contains('is-open')) drawer.hidden = true; }, 420);
-  }
-  if(bd){
-    bd.classList.remove('is-open');
-    setTimeout(()=>{ bd.hidden = true; }, 350);
   }
 }
 
@@ -475,6 +457,45 @@ function setDrawerLoading(on){
   const ct = document.getElementById('voice-drawer-content');
   if(ld) ld.hidden = !on;
   if(ct && on){ ct.textContent = ''; ct.classList.remove('is-empty'); }
+}
+
+function renderTimedTranscript(text, segments){
+  const ct = document.getElementById('voice-drawer-content');
+  if(!ct) return;
+  ct.replaceChildren();
+  if(Array.isArray(segments) && segments.length){
+    segments.forEach((segment, index)=>{
+      const start = Number(segment.start ?? segment.startTime ?? 0);
+      const end = Number(segment.end ?? segment.endTime ?? start);
+      const value = String(segment.text ?? segment.word ?? '').trim();
+      if(!value) return;
+      const span = document.createElement('span');
+      span.className = 'voice-transcript__segment';
+      span.textContent = value + (index < segments.length - 1 ? ' ' : '');
+      span.dataset.start = String(start);
+      span.dataset.end = String(end);
+      ct.appendChild(span);
+    });
+    ct.dataset.timing = 'exact';
+    return;
+  }
+  // برای متن‌های بدون timestamp، هایلایت جمله‌ای تخمینی بر اساس طول جمله.
+  const lines = String(text || '').split(/\r?\n|(?<=[.!?؟])\s+/u).map(x=>x.trim()).filter(Boolean);
+  if(!lines.length){
+    ct.classList.add('is-empty');
+    ct.textContent = 'متنی برای این مورد ثبت نشده است.';
+    return;
+  }
+  ct.classList.remove('is-empty');
+  lines.forEach((line, index)=>{
+    const span = document.createElement('span');
+    span.className = 'voice-transcript__line';
+    span.textContent = line;
+    span.dataset.weight = String(Math.max(1, line.length));
+    ct.appendChild(span);
+    if(index < lines.length - 1) ct.appendChild(document.createElement('br'));
+  });
+  ct.dataset.timing = 'estimated';
 }
 
 function paintDrawerContent(){
@@ -489,7 +510,40 @@ function paintDrawerContent(){
     return;
   }
   ct.classList.remove('is-empty');
-  ct.textContent = text;
+  renderTimedTranscript(text, _drawerTab === 'fa' ? cached.faSegments : cached.segments);
+  syncTranscriptHighlight();
+}
+
+function syncTranscriptHighlight(){
+  const ct = document.getElementById('voice-drawer-content');
+  if(!ct || !_drawerVoiceKey) return;
+  const spans = [...ct.querySelectorAll('.voice-transcript__segment, .voice-transcript__line')];
+  if(!spans.length) return;
+  const current = Number(audioEl.currentTime || 0);
+  let active = -1;
+  if(ct.dataset.timing === 'exact'){
+    active = spans.findIndex(el => current >= Number(el.dataset.start) && current <= Number(el.dataset.end));
+    if(active < 0 && current < Number(spans[0].dataset.start)) active = 0;
+  }else{
+    const duration = Number(audioEl.duration);
+    if(duration > 0){
+      const total = spans.reduce((sum, el)=>sum + Number(el.dataset.weight || 1), 0);
+      const target = (current / duration) * total;
+      let cumulative = 0;
+      active = spans.findIndex(el=>{ cumulative += Number(el.dataset.weight || 1); return target <= cumulative; });
+      if(active < 0 && current < duration) active = spans.length - 1;
+    }
+  }
+  spans.forEach((el, index)=>el.classList.toggle('is-active', index === active));
+  if(active >= 0){
+    const target = spans[active];
+    const body = ct.closest('.voice-drawer__body');
+    if(body){
+      const top = target.offsetTop - ct.offsetTop;
+      if(top < body.scrollTop || top + target.offsetHeight > body.scrollTop + body.clientHeight)
+        body.scrollTo({top:Math.max(0, top - body.clientHeight * .35), behavior:'smooth'});
+    }
+  }
 }
 
 async function translateToFa(text){
@@ -505,60 +559,71 @@ async function translateToFa(text){
   }catch(_){ return ''; }
 }
 
-async function ensureTranscript(key, { id, title, audioUrl }){
+async function ensureTranscript(key, { id, title, audioUrl, bodyText }){
   if(_transcriptCache.has(key)) return _transcriptCache.get(key);
-  setDrawerLoading(true);
-  let original = '';
-  if(id){
-    try{
-      const r = await fetch('/api/site/library/' + id, { cache:'no-store' });
-      if(r.ok){
-        const it = await r.json();
-        original = (it.bodyText || it.BodyText || it.summary || it.Summary || '').trim();
-      }
-    }catch(_){}
+  let item = id != null ? _libraryItemCache.get(String(id)) : null;
+  // The card already carries BodyText from the category API response.
+  // Prefer it so drawer opening never depends on a detail endpoint.
+  let original = String(bodyText || item?.bodyText || item?.BodyText || item?.lyrics || item?.Lyrics || item?.transcript || item?.Transcript || item?.content || item?.Content || item?.summary || item?.Summary || '').trim();
+  let segments = [];
+  // Use the collection DTO first; it already contains bodyText.
+  if(item){
+    if(!original) original = String(item.bodyText ?? item.BodyText ?? item.lyrics ?? item.Lyrics ?? item.transcript ?? item.Transcript ?? item.content ?? item.Content ?? item.summary ?? item.Summary ?? '').trim();
+    segments = item.transcriptSegments || item.TranscriptSegments || item.segments || item.Segments || item.words || item.Words || [];
   }
-  if(!original && audioUrl){
+  // Fallback for direct detail-page playback.
+  if(!original && !item && id){
     try{
-      const r = await fetch('/api/site/transcribe', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ audioUrl, contentId: id || null })
-      });
+      const r = await fetch('/api/site/library/' + encodeURIComponent(id), { cache:'no-store' });
       if(r.ok){
-        const data = await r.json();
-        original = (data && data.text) ? String(data.text).trim() : '';
-      }
-    }catch(_){}
+        item = await r.json();
+        if(item?.id != null) _libraryItemCache.set(String(item.id), item);
+        original = String(item?.bodyText ?? item?.BodyText ?? item?.lyrics ?? item?.Lyrics ?? item?.transcript ?? item?.Transcript ?? item?.content ?? item?.Content ?? item?.summary ?? item?.Summary ?? '').trim();
+        segments = item?.transcriptSegments || item?.TranscriptSegments || item?.segments || item?.Segments || item?.words || item?.Words || [];
+      }else console.warn('[voice-drawer] Detail endpoint returned', r.status, 'for item', id);
+    }catch(error){ console.warn('[voice-drawer] Detail request failed:', error); }
   }
-  let fa = '';
-  if(original) fa = await translateToFa(original);
-  const entry = { original, fa, title: title || '' };
-  _transcriptCache.set(key, entry);
-  setDrawerLoading(false);
+  // Do not call placeholder transcription when a library record exists but BodyText is empty.
+  if(!original && !item && audioUrl){
+    try{
+      const r = await fetch('/api/site/transcribe', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({audioUrl,contentId:id||null}) });
+      if(r.ok){ const data=await r.json(); original=data?.text?String(data.text).trim():''; segments=data?.segments||data?.words||[]; }
+    }catch(error){ console.warn('[voice-drawer] Transcription request failed:', error); }
+  }
+  const entry={original,fa:'',title:title||item?.title||'',segments,faSegments:[]};
+  _transcriptCache.set(key,entry);
   return entry;
 }
 
-async function openVoiceTranscript({ id, title, audioUrl }){
+async function openVoiceTranscript({ id, title, audioUrl, bodyText }){
   const key = id ? ('id:' + id) : ('url:' + (audioUrl || ''));
-  if(_drawerVoiceKey && _drawerVoiceKey !== key){
-    const ct = document.getElementById('voice-drawer-content');
-    if(ct){ ct.textContent = ''; ct.classList.remove('is-empty'); }
+  const requestId = ++_drawerRequestId;
+  const ct = document.getElementById('voice-drawer-content');
+  if(ct) ct.textContent = '';
+  openVoiceDrawerShell(title);
+  setDrawerLoading(true);
+  const entry = await ensureTranscript(key, { id, title, audioUrl, bodyText });
+  if(requestId !== _drawerRequestId) return false;
+  if(!entry || !String(entry.original || '').trim()){
+    setDrawerLoading(false);
+    const empty = document.getElementById('voice-drawer-content');
+    if(empty){ empty.classList.add('is-empty'); empty.textContent = 'برای این محتوا متنی ثبت نشده است.'; }
+    console.info('[voice-drawer] No transcript/lyrics found for selected item.', { id, title });
+    return false;
   }
   _drawerVoiceKey = key;
   _drawerTab = 'orig';
-  document.querySelectorAll('.voice-drawer__tab').forEach(t=>{
-    t.classList.toggle('is-on', t.getAttribute('data-tab') === 'orig');
-  });
+  document.querySelectorAll('.voice-drawer__tab').forEach(t=>t.classList.toggle('is-on', t.getAttribute('data-tab') === 'orig'));
   openVoiceDrawerShell(title);
-  await ensureTranscript(key, { id, title, audioUrl });
-  if(_drawerVoiceKey === key) paintDrawerContent();
+  setDrawerLoading(false);
+  paintDrawerContent();
+  return true;
 }
 
 function wireVoiceDrawerOnce(){
   if(window.__voiceDrawerWired) return;
   window.__voiceDrawerWired = true;
   document.getElementById('voice-drawer-close')?.addEventListener('click', closeVoiceDrawer);
-  document.getElementById('voice-drawer-backdrop')?.addEventListener('click', closeVoiceDrawer);
   document.querySelectorAll('.voice-drawer__tab').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
       _drawerTab = btn.getAttribute('data-tab') || 'orig';
@@ -581,45 +646,45 @@ wireVoiceDrawerOnce();
 
 function playAudio(url, title, wrapEl, itemId){
   if(!url) return;
-  audioEl.setAttribute('controlsList','nodownload noplaybackrate');
-  // same track resume vs new
-  if(audioEl.src && !audioEl.src.endsWith(url) && audioEl.getAttribute('src') !== url){
-    audioEl.src = url;
-  } else if(!audioEl.getAttribute('src') || audioEl.getAttribute('src') !== url){
-    audioEl.src = url;
+  const sameTrack = audioEl.dataset.audioUrl === url;
+  if(sameTrack && !audioEl.paused){
+    audioEl.pause();
+    if(_activeWrap) _activeWrap.classList.remove('is-playing');
+    return;
   }
-  if(spTitle) spTitle.textContent = title || 'در حال پخش';
-  sitePlayer.classList.add('is-on');
+  if(!sameTrack){
+    audioEl.pause(); audioEl.src = url; audioEl.dataset.audioUrl = url; audioEl.currentTime = 0;
+  }
   clearAllPlaying();
   _activeWrap = wrapEl || null;
-  if(_activeWrap){
-    _activeWrap.classList.add('is-playing');
-    _activeWrap.classList.add('has-progress');
-  }
-  audioEl.play().catch(()=>{});
+  if(_activeWrap) _activeWrap.classList.add('is-playing','has-progress');
   const id = itemId || (wrapEl && wrapEl.getAttribute('data-id')) || null;
-  openVoiceTranscript({ id, title: title || '', audioUrl: url });
-
+  const bodyText = wrapEl ? (wrapEl.getAttribute('data-body-text') || '') : '';
+  // پنل متن مستقل از موفقیت شروع پخش باز می‌شود.
+  openVoiceTranscript({ id, title: title || '', audioUrl: url, bodyText });
+  if(audioEl){
+    audioEl.play().catch(()=>{ if(_activeWrap) _activeWrap.classList.remove('is-playing'); });
+  }
 }
 
 function stopInlinePlayer(){
-  audioEl.pause();
-  sitePlayer.classList.remove('is-on');
-  clearAllPlaying();
-  _activeWrap = null;
+  audioEl.pause(); audioEl.currentTime = 0;
+  if(_activeWrap){
+    setRingProgress(_activeWrap, 0);
+    const timeEl = _activeWrap.querySelector('[data-time]');
+    if(timeEl) timeEl.textContent = fmtTime(0) + ' / ' + fmtTime(audioEl.duration);
+  }
+  clearAllPlaying(); _activeWrap = null;
 }
 
 audioEl.addEventListener('timeupdate', ()=>{
+  syncTranscriptHighlight();
   if(!_activeWrap) return;
   const d = audioEl.duration;
   const c = audioEl.currentTime;
   if(d > 0) setRingProgress(_activeWrap, c / d);
   const timeEl = _activeWrap.querySelector('[data-time]');
-  if(timeEl){
-    timeEl.textContent = fmtTime(c) + ' / ' + fmtTime(d);
-  }
-  const sub = document.querySelector('.site-player__sub');
-  if(sub) sub.textContent = fmtTime(c) + ' از ' + fmtTime(d);
+  if(timeEl) timeEl.textContent = fmtTime(c) + ' / ' + fmtTime(d);
 });
 
 audioEl.addEventListener('ended', ()=>{
@@ -628,12 +693,12 @@ audioEl.addEventListener('ended', ()=>{
     const timeEl = _activeWrap.querySelector('[data-time]');
     if(timeEl && audioEl.duration) timeEl.textContent = fmtTime(audioEl.duration) + ' / ' + fmtTime(audioEl.duration);
   }
-  clearAllPlaying();
-  sitePlayer.classList.remove('is-on');
+  if(_activeWrap) _activeWrap.classList.remove('is-playing');
   _activeWrap = null;
 });
 
 audioEl.addEventListener('loadedmetadata', ()=>{
+  syncTranscriptHighlight();
   if(!_activeWrap) return;
   const timeEl = _activeWrap.querySelector('[data-time]');
   if(timeEl) timeEl.textContent = fmtTime(0) + ' / ' + fmtTime(audioEl.duration);
@@ -677,12 +742,14 @@ async function renderLibraryList(key){
     const isVideo = key === 'videos';
     const isMusic = key === 'musics';
     // موسیقی و voice-only: پخش درجا + drawer متن/شعر
-    const playInline = !isVideo && (!!it.isVoiceOnly || isMusic) && !!it.audioUrl;
+    const isPodcastOrStory = key === 'podcast' || key === 'stories';
+    const playInline = !isVideo && (!!it.isVoiceOnly || isMusic || isPodcastOrStory) && !!it.audioUrl;
     const href = isVideo ? `#/english/videos/${it.id}` : (playInline ? 'javascript:void(0)' : `#/english/${key}/${it.id}`);
     const voice = playInline ? (it.audioUrl || '') : '';
     const videoUrl = (isVideo && it.videoUrl) ? it.videoUrl : '';
     const isVoice = playInline && voice;
     return `<a class="circle-wrap" href="${href}" data-id="${it.id}"
+      data-body-text="${escapeHtml(it.bodyText || it.BodyText || it.lyrics || it.transcript || '')}"
       data-audio="${voice}" data-video="${videoUrl}" data-title="${escapeHtml(it.title)}"
       data-voice-only="${isVoice ? '1' : '0'}"
       title="${escapeHtml(it.title)}">
@@ -694,9 +761,13 @@ async function renderLibraryList(key){
         <span class="circle circle--sm">
           <img src="${img}" alt="${escapeHtml(it.title)}" loading="lazy">
           <span class="circle__label">${escapeHtml(it.title)}</span>
+          ${playInline ? `<span class="circle-player-ui">
+            <span class="circle-player-ui__play">▶</span>
+            <span class="circle-player-ui__time" data-time>۰:۰۰ / --:--</span>
+            <span class="circle-player-ui__stop" data-stop="1" title="توقف">■</span>
+          </span>` : ''}
         </span>
       </span>
-      <span class="circle-time" data-time>۰:۰۰</span>
     </a>`;
   }).join('')}</div>`;
 }
@@ -2122,13 +2193,19 @@ async function route(){
         <div style="text-align:center"><a class="back" href="#/english">← زبان انگلیسی</a></div>
       </div>`;
     /* voice-only podcast: play inline — stay on page, show ring progress */
-    app.querySelectorAll('a.circle-wrap[data-voice-only="1"]').forEach(el=>{
-      const url = el.getAttribute('data-audio');
+    // Every audio-backed circle (Music, Podcast, Stories, Voice) opens the
+    // in-page transcript drawer. Do not restrict this to isVoiceOnly.
+    app.querySelectorAll('a.circle-wrap[data-audio]').forEach(el=>{
+      const url = (el.getAttribute('data-audio') || '').trim();
       if(!url) return;
       el.addEventListener('click', e=>{
-        e.preventDefault();
-        e.stopPropagation();
-        playAudio(url, el.getAttribute('data-title') || '', el);
+        if(e.target.closest('[data-stop]')){
+          e.preventDefault(); e.stopPropagation();
+          if(_activeWrap === el) stopInlinePlayer();
+          return;
+        }
+        e.preventDefault(); e.stopPropagation();
+        playAudio(url, el.getAttribute('data-title') || '', el, el.getAttribute('data-id'));
       });
     });
     /* educational videos: hover 2s → 10s preview in circle */
