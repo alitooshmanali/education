@@ -33,38 +33,55 @@ public sealed class ContentService : IContentService
             x.Folder != null ? x.Folder.RelativePath : string.Empty,
             x.Levels.Select(l => l.Level).ToList()));
 
-    public async Task<IReadOnlyList<ContentDto>> GetAllAsync(CancellationToken cancellationToken = default)
-        => await ProjectMeta(_db.Contents.AsNoTracking())
-            .OrderBy(x => x.DisplayName)
-            .ToListAsync(cancellationToken);
+    public Task<IReadOnlyList<ContentDto>> GetAllAsync(
+    CancellationToken cancellationToken = default)
+    {
+        return GetMetaAsync(
+            _db.Contents,
+            cancellationToken);
+    }
 
     public Task<int> CountActiveAsync(CancellationToken cancellationToken = default)
         => _db.Contents.AsNoTracking().CountAsync(c => c.IsActive, cancellationToken);
 
-    public async Task<IReadOnlyList<ContentDto>> GetByLevelAsync(LanguageLevel level, CancellationToken cancellationToken = default)
-        => await ProjectMeta(
-                _db.Contents.AsNoTracking()
-                    .Where(x => x.Levels.Any(l => l.Level == level) || (x.Folder != null && x.Folder.Level == level)))
-            .OrderBy(x => x.DisplayName)
-            .ToListAsync(cancellationToken);
+   public Task<IReadOnlyList<ContentDto>> GetByLevelAsync(
+    LanguageLevel level,
+    CancellationToken cancellationToken = default)
+    {
+        return GetMetaAsync(
+            _db.Contents.Where(x =>
+                x.Levels.Any(l => l.Level == level) ||
+                (x.Folder != null && x.Folder.Level == level)),
+            cancellationToken);
+    }
 
-    public async Task<IReadOnlyList<ContentDto>> GetForUserAsync(long userId, bool isAdmin, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<ContentDto>> GetForUserAsync(
+    long userId,
+    bool isAdmin,
+    CancellationToken cancellationToken = default)
     {
         if (isAdmin)
             return await GetAllAsync(cancellationToken);
-
-        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+    
+        var user = await _db.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                u => u.Id == userId,
+                cancellationToken);
+    
         if (user?.Level is null)
             return Array.Empty<ContentDto>();
-
+    
         var level = user.Level.Value;
-        return await ProjectMeta(
-                _db.Contents.AsNoTracking()
-                    .Where(c => c.IsActive && (
-                        c.Levels.Any(l => l.Level == level) ||
-                        (c.Folder != null && c.Folder.Level == level))))
-            .OrderBy(x => x.DisplayName)
-            .ToListAsync(cancellationToken);
+    
+        return await GetMetaAsync(
+            _db.Contents.Where(c =>
+                c.IsActive &&
+                (
+                    c.Levels.Any(l => l.Level == level) ||
+                    (c.Folder != null && c.Folder.Level == level)
+                )),
+            cancellationToken);
     }
 
     /// <summary>Does NOT load binary Content column — use IContentStreamingService to play.</summary>
@@ -380,5 +397,75 @@ public sealed class ContentService : IContentService
         if (mime.StartsWith("image/")) return ContentType.Image;
         if (ext is ".pdf" or ".doc" or ".docx" or ".txt") return ContentType.Document;
         return ContentType.Other;
+    }
+
+    private async Task<IReadOnlyList<ContentDto>> GetMetaAsync(
+    IQueryable<LessonContent> query,
+    CancellationToken cancellationToken)
+    {
+        // Query 1: Load content metadata only.
+        // Ordering is performed on the entity before projection.
+        var rows = await query
+            .AsNoTracking()
+            .OrderBy(x => x.DisplayName)
+            .Select(x => new
+            {
+                x.Id,
+                x.OriginalFileName,
+                x.DisplayName,
+                x.FileExtension,
+                x.MimeType,
+                x.FileSize,
+                x.Type,
+                x.DurationSeconds,
+                x.FolderId,
+                FolderPath = x.Folder != null
+                    ? x.Folder.RelativePath
+                    : string.Empty
+            })
+            .ToListAsync(cancellationToken);
+
+        if (rows.Count == 0)
+            return Array.Empty<ContentDto>();
+
+        var contentIds = rows
+            .Select(x => x.Id)
+            .ToArray();
+
+        // Query 2: Load content levels separately.
+        var levelRows = await _db.ContentLevels
+            .AsNoTracking()
+            .Where(x => contentIds.Contains(x.ContentId))
+            .Select(x => new
+            {
+                x.ContentId,
+                x.Level
+            })
+            .ToListAsync(cancellationToken);
+
+        var levelsByContentId = levelRows
+            .GroupBy(x => x.ContentId)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<LanguageLevel>)
+                    group.Select(x => x.Level).ToArray());
+
+        // Combine results in memory.
+        return rows
+            .Select(x => new ContentDto(
+                x.Id,
+                x.OriginalFileName,
+                x.DisplayName,
+                x.FileExtension,
+                x.MimeType,
+                x.FileSize,
+                x.Type,
+                x.DurationSeconds,
+                x.FolderId,
+                x.FolderPath,
+                levelsByContentId.TryGetValue(x.Id, out var levels)
+                    ? levels
+                    : Array.Empty<LanguageLevel>()))
+            .ToArray();
     }
 }

@@ -390,10 +390,15 @@ async function renderEnglishStations(circles){
     books:{icon:'📚',tone:'',desc:'منابع و کتاب‌های آموزشی'}
   };
   const counts=await Promise.all(circles.map(async c=>{
-    const key=c.id==='music'?'musics':c.id;
-    const category=CAT[key];
+    // کتاب‌ها از API جدا (SiteBooks) می‌آیند نه از کتابخانه SiteLibrary
+    if(c.id === 'books'){
+      const books = await fetchBooks();
+      return Array.isArray(books) ? books.length : 0;
+    }
+    const key = c.id === 'music' ? 'musics' : c.id;
+    const category = CAT[key];
     if(!category) return 0;
-    const items=await fetchLibrary(category);
+    const items = await fetchLibrary(category);
     return items.length;
   }));
   return `<section class="sec station-section">
@@ -746,15 +751,35 @@ async function renderBooksGrid(){
   if(!items.length){
     return `<div class="lib-empty">هنوز کتابی ثبت نشده است.<br>از پنل ادمین → کتاب‌های سایت اضافه کنید.</div>`;
   }
-  return `<div class="content-grid content-grid--books">${items.map(it=>{
+  return `<div class="books-zigzag">${items.map((it, i)=>{
     const img = it.imageUrl || CAT_HERO.books || IMG.oxford;
-    const price = (it.price != null) ? Number(it.price).toLocaleString('fa-IR') : '—';
-    return `<article class="content-card book-content-card">
-      <div class="content-card__media"><img src="${escapeHtml(img)}" alt="${escapeHtml(it.title||'')}" loading="lazy"></div>
-      <div class="content-card__body"><span class="content-card__eyebrow">کتاب آموزشی</span>
+    const price = (it.price != null) ? Number(it.price).toLocaleString('fa-IR') : null;
+    const author = it.author || it.subtitle || it.summary || '';
+    const desc = it.description || it.summary || it.bodyText || '';
+    const rev = (i % 2 === 1) ? ' rev' : '';
+    const tags = [];
+    if(it.level) tags.push(String(it.level));
+    if(it.collection) tags.push(String(it.collection));
+    if(it.pages) tags.push(it.pages + ' صفحه');
+    const tagsHtml = tags.length
+      ? `<div class="coll">${tags.map(t=>`<span>${escapeHtml(t)}</span>`).join('')}</div>`
+      : '';
+    const cover = img
+      ? `<div class="bookcov bookcov--img"><img src="${escapeHtml(img)}" alt="${escapeHtml(it.title||'')}" loading="lazy"></div>`
+      : `<div class="bookcov"><b>${escapeHtml((it.title||'BOOK').slice(0,40))}</b></div>`;
+    return `<article class="bookrow${rev}">
+      <div class="bookrow__img">${cover}</div>
+      <div class="bookrow__body">
         <h2>${escapeHtml(it.title||'')}</h2>
-        <p class="content-card__price">${price} <small>تومان</small></p>
-        ${it.fileUrl ? `<a class="content-card__action" href="${escapeHtml(it.fileUrl)}" target="_blank" rel="noopener">مشاهده / دریافت کتاب PDF ←</a>` : '<span class="content-card__note">فایل این کتاب هنوز بارگذاری نشده است.</span>'}
+        ${author ? `<div class="au">${escapeHtml(author)}</div>` : ''}
+        ${tagsHtml}
+        ${desc ? `<p>${escapeHtml(desc)}</p>` : ''}
+        <div class="bookrow__foot">
+          ${price != null ? `<div class="bookprice">${price} <span>تومان</span></div>` : ''}
+          ${it.fileUrl
+            ? `<a class="xbtn xbtn--navy xbtn--sm" href="${escapeHtml(it.fileUrl)}" target="_blank" rel="noopener">مشاهده / دریافت</a>`
+            : `<span class="content-card__note">فایل هنوز بارگذاری نشده</span>`}
+        </div>
       </div>
     </article>`;
   }).join('')}</div>`;
@@ -2269,21 +2294,28 @@ async function route(){
       const subtitle = hero.subtitle || 'از زبان انگلیسی تا موسیقی، کامپیوتر و نقاشی؛ مسیر یادگیری مناسب خودت را پیدا کن.';
       const heroImage = hero.imageUrl || '';
       const departments = [
-        {id:'english',icon:'🗣',title:'زبان انگلیسی',desc:'پادکست، ویدیو، داستان، موسیقی و کتاب؛ از شنیدن تا مکالمه.',href:'#/english',tag:'زبان و ارتباط'},
-        {id:'music-skill',icon:'🎸',title:'موسیقی',desc:'از آشنایی با ساز تا تمرین و پیشرفت مرحله‌به‌مرحله.',href:'#/music-skill',tag:'هنر و اجرا'},
-        {id:'computer',icon:'💻',title:'کامپیوتر',desc:'مهارت‌های دیجیتال و مسیرهای آموزشی پروژه‌محور.',href:'#/computer',tag:'مهارت دیجیتال'},
-        {id:'painting',icon:'🎨',title:'نقاشی',desc:'یادگیری طراحی و هنرهای تجسمی با تمرین هدفمند.',href:'#/painting',tag:'هنرهای تجسمی'}
-      ];
-      const dynamicByTitle = new Map(circles.map(x=>[x.id,x]));
-      const deptCards = departments.map(d=>{
-        const actual = dynamicByTitle.get(d.id);
-        const label = actual?.label || d.title;
-        const img = actual?.img || '';
-        return `<a class="v4-dept-card" href="${d.href}" aria-label="ورود به دپارتمان ${escapeHtml(label)}">
-          <div class="v4-dept-card__icon">${img ? `<img src="${escapeHtml(img)}" alt="" loading="lazy">` : `<span>${d.icon}</span>`}</div>
-          <div class="v4-dept-card__body"><small>${d.tag}</small><h3>${escapeHtml(label)}</h3><p>${escapeHtml(d.desc)}</p><b>مشاهده دپارتمان <span aria-hidden="true">←</span></b></div>
-        </a>`;
-      }).join('');
+  {id:'painting',aliases:['painting'],icon:'🎨',glyph:'Painting',title:'نقاشی',desc:'یادگیری طراحی و هنرهای تجسمی با تمرین هدفمند.',href:'#/painting',tag:'هنرهای تجسمی',tone:'paint'},
+  {id:'computer',aliases:['computer'],icon:'💻',glyph:'Code',title:'کامپیوتر',desc:'مهارت‌های دیجیتال و مسیرهای آموزشی پروژه‌محور.',href:'#/computer',tag:'مهارت دیجیتال',tone:'code'},
+  {id:'music-skill',aliases:['music','music-skill'],icon:'🎸',glyph:'Music',title:'موسیقی',desc:'از آشنایی با ساز تا تمرین و پیشرفت مرحله‌به‌مرحله.',href:'#/music-skill',tag:'هنر و اجرا',tone:'music'},
+  {id:'english',aliases:['english'],icon:'EN',glyph:'English',title:'زبان انگلیسی',desc:'پادکست، ویدیو، داستان، موسیقی و کتاب؛ از شنیدن تا مکالمه.',href:'#/english',tag:'زبان و ارتباط',tone:'lang'}
+];
+const dynamicByTitle = new Map();
+circles.forEach(x=>{
+  dynamicByTitle.set(x.id, x);
+  if(x.id === 'music') dynamicByTitle.set('music-skill', x);
+  if(x.id === 'music-skill') dynamicByTitle.set('music', x);
+});
+const deptCards = departments.map(d=>{
+  const actual = d.aliases.map(a=>dynamicByTitle.get(a)).find(Boolean);
+  const label = actual?.label || d.title;
+  // عمداً از تصویر دایره‌ای به‌عنوان کاور استفاده نمی‌کنیم تا کارت‌ها یکدست بمانند
+  return `<a class="v4-dept-card v4-dept-card--${d.tone}" href="${d.href}" aria-label="ورود به دپارتمان ${escapeHtml(label)}">
+    <div class="v4-dept-card__media" aria-hidden="true">
+      <span class="v4-dept-card__badge"><span class="v4-dept-card__emoji">${d.icon}</span><span class="v4-dept-card__glyph">${d.glyph}</span></span>
+    </div>
+    <div class="v4-dept-card__body"><small>${d.tag}</small><h3>${escapeHtml(label)}</h3><p>${escapeHtml(d.desc)}</p><b>مشاهده دپارتمان <span aria-hidden="true">←</span></b></div>
+  </a>`;
+}).join('');
       app.innerHTML = `<main class="v4-home">
         <section class="v4-home-hero">
           <div class="v4-home-hero__copy"><span class="v4-eyebrow">ASATIR ACADEMY</span>
@@ -2302,10 +2334,34 @@ async function route(){
 
   /* Shared department hub — Asatir v4 / mockups 38 + 52 */
   const departmentMap = {
-    painting:{key:'painting',title:'نقاشی',english:'PAINTING DEPARTMENT',subject:'Painting',icon:'🎨',accent:'#B66C43',description:'از طراحی پایه تا خلق اثر؛ مهارت‌های هنری را با تمرین و راهنمایی مرحله‌به‌مرحله توسعه بده.',stations:[]},
-    computer:{key:'computer',title:'کامپیوتر',english:'COMPUTER DEPARTMENT',subject:'Computer',icon:'💻',accent:'#0F7A57',description:'از مفاهیم پایه تا ساخت پروژه؛ مهارت‌های دیجیتال را با مسیرهای آموزشی هدفمند یاد بگیر.',stations:[{icon:'📚',title:'دوره‌های آموزشی',desc:'مسیرهای یادگیری و مهارت‌ها',href:'#/computer/courses'},{icon:'🎬',title:'ویدیوهای آموزشی',desc:'آموزش‌های ویدیویی',href:'#/computer/courses'},{icon:'🧪',title:'پروژه‌های عملی',desc:'یادگیری پروژه‌محور',href:'#/computer/courses'}]},
-    'music-skill':{key:'music',title:'موسیقی',english:'MUSIC DEPARTMENT',subject:'Music',icon:'🎸',accent:'#5B4B8A',description:'از شنیدن تا نواختن؛ مسیر یادگیری ساز و مبانی موسیقی را متناسب با سطح خودت دنبال کن.',stations:[{icon:'🎼',title:'دوره‌های موسیقی',desc:'آموزش ساز و مبانی موسیقی',href:'#/music-skill/courses'},{icon:'🎧',title:'تمرین و شنیدار',desc:'محتوای صوتی آموزشی',href:'#/music-skill/courses'},{icon:'🎬',title:'ویدیوهای آموزشی',desc:'تمرین‌های تصویری',href:'#/music-skill/courses'}]}
-  };
+  painting:{
+    key:'painting',title:'نقاشی',english:'PAINTING DEPARTMENT',subject:'Painting',icon:'🎨',accent:'#B66C43',
+    description:'از طراحی پایه تا خلق اثر؛ مهارت‌های هنری را با تمرین و راهنمایی مرحله‌به‌مرحله توسعه بده.',
+    stations:[
+      {icon:'📚',title:'دوره‌های آموزشی',desc:'مسیرهای یادگیری و مهارت‌ها',href:'#/painting/courses'},
+      {icon:'🎬',title:'ویدیوهای آموزشی',desc:'آموزش‌های تصویری',href:'#/painting/courses'},
+      {icon:'🧪',title:'پروژه‌های عملی',desc:'تمرین و خلق اثر',href:'#/painting/courses'}
+    ]
+  },
+  computer:{
+    key:'computer',title:'کامپیوتر',english:'COMPUTER DEPARTMENT',subject:'Computer',icon:'💻',accent:'#0F7A57',
+    description:'از مفاهیم پایه تا ساخت پروژه؛ مهارت‌های دیجیتال را با مسیرهای آموزشی هدفمند یاد بگیر.',
+    stations:[
+      {icon:'📚',title:'دوره‌های آموزشی',desc:'مسیرهای یادگیری و مهارت‌ها',href:'#/computer/courses'},
+      {icon:'🎬',title:'ویدیوهای آموزشی',desc:'آموزش‌های ویدیویی',href:'#/computer/courses'},
+      {icon:'🧪',title:'پروژه‌های عملی',desc:'یادگیری پروژه‌محور',href:'#/computer/courses'}
+    ]
+  },
+  'music-skill':{
+    key:'music',title:'موسیقی',english:'MUSIC DEPARTMENT',subject:'Music',icon:'🎸',accent:'#5B4B8A',
+    description:'از شنیدن تا نواختن؛ مسیر یادگیری ساز و مبانی موسیقی را متناسب با سطح خودت دنبال کن.',
+    stations:[
+      {icon:'📚',title:'دوره‌های آموزشی',desc:'مسیرهای یادگیری و مهارت‌ها',href:'#/music-skill/courses'},
+      {icon:'🎬',title:'ویدیوهای آموزشی',desc:'آموزش‌های ویدیویی',href:'#/music-skill/courses'},
+      {icon:'🧪',title:'پروژه‌های عملی',desc:'تمرین و اجرا',href:'#/music-skill/courses'}
+    ]
+  }
+};
   if(departmentMap[parts[0]] && parts.length===1){
     const dept = departmentMap[parts[0]];
     showSiteLoader(true, `در حال بارگذاری دپارتمان ${dept.title}…`);
